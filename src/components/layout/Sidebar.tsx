@@ -133,7 +133,14 @@ export function Sidebar() {
             )}
 
             {/* Navigation */}
-            <div className={cn("flex-1 overflow-y-auto py-2", collapsed ? "px-2" : "px-3")}>
+            <div className={cn(
+                "flex-1 py-2 overflow-y-auto scrollbar-thin",
+                collapsed ? "px-2" : "px-3"
+            )}
+            style={{
+                scrollbarGutter: 'stable'
+            }}
+            >
                 <div className="space-y-4">
                     <NavSection title="Main" items={mainMenu} expanded={mainExpanded} onToggle={() => setMainExpanded(!mainExpanded)} />
                     <NavSection title="Features" items={monitorMenu} expanded={featuresExpanded} onToggle={() => setFeaturesExpanded(!featuresExpanded)} />

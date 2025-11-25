@@ -16,10 +16,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant = 'primary', size = 'md', isLoading, children, ...props }, ref) => {
 
         const variants = {
-            primary: "bg-gold-500 text-black-900 hover:bg-gold-600 shadow-lg shadow-gold-500/20 border-transparent font-bold",
+            primary: "bg-accent text-on-accent hover:bg-accent-600 shadow-lg shadow-accent-sm border-transparent font-bold",
             secondary: "bg-gray-700 text-white hover:bg-gray-600 border-transparent",
-            outline: "bg-transparent border-gray-600 text-gray-400 hover:border-gold-500 hover:text-gold-500 border",
-            ghost: "bg-transparent text-gray-400 hover:text-white hover:bg-gray-800 border-transparent",
+            outline: "bg-transparent border-themed-secondary text-themed-muted hover:border-accent hover:text-accent border",
+            ghost: "bg-transparent text-themed-muted hover:text-themed-primary hover:bg-themed-elevated border-transparent",
             danger: "bg-status-danger text-white hover:bg-red-600 shadow-lg shadow-red-500/20 border-transparent",
             success: "bg-status-success text-white hover:bg-green-600 shadow-lg shadow-green-500/20 border-transparent",
         };
@@ -34,7 +34,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         return (
             <button
                 className={cn(
-                    "inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 disabled:pointer-events-none disabled:opacity-50",
+                    "inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-50",
                     variants[variant],
                     sizes[size],
                     className

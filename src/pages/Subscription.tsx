@@ -51,11 +51,11 @@ export default function Subscription() {
     };
 
     return (
-        <div className="min-h-screen bg-black-900 py-12 px-4">
+        <div className="min-h-screen bg-themed-primary py-12 px-4">
             <div className="max-w-5xl mx-auto space-y-8">
                 <div className="text-center space-y-4">
-                    <h1 className="text-3xl font-bold text-white font-heading">Choose your plan</h1>
-                    <p className="text-slate-400 max-w-2xl mx-auto">
+                    <h1 className="text-3xl font-bold text-themed-primary font-heading">Choose your plan</h1>
+                    <p className="text-themed-secondary max-w-2xl mx-auto">
                         Select the plan that best fits your needs. You can upgrade or downgrade at any time.
                     </p>
                 </div>
@@ -64,48 +64,48 @@ export default function Subscription() {
                     {plans.map((plan) => (
                         <Card
                             key={plan.id}
-                            className={`relative cursor-pointer transition-all duration-200 ${selectedPlan === plan.id ? 'ring-2 ring-gold-500 bg-gray-800' : 'bg-gray-800/50 hover:bg-gray-800'}`}
+                            className={`relative cursor-pointer transition-all duration-200 card-gradient ${selectedPlan === plan.id ? 'ring-2 ring-accent' : 'hover:border-accent/50'} border-themed`}
                             onClick={() => setSelectedPlan(plan.id)}
                         >
                             {plan.popular && (
                                 <div className="absolute -top-3 left-0 right-0 flex justify-center">
-                                    <Badge variant="default" className="bg-gold-500 text-black-900 hover:bg-gold-600">Most Popular</Badge>
+                                    <Badge variant="default" className="bg-accent text-white hover:bg-accent-dark">Most Popular</Badge>
                                 </div>
                             )}
                             <CardHeader>
-                                <CardTitle>{plan.name}</CardTitle>
+                                <CardTitle className="text-themed-primary">{plan.name}</CardTitle>
                                 <CardDescription>{plan.description}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <div>
-                                    <span className="text-4xl font-bold text-white">{plan.price}</span>
-                                    <span className="text-sm text-slate-400">/{plan.interval}</span>
+                                    <span className="text-4xl font-bold text-themed-primary">{plan.price}</span>
+                                    <span className="text-sm text-themed-secondary">/{plan.interval}</span>
                                 </div>
                                 <ul className="space-y-3">
                                     {plan.features.map((feature, i) => (
-                                        <li key={i} className="flex items-center text-sm text-slate-300">
-                                            <Check className="h-4 w-4 text-gold-500 mr-3 flex-shrink-0" />
+                                        <li key={i} className="flex items-center text-sm text-themed-secondary">
+                                            <Check className="h-4 w-4 text-accent mr-3 flex-shrink-0" />
                                             {feature}
                                         </li>
                                     ))}
                                 </ul>
                             </CardContent>
                             <CardFooter>
-                                <div className={`w-full h-6 flex items-center justify-center rounded-full border ${selectedPlan === plan.id ? 'border-gold-500 bg-gold-500/20' : 'border-gray-700'}`}>
-                                    {selectedPlan === plan.id && <div className="h-3 w-3 rounded-full bg-gold-500" />}
+                                <div className={`w-full h-6 flex items-center justify-center rounded-full border ${selectedPlan === plan.id ? 'border-accent bg-accent/20' : 'border-themed'}`}>
+                                    {selectedPlan === plan.id && <div className="h-3 w-3 rounded-full bg-accent" />}
                                 </div>
                             </CardFooter>
                         </Card>
                     ))}
                 </div>
 
-                <div className="flex justify-end pt-8 border-t border-slate-800">
+                <div className="flex justify-end pt-8 border-t border-themed">
                     <Button
                         size="lg"
                         disabled={!selectedPlan}
                         onClick={handleSubscribe}
                         isLoading={isLoading}
-                        className="bg-gold-500 hover:bg-gold-600 text-black-900 font-bold"
+                        className="btn-primary"
                     >
                         {selectedPlan === 'starter' ? 'Continue for Free' : (
                             <>

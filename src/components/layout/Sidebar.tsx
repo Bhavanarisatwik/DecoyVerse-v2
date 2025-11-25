@@ -9,63 +9,150 @@ import {
     BrainCircuit,
     Activity,
     Settings,
-    LogOut
+    LogOut,
+    ChevronLeft,
+    ChevronRight,
+    HelpCircle,
+    ChevronDown,
+    Cog
 } from "lucide-react"
 import { cn } from "../../utils/cn"
+import { useState } from "react"
+import { useAuth } from "../../context/AuthContext"
 
-const navItems = [
+const mainMenu = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
     { icon: Server, label: "Nodes", href: "/nodes" },
     { icon: Ghost, label: "Decoys", href: "/decoys" },
     { icon: FileKey, label: "Honeytokens", href: "/honeytokens" },
+]
+
+const monitorMenu = [
     { icon: ScrollText, label: "Logs", href: "/logs" },
     { icon: Siren, label: "Alerts", href: "/alerts" },
     { icon: BrainCircuit, label: "AI Insights", href: "/ai-insights" },
     { icon: Activity, label: "Grafana", href: "/grafana" },
+]
+
+const toolsMenu = [
     { icon: Settings, label: "Settings", href: "/settings" },
+    { icon: Cog, label: "Configuration", href: "/configuration" },
+    { icon: HelpCircle, label: "Help center", href: "#" },
 ]
 
 export function Sidebar() {
     const location = useLocation();
+    const { logout } = useAuth();
+    const [collapsed, setCollapsed] = useState(false);
+    const [mainExpanded, setMainExpanded] = useState(true);
+    const [featuresExpanded, setFeaturesExpanded] = useState(true);
+    const [toolsExpanded, setToolsExpanded] = useState(true);
+
+    const NavItem = ({ item, isActive }: { item: typeof mainMenu[0], isActive: boolean }) => (
+        <Link
+            to={item.href}
+            className={cn(
+                "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                collapsed ? "justify-center" : "",
+                isActive
+                    ? "text-themed-primary bg-themed-elevated"
+                    : "text-themed-muted hover:text-themed-primary hover:bg-themed-elevated/50"
+            )}
+            title={collapsed ? item.label : undefined}
+        >
+            {/* Left accent bar for active state */}
+            {isActive && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
+            )}
+            
+            <item.icon className={cn(
+                "h-[18px] w-[18px] flex-shrink-0",
+                collapsed && "h-5 w-5"
+            )} />
+            {!collapsed && <span>{item.label}</span>}
+        </Link>
+    );
+
+    const NavSection = ({ title, items, expanded, onToggle }: { title: string, items: typeof mainMenu, expanded: boolean, onToggle: () => void }) => (
+        <div className="space-y-1">
+            {!collapsed && (
+                <button 
+                    onClick={onToggle}
+                    className="flex items-center justify-between w-full px-3 py-2 text-[11px] font-semibold text-themed-dimmed uppercase tracking-wider hover:text-themed-muted transition-colors"
+                >
+                    <span>{title}</span>
+                    <ChevronDown className={cn("h-3 w-3 transition-transform", !expanded && "-rotate-90")} />
+                </button>
+            )}
+            {collapsed && <div className="my-3 mx-2 border-t border-white/5" />}
+            {(expanded || collapsed) && items.map((item) => {
+                const isActive = location.pathname === item.href;
+                return <NavItem key={item.href} item={item} isActive={isActive} />;
+            })}
+        </div>
+    );
 
     return (
-        <div className="flex h-screen w-64 flex-col border-r border-gray-700 bg-black-900 text-gray-200">
-            <div className="flex h-16 items-center px-6 border-b border-gray-700">
-                <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-gold-500/20 flex items-center justify-center">
-                        <Ghost className="h-5 w-5 text-gold-500" />
+        <div className={cn(
+            "flex h-screen flex-col bg-gradient-to-b from-[#0c0c0e] via-[#0e0e10] to-[#0a0a0c] border-r border-white/5 transition-all duration-300",
+            collapsed ? "w-[68px]" : "w-56"
+        )}>
+            {/* Logo */}
+            <div className={cn(
+                "flex h-[58px] items-center",
+                collapsed ? "justify-center px-2" : "justify-between px-4"
+            )}>
+                <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-accent to-accent-600 flex items-center justify-center flex-shrink-0">
+                        <Ghost className="h-4 w-4 text-on-accent" />
                     </div>
-                    <span className="text-lg font-bold text-white tracking-tight">DECOYVERSE</span>
+                    {!collapsed && (
+                        <span className="text-sm font-semibold text-themed-primary tracking-tight">DecoyVerse</span>
+                    )}
+                </div>
+                {!collapsed && (
+                    <button 
+                        onClick={() => setCollapsed(true)}
+                        className="h-6 w-6 rounded flex items-center justify-center text-themed-dimmed hover:bg-white/5 hover:text-themed-muted transition-colors"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </button>
+                )}
+            </div>
+
+            {/* Expand button when collapsed */}
+            {collapsed && (
+                <div className="flex justify-center py-2">
+                    <button 
+                        onClick={() => setCollapsed(false)}
+                        className="h-7 w-7 rounded-lg flex items-center justify-center text-themed-dimmed hover:bg-white/5 hover:text-themed-muted transition-colors"
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </button>
+                </div>
+            )}
+
+            {/* Navigation */}
+            <div className={cn("flex-1 overflow-y-auto py-2", collapsed ? "px-2" : "px-3")}>
+                <div className="space-y-4">
+                    <NavSection title="Main" items={mainMenu} expanded={mainExpanded} onToggle={() => setMainExpanded(!mainExpanded)} />
+                    <NavSection title="Features" items={monitorMenu} expanded={featuresExpanded} onToggle={() => setFeaturesExpanded(!featuresExpanded)} />
+                    <NavSection title="Tools" items={toolsMenu} expanded={toolsExpanded} onToggle={() => setToolsExpanded(!toolsExpanded)} />
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto py-4">
-                <nav className="space-y-1 px-3">
-                    {navItems.map((item) => {
-                        const isActive = location.pathname === item.href;
-                        return (
-                            <Link
-                                key={item.href}
-                                to={item.href}
-                                className={cn(
-                                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                                    isActive
-                                        ? "bg-gold-500/10 text-gold-500 border-r-2 border-gold-500"
-                                        : "text-gray-400 hover:bg-gray-800 hover:text-gray-100"
-                                )}
-                            >
-                                <item.icon className={cn("h-5 w-5", isActive ? "text-gold-500" : "text-gray-500")} />
-                                {item.label}
-                            </Link>
-                        )
-                    })}
-                </nav>
-            </div>
-
-            <div className="border-t border-gray-700 p-4">
-                <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-status-danger transition-colors">
-                    <LogOut className="h-5 w-5" />
-                    Sign Out
+            {/* Logout */}
+            <div className={cn("border-t border-white/5 py-3", collapsed ? "px-2" : "px-3")}>
+                <button 
+                    onClick={logout}
+                    className={cn(
+                        "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary hover:bg-white/5 transition-all duration-200",
+                        collapsed ? "justify-center" : ""
+                    )}
+                    title={collapsed ? "Logout" : undefined}
+                >
+                    <LogOut className={cn("h-[18px] w-[18px] flex-shrink-0", collapsed && "h-5 w-5")} />
+                    {!collapsed && <span>Logout</span>}
                 </button>
             </div>
         </div>

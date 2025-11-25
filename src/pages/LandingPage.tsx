@@ -6,7 +6,7 @@ import { Footer } from "../components/landing/Footer"
 
 export default function LandingPage() {
     return (
-        <div className="min-h-screen bg-black-900 text-gray-200 font-sans selection:bg-gold-500/30 antialiased">
+        <div className="min-h-screen bg-themed-primary text-themed-secondary font-sans selection:bg-accent/30 antialiased transition-colors duration-300">
             <LandingNavbar />
             <main>
                 <Hero />

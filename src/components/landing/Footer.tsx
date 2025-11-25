@@ -24,9 +24,9 @@ const faqs = [
 
 export function Footer() {
     return (
-        <footer className="bg-black-900 relative overflow-hidden">
+        <footer className="bg-themed-primary relative overflow-hidden">
             {/* FAQ Section */}
-            <section className="py-24 border-t border-gray-800">
+            <section className="py-24 border-t border-themed">
                 <div className="container px-4 md:px-6 mx-auto max-w-7xl">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -35,10 +35,10 @@ export function Footer() {
                         transition={{ duration: 0.6 }}
                         className="text-center mb-12"
                     >
-                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-heading">
+                        <h2 className="text-3xl md:text-4xl font-bold text-themed-primary mb-4 font-heading">
                             Frequently asked questions
                         </h2>
-                        <p className="text-gray-500">
+                        <p className="text-themed-muted">
                             Everything you need to know about DecoyVerse.
                         </p>
                     </motion.div>
@@ -51,11 +51,11 @@ export function Footer() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.4, delay: index * 0.1 }}
-                                className="rounded-2xl border border-gray-800 bg-gray-900/30 p-5 hover:border-gray-700 transition-colors cursor-pointer group"
+                                className="rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900/60 via-gray-800/30 to-gray-900/40 p-5 hover:border-gray-700 transition-all duration-300 cursor-pointer group"
                             >
                                 <div className="flex items-center justify-between">
-                                    <h3 className="text-white font-medium">{faq.question}</h3>
-                                    <ChevronRight className="h-5 w-5 text-gray-600 group-hover:text-gold-500 transition-colors" />
+                                    <h3 className="text-themed-primary font-medium">{faq.question}</h3>
+                                    <ChevronRight className="h-5 w-5 text-themed-dimmed group-hover:text-accent transition-colors" />
                                 </div>
                             </motion.div>
                         ))}
@@ -71,27 +71,27 @@ export function Footer() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
-                        className="relative rounded-3xl border border-gray-800 bg-gradient-to-b from-gray-900/80 to-black-900 p-12 text-center overflow-hidden"
+                        className="relative rounded-3xl border border-gray-800 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black p-12 text-center overflow-hidden"
                     >
                         {/* Background glow */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-gold-500/10 blur-[100px]"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-accent/10 blur-[100px]"></div>
                         
                         <div className="relative z-10">
-                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-heading">
+                            <h2 className="text-3xl md:text-4xl font-bold text-themed-primary mb-4 font-heading">
                                 Enterprise-grade security.<br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-gold-600">Effortless simplicity.</span>
+                                <span className="text-accent">Effortless simplicity.</span>
                             </h2>
-                            <p className="text-gray-500 max-w-xl mx-auto mb-8">
+                            <p className="text-themed-muted max-w-xl mx-auto mb-8">
                                 Full protection for your network. Deploy decoys in minutes. Get alerted instantly.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <Link to="/auth/signup">
-                                    <Button size="lg" className="bg-gold-500 hover:bg-gold-400 text-black-900 font-semibold rounded-full px-8">
+                                    <Button size="lg" className="bg-gradient-to-r from-accent-400 via-accent to-accent-600 hover:from-accent-400 hover:via-accent-400 hover:to-accent text-on-accent font-semibold rounded-full px-8 transition-all duration-300 hover:scale-[1.02] hover:shadow-accent-glow">
                                         Start Free Trial
                                     </Button>
                                 </Link>
                                 <Link to="/dashboard">
-                                    <Button variant="outline" size="lg" className="border-gray-700 text-gray-300 hover:bg-gray-800 rounded-full px-8">
+                                    <Button variant="outline" size="lg" className="border-accent/30 text-themed-secondary hover:bg-accent/10 hover:border-accent/60 rounded-full px-8 transition-all duration-300 hover:scale-[1.02]">
                                         View Demo
                                     </Button>
                                 </Link>
@@ -102,42 +102,42 @@ export function Footer() {
             </section>
 
             {/* Footer Links */}
-            <div className="border-t border-gray-800 py-12">
+            <div className="border-t border-themed py-12">
                 <div className="container px-4 md:px-6 mx-auto max-w-7xl">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                         {/* Logo */}
                         <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gold-500 to-gold-600 flex items-center justify-center">
-                                <Ghost className="h-4 w-4 text-black-900" />
+                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]">
+                                <Ghost className="h-4 w-4 text-themed-primary" />
                             </div>
-                            <span className="text-lg font-bold text-white tracking-tight">DecoyVerse</span>
+                            <span className="text-lg font-bold text-themed-primary tracking-tight">DecoyVerse</span>
                         </div>
 
                         {/* Links */}
-                        <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
-                            <Link to="#" className="hover:text-white transition-colors">Company</Link>
-                            <Link to="#" className="hover:text-white transition-colors">Whitepaper</Link>
-                            <Link to="#" className="hover:text-white transition-colors">Features</Link>
-                            <Link to="#" className="hover:text-white transition-colors">Privacy</Link>
-                            <Link to="#" className="hover:text-white transition-colors">FAQ</Link>
+                        <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-themed-muted">
+                            <Link to="#" className="hover:text-themed-primary transition-colors">Company</Link>
+                            <Link to="#" className="hover:text-themed-primary transition-colors">Whitepaper</Link>
+                            <Link to="#" className="hover:text-themed-primary transition-colors">Features</Link>
+                            <Link to="#" className="hover:text-themed-primary transition-colors">Privacy</Link>
+                            <Link to="#" className="hover:text-themed-primary transition-colors">FAQ</Link>
                         </div>
 
                         {/* Social */}
                         <div className="flex items-center gap-4">
-                            <a href="#" className="h-10 w-10 rounded-full border border-gray-800 flex items-center justify-center text-gray-500 hover:text-white hover:border-gray-700 transition-colors">
+                            <a href="#" className="h-10 w-10 rounded-full border border-accent/20 flex items-center justify-center text-themed-muted hover:text-themed-primary hover:border-accent/50 transition-all duration-300 hover:bg-accent/10 hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)]">
                                 <Github className="h-4 w-4" />
                             </a>
-                            <a href="#" className="h-10 w-10 rounded-full border border-gray-800 flex items-center justify-center text-gray-500 hover:text-white hover:border-gray-700 transition-colors">
+                            <a href="#" className="h-10 w-10 rounded-full border border-accent/20 flex items-center justify-center text-themed-muted hover:text-themed-primary hover:border-accent/50 transition-all duration-300 hover:bg-accent/10 hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)]">
                                 <Twitter className="h-4 w-4" />
                             </a>
-                            <a href="#" className="h-10 w-10 rounded-full border border-gray-800 flex items-center justify-center text-gray-500 hover:text-white hover:border-gray-700 transition-colors">
+                            <a href="#" className="h-10 w-10 rounded-full border border-accent/20 flex items-center justify-center text-themed-muted hover:text-themed-primary hover:border-accent/50 transition-all duration-300 hover:bg-accent/10 hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)]">
                                 <Linkedin className="h-4 w-4" />
                             </a>
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-8 border-t border-gray-800 text-center">
-                        <p className="text-sm text-gray-600">
+                    <div className="mt-8 pt-8 border-t border-themed text-center">
+                        <p className="text-sm text-themed-dimmed">
                             © 2025 DecoyVerse Inc. All rights reserved.
                         </p>
                     </div>

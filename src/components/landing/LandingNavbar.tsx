@@ -1,47 +1,49 @@
 import { Link } from "react-router-dom"
 import { Ghost, ChevronDown } from "lucide-react"
 import { Button } from "../common/Button"
+import { ThemeSwitcher } from "../common/ThemeSwitcher"
 
 export function LandingNavbar() {
     return (
         <nav className="fixed top-0 left-0 right-0 z-50">
             <div className="mx-auto max-w-7xl px-4 md:px-6 py-4">
-                <div className="flex items-center justify-between rounded-full border border-gray-800 bg-black-900/60 backdrop-blur-xl px-6 py-3">
+                <div className="flex items-center justify-between rounded-full border border-themed bg-themed-primary/60 backdrop-blur-xl px-6 py-3">
                     <Link to="/" className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gold-500 to-gold-600 flex items-center justify-center">
-                            <Ghost className="h-4 w-4 text-black-900" />
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center">
+                            <Ghost className="h-4 w-4 text-themed-primary" />
                         </div>
-                        <span className="text-lg font-bold text-white tracking-tight">DecoyVerse</span>
+                        <span className="text-lg font-bold text-themed-primary tracking-tight">DecoyVerse</span>
                     </Link>
 
                     <div className="hidden md:flex items-center gap-1">
-                        <button className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800/50">
+                        <button className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             Overview
                             <ChevronDown className="h-3 w-3" />
                         </button>
-                        <button className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800/50">
+                        <button className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             Products
                             <ChevronDown className="h-3 w-3" />
                         </button>
-                        <Link to="#features" className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800/50">
+                        <Link to="#features" className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             Features
                         </Link>
-                        <Link to="#pricing" className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800/50">
+                        <Link to="#pricing" className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             Pricing
                         </Link>
-                        <Link to="#" className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800/50">
+                        <Link to="#" className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             FAQ
                         </Link>
                     </div>
 
                     <div className="flex items-center gap-3">
+                        <ThemeSwitcher />
                         <Link to="/auth/login">
-                            <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-gray-400 hover:text-white">
+                            <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-themed-muted hover:text-themed-primary">
                                 Login
                             </Button>
                         </Link>
                         <Link to="/auth/signup">
-                            <Button size="sm" className="bg-gold-500 hover:bg-gold-400 text-black-900 font-semibold rounded-full px-5">
+                            <Button size="sm" className="bg-gradient-to-r from-accent-400 via-accent to-accent-600 hover:from-accent-400 hover:via-accent-400 hover:to-accent text-on-accent font-semibold rounded-full px-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-accent-sm">
                                 Get Started
                             </Button>
                         </Link>

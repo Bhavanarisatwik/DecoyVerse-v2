@@ -1,74 +1,110 @@
 import { Link, useNavigate } from "react-router-dom"
-import { Ghost, Lock, Mail } from "lucide-react"
+import { Ghost, Lock, Mail, AlertCircle } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Input } from "../components/common/Input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/common/Card"
 import { useState } from "react"
+import { useAuth } from "../context/AuthContext"
 
 export default function Login() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData(prev => ({
+            ...prev,
+            [e.target.name]: e.target.value
+        }));
+        setError(null);
+    };
+
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        // Mock login delay
-        setTimeout(() => {
-            setIsLoading(false);
+        setError(null);
+
+        const result = await login({
+            email: formData.email,
+            password: formData.password
+        });
+
+        setIsLoading(false);
+
+        if (result.success) {
             navigate('/dashboard');
-        }, 1500);
+        } else {
+            setError(result.message);
+        }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-black-900 px-4 relative overflow-hidden">
+        <div className="min-h-screen flex items-center justify-center bg-themed-primary px-4 relative overflow-hidden">
             {/* Background Elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-gold-500/10 blur-[100px]"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-yellow-500/10 blur-[100px]"></div>
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-accent/10 blur-[100px]"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-accent/5 blur-[100px]"></div>
             </div>
 
             <div className="w-full max-w-md relative z-10">
                 <div className="flex justify-center mb-8">
                     <Link to="/" className="flex items-center gap-2">
-                        <div className="h-10 w-10 rounded-xl bg-gold-500/20 flex items-center justify-center">
-                            <Ghost className="h-6 w-6 text-gold-500" />
+                        <div className="h-10 w-10 rounded-xl bg-accent/20 flex items-center justify-center">
+                            <Ghost className="h-6 w-6 text-accent" />
                         </div>
-                        <span className="text-2xl font-bold text-white tracking-tight">DECOYVERSE</span>
+                        <span className="text-2xl font-bold text-themed-primary tracking-tight">DECOYVERSE</span>
                     </Link>
                 </div>
 
-                <Card className="border-gray-700 bg-black-800/50 backdrop-blur-xl shadow-2xl">
+                <Card className="card-gradient border-themed backdrop-blur-xl shadow-2xl">
                     <CardHeader className="space-y-1">
-                        <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
+                        <CardTitle className="text-2xl text-center text-themed-primary">Welcome back</CardTitle>
                         <CardDescription className="text-center">
                             Enter your credentials to access your dashboard
                         </CardDescription>
                     </CardHeader>
                     <form onSubmit={handleLogin}>
                         <CardContent className="space-y-4">
+                            {error && (
+                                <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                                    <span>{error}</span>
+                                </div>
+                            )}
                             <Input
                                 label="Email"
                                 type="email"
+                                name="email"
                                 placeholder="name@example.com"
                                 icon={<Mail className="h-4 w-4" />}
+                                value={formData.email}
+                                onChange={handleChange}
                                 required
                             />
                             <div className="space-y-1">
                                 <div className="flex items-center justify-between">
-                                    <label className="text-sm font-medium text-gray-400">Password</label>
-                                    <Link to="#" className="text-xs text-gold-500 hover:text-gold-400">
+                                    <label className="text-sm font-medium text-themed-secondary">Password</label>
+                                    <Link to="#" className="text-xs text-accent hover:text-accent-light">
                                         Forgot password?
                                     </Link>
                                 </div>
                                 <Input
                                     type="password"
+                                    name="password"
                                     icon={<Lock className="h-4 w-4" />}
+                                    value={formData.password}
+                                    onChange={handleChange}
                                     required
                                 />
                             </div>
                         </CardContent>
                         <CardFooter className="flex flex-col gap-4">
-                            <Button className="w-full bg-gold-500 hover:bg-gold-600 text-black-900 font-bold" isLoading={isLoading}>
+                            <Button className="btn-primary w-full" isLoading={isLoading}>
                                 Sign In
                             </Button>
                             <div className="relative">
@@ -79,7 +115,7 @@ export default function Login() {
                                     <span className="bg-black-900 px-2 text-gray-500">Or continue with</span>
                                 </div>
                             </div>
-                            <Button variant="outline" type="button" className="w-full border-gray-700 hover:bg-gray-800">
+                            <Button variant="outline" type="button" className="w-full border-themed hover:bg-themed-elevated">
                                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                                     <path
                                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -100,9 +136,9 @@ export default function Login() {
                                 </svg>
                                 Google
                             </Button>
-                            <div className="text-sm text-center text-gray-400">
+                            <div className="text-sm text-center text-themed-secondary">
                                 Don't have an account?{" "}
-                                <Link to="/auth/signup" className="text-gold-500 hover:underline font-medium">
+                                <Link to="/auth/signup" className="text-accent hover:underline font-medium">
                                     Sign up
                                 </Link>
                             </div>

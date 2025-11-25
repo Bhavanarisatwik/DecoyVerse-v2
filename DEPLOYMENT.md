@@ -220,6 +220,24 @@ NODE_ENV=production
 
 ## Troubleshooting
 
+### Issue: TypeScript build errors on Render/Railway
+**Error**: `Cannot find name 'process'`, `Cannot find name 'console'`, type declaration errors
+
+**Solution**: 
+1. Ensure `@types/node`, `@types/express`, `@types/cors`, `@types/bcryptjs`, `@types/jsonwebtoken` are in `devDependencies`
+2. Update `tsconfig.json` to include:
+   ```json
+   {
+     "compilerOptions": {
+       "moduleResolution": "node",
+       "types": ["node"]
+     }
+   }
+   ```
+3. Run `npm install` locally to update `package-lock.json`
+4. Commit and push changes
+5. Trigger new deployment on Render
+
 ### Issue: CORS errors
 **Solution**: Add your Vercel domain to CORS whitelist in `server/src/index.ts`
 

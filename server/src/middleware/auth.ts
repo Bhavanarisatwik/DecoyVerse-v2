@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import User, { IUser } from '../models/User';
 
 export interface AuthRequest extends Request {
@@ -22,9 +22,11 @@ export const generateToken = (user: IUser): string => {
         role: user.role,
     };
 
-    return jwt.sign(payload, process.env.JWT_SECRET || 'fallback_secret', {
-        expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-    });
+    return jwt.sign(
+        payload, 
+        process.env.JWT_SECRET as Secret || 'fallback_secret',
+        { expiresIn: '7d' }
+    );
 };
 
 // Verify JWT Token Middleware

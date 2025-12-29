@@ -9,7 +9,7 @@ const plans = [
     {
         id: "starter",
         name: "Starter",
-        price: "$0",
+        price: "₹0",
         interval: "forever",
         description: "Perfect for testing and small labs.",
         features: ["Up to 5 Nodes", "Basic Decoys", "7-day Log Retention", "Community Support"],
@@ -18,7 +18,7 @@ const plans = [
     {
         id: "pro",
         name: "Pro",
-        price: "$49",
+        price: "₹299",
         interval: "per month",
         description: "For growing teams and startups.",
         features: ["Up to 50 Nodes", "Advanced Decoys (RDP, DB)", "30-day Log Retention", "Email Support", "API Access"],
@@ -27,7 +27,7 @@ const plans = [
     {
         id: "business",
         name: "Business",
-        price: "$199",
+        price: "₹999",
         interval: "per month",
         description: "Scale security across the organization.",
         features: ["Unlimited Nodes", "Custom Decoys", "1-year Log Retention", "Priority Support", "SSO & RBAC"],

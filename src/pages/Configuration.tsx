@@ -61,7 +61,7 @@ export default function Configuration() {
                                     <Badge className="bg-accent text-on-accent">Current</Badge>
                                 </div>
                                 <p className="text-sm text-themed-secondary mb-4">
-                                    $49/month • Next billing date: Dec 20, 2024
+                                    ₹299/month • Next billing date: Dec 20, 2024
                                 </p>
                                 <div className="flex gap-2">
                                     <Button size="sm" className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-lg">Upgrade Plan</Button>

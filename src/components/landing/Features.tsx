@@ -33,7 +33,7 @@ const problemCards = [
         visual: (
             <div className="p-4">
                 <div className="rounded-xl border border-themed bg-themed-elevated/50 p-4">
-                    <div className="text-2xl font-bold text-themed-primary mb-1">$4.88M</div>
+                    <div className="text-2xl font-bold text-themed-primary mb-1">₹40 Cr</div>
                     <div className="text-xs text-themed-muted">Avg. data breach cost in 2024</div>
                 </div>
             </div>
@@ -104,7 +104,7 @@ export function Features() {
         <section id="features" className="py-24 bg-themed-primary relative overflow-hidden transition-colors duration-300">
             {/* Background gradient */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-accent/5 blur-[150px]"></div>
-            
+
             <div className="container px-4 md:px-6 mx-auto max-w-7xl relative z-10">
                 {/* Problem Section */}
                 <motion.div
@@ -121,7 +121,7 @@ export function Features() {
                         Chaos isn't <span className="text-themed-muted">management.</span>
                     </h2>
                     <p className="text-themed-muted max-w-2xl mx-auto">
-                        Most organizations use fragmented security tools that leave gaps attackers exploit. 
+                        Most organizations use fragmented security tools that leave gaps attackers exploit.
                         It's time for a unified deception platform.
                     </p>
                 </motion.div>
@@ -158,7 +158,7 @@ export function Features() {
                         One Platform. <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 to-accent-600">Total Control.</span>
                     </h2>
                     <p className="text-themed-muted max-w-2xl mx-auto">
-                        DecoyVerse consolidates all your deception capabilities into one powerful, 
+                        DecoyVerse consolidates all your deception capabilities into one powerful,
                         easy-to-use platform with proactive threat detection.
                     </p>
                 </motion.div>
@@ -208,9 +208,8 @@ export function Features() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
-                            className={`rounded-3xl border border-gray-800 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black p-6 hover:border-gray-700 transition-all duration-500 hover:-translate-y-1 cursor-pointer group ${
-                                cap.size === 'large' ? 'md:col-span-2' : ''
-                            }`}
+                            className={`rounded-3xl border border-gray-800 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black p-6 hover:border-gray-700 transition-all duration-500 hover:-translate-y-1 cursor-pointer group ${cap.size === 'large' ? 'md:col-span-2' : ''
+                                }`}
                         >
                             <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 border border-gray-700 flex items-center justify-center mb-4 transition-all duration-300 group-hover:border-gray-600">
                                 <cap.icon className="h-6 w-6 text-accent" />

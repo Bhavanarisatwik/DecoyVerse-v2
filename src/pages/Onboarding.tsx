@@ -23,18 +23,23 @@ export default function Onboarding() {
         const setupNode = async () => {
             try {
                 const response = await nodesApi.listNodes()
-                if (response.data && response.data.length > 0) {
-                    setNodeData(response.data[0])
-                } else {
-                    // Create a new node for onboarding
-                    const createResponse = await nodesApi.createNode('Onboarding-Node')
-                    console.log('Create node response:', createResponse);
-                    const nodeInfo = createResponse.data || createResponse;
-                    setNodeData({
-                        node_id: nodeInfo.node_id || nodeInfo.id,
-                        node_api_key: nodeInfo.node_api_key || nodeInfo.api_key
-                    })
+                const existingNode = response.data && response.data.length > 0 ? response.data[0] : null
+                const existingNodeId = existingNode?.node_id || existingNode?.id
+                const existingApiKey = existingNode?.node_api_key || existingNode?.api_key
+
+                if (existingNode && existingApiKey) {
+                    setNodeData(existingNode)
+                    return
                 }
+
+                // Create a new node for onboarding when token is missing
+                const createResponse = await nodesApi.createNode('Onboarding-Node')
+                console.log('Create node response:', createResponse);
+                const nodeInfo = createResponse.data || createResponse;
+                setNodeData({
+                    node_id: nodeInfo.node_id || nodeInfo.id || existingNodeId,
+                    node_api_key: nodeInfo.node_api_key || nodeInfo.api_key
+                })
             } catch (err) {
                 console.error('Error setting up node:', err)
                 // Fallback to default

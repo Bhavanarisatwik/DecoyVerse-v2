@@ -11,12 +11,19 @@ import { useAuth } from "../context/AuthContext"
 
 export default function Onboarding() {
     const navigate = useNavigate();
-    const { updateUser } = useAuth();
+    const { updateUser, user } = useAuth();
     const [copied, setCopied] = useState(false);
     const [nodeData, setNodeData] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [agentConnected, setAgentConnected] = useState(false)
     const [completing, setCompleting] = useState(false)
+
+    // Navigate to dashboard when onboarding is complete
+    useEffect(() => {
+        if (completing && user?.isOnboarded === true) {
+            navigate('/dashboard');
+        }
+    }, [completing, user?.isOnboarded, navigate]);
 
     useEffect(() => {
         // Try to get the first node from the backend or create a new one
@@ -275,11 +282,8 @@ export default function Onboarding() {
                                     const response = await authApi.completeOnboarding();
                                     if (response.success && response.data?.user) {
                                         updateUser(response.data.user);
+                                        // The useEffect will handle navigation once user.isOnboarded is true
                                     }
-                                    // Small delay to ensure state updates are processed
-                                    setTimeout(() => {
-                                        navigate('/dashboard');
-                                    }, 50);
                                 } catch (error) {
                                     console.error('Failed to complete onboarding:', error);
                                     setCompleting(false);

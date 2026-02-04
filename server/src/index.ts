@@ -59,3 +59,7 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+
+// Export for Vercel serverless
+export default app;
+});

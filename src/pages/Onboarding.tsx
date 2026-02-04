@@ -189,12 +189,12 @@ export default function Onboarding() {
 
                                     <TabsContent value="windows" className="space-y-4">
                                         <div className="bg-themed-elevated rounded-xl p-4 font-mono text-sm text-themed-secondary border border-themed relative group">
-                                            <p>iwr -useb https://install.decoyverse.com/windows | iex -ArgumentList "--token={nodeData.node_api_key}"</p>
+                                            <p>$env:DECOY_TOKEN="{nodeData.node_api_key}"; iwr -useb https://install.decoyverse.com/windows -OutFile install.ps1; .\install.ps1</p>
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
                                                 className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
-                                                onClick={() => navigator.clipboard.writeText(`iwr -useb https://install.decoyverse.com/windows | iex -ArgumentList "--token=${nodeData.node_api_key}"`)}
+                                                onClick={() => navigator.clipboard.writeText(`$env:DECOY_TOKEN="${nodeData.node_api_key}"; iwr -useb https://install.decoyverse.com/windows -OutFile install.ps1; .\\install.ps1`)}
                                             >
                                                 <Copy className="h-4 w-4" />
                                             </Button>

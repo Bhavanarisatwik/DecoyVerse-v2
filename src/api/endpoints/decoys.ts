@@ -33,7 +33,7 @@ export const decoysApi = {
      */
     async getDecoys(): Promise<{ success: boolean; data: Decoy[] }> {
         try {
-            const response = await apiClient.get('/api/decoys');
+            const response = await apiClient.get('/decoys');
             return {
                 success: true,
                 data: response.data,
@@ -48,7 +48,7 @@ export const decoysApi = {
      */
     async updateDecoyStatus(id: string, status: string): Promise<{ success: boolean; data: Decoy }> {
         try {
-            const response = await apiClient.patch(`/api/decoys/${id}`, { status });
+            const response = await apiClient.patch(`/decoys/${id}`, { status });
             return {
                 success: true,
                 data: response.data,

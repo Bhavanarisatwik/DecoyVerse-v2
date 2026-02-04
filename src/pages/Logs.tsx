@@ -18,6 +18,12 @@ const getSeverityColor = (severity: string) => {
     }
 };
 
+const safeLower = (value: unknown) =>
+    typeof value === 'string' ? value.toLowerCase() : '';
+
+const safeString = (value: unknown, fallback = 'Unknown') =>
+    typeof value === 'string' && value.trim() ? value : fallback;
+
 const formatTimestamp = (dateString: string) => {
     try {
         const date = new Date(dateString);
@@ -59,10 +65,10 @@ export default function Logs() {
         } else {
             const term = searchTerm.toLowerCase()
             const filtered = events.filter(e =>
-                e.event_type.toLowerCase().includes(term) ||
-                e.source_ip.toLowerCase().includes(term) ||
-                e.decoy_name.toLowerCase().includes(term) ||
-                e.node_id.toLowerCase().includes(term)
+                safeLower(e.event_type).includes(term) ||
+                safeLower(e.source_ip).includes(term) ||
+                safeLower(e.decoy_name).includes(term) ||
+                safeLower(e.node_id).includes(term)
             )
             setFilteredEvents(filtered)
         }
@@ -147,27 +153,27 @@ export default function Logs() {
                                     <TableRow key={log.id}>
                                         <TableCell className="font-mono text-xs text-themed-muted">{formatTimestamp(log.timestamp)}</TableCell>
                                         <TableCell>
-                                            <Badge variant={getSeverityColor(log.severity) as any}>
-                                                {log.severity.toUpperCase()}
+                                            <Badge variant={getSeverityColor(safeLower(log.severity)) as any}>
+                                                {safeString(log.severity, 'UNKNOWN').toUpperCase()}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="font-medium text-themed-primary">{log.event_type}</TableCell>
-                                        <TableCell className="text-themed-secondary">{log.node_id}</TableCell>
+                                        <TableCell className="font-medium text-themed-primary">{safeString(log.event_type)}</TableCell>
+                                        <TableCell className="text-themed-secondary">{safeString(log.node_id, 'N/A')}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2 text-xs text-themed-secondary">
-                                                {log.decoy_name.includes('SSH') && <Shield className="h-3 w-3 text-accent" />}
-                                                {(log.decoy_name.includes('File') || log.decoy_name.includes('txt') || log.decoy_name.includes('csv') || log.decoy_name.includes('key')) ? <FileKey className="h-3 w-3 text-status-warning" /> : null}
-                                                {log.decoy_name}
+                                                {safeString(log.decoy_name, '').includes('SSH') && <Shield className="h-3 w-3 text-accent" />}
+                                                {(safeString(log.decoy_name, '').includes('File') || safeString(log.decoy_name, '').includes('txt') || safeString(log.decoy_name, '').includes('csv') || safeString(log.decoy_name, '').includes('key')) ? <FileKey className="h-3 w-3 text-status-warning" /> : null}
+                                                {safeString(log.decoy_name)}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="font-mono text-xs text-themed-muted">{log.source_ip}</TableCell>
+                                        <TableCell className="font-mono text-xs text-themed-muted">{safeString(log.source_ip, 'N/A')}</TableCell>
                                         <TableCell>
                                             <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                                log.risk_score >= 80 ? 'bg-status-danger/20 text-status-danger' :
-                                                log.risk_score >= 60 ? 'bg-status-warning/20 text-status-warning' :
+                                                (log.risk_score ?? 0) >= 80 ? 'bg-status-danger/20 text-status-danger' :
+                                                (log.risk_score ?? 0) >= 60 ? 'bg-status-warning/20 text-status-warning' :
                                                 'bg-status-info/20 text-status-info'
                                             }`}>
-                                                {log.risk_score}
+                                                {log.risk_score ?? 0}
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-right">

@@ -20,7 +20,7 @@ export const logsApi = {
             const params: any = { limit };
             if (nodeId) params.node_id = nodeId;
 
-            const response = await apiClient.get('/api/recent-attacks', { params });
+            const response = await apiClient.get('/recent-attacks', { params });
             return {
                 success: true,
                 data: response.data,

@@ -27,8 +27,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
 
     // Redirect first-time users to onboarding flow
-    if (user?.isOnboarded !== true && !location.pathname.startsWith('/onboarding')) {
-        return <Navigate to="/onboarding/subscription" replace />;
+    // Only redirect if isOnboarded is explicitly false (not undefined)
+    // This prevents redirect loops when backend doesn't return isOnboarded
+    if (user?.isOnboarded === false && !location.pathname.startsWith('/onboarding')) {
+        return <Navigate to="/onboarding" replace />;
     }
 
     return <>{children}</>;

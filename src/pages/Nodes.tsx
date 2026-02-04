@@ -98,19 +98,27 @@ export default function Nodes() {
         }
     }
 
-    const handleDeleteNode = async (nodeId: string) => {
+    const handleDeleteNode = (nodeId: string) => {
         if (!window.confirm('Are you sure you want to delete this node?')) {
             return
         }
 
-        try {
-            await nodesApi.deleteNode(nodeId)
-            setNodes(nodes.filter(n => n.id !== nodeId))
-            setStats(s => ({ ...s, total: s.total - 1 }))
-        } catch (err) {
-            console.error('Error deleting node:', err)
-            setError('Failed to delete node')
-        }
+        // Optimistic UI update first to prevent INP violation
+        setNodes(prev => prev.filter(n => n.id !== nodeId && n.node_id !== nodeId))
+        setStats(s => ({ ...s, total: Math.max(0, s.total - 1) }))
+
+        // Defer async work to next task
+        setTimeout(async () => {
+            try {
+                await nodesApi.deleteNode(nodeId)
+            } catch (err) {
+                console.error('Error deleting node:', err)
+                setError('Failed to delete node')
+                // Revert optimistic update on failure
+                const nodesResponse = await nodesApi.listNodes()
+                setNodes(nodesResponse.data)
+            }
+        }, 0)
     }
 
     if (loading) {

@@ -1,11 +1,30 @@
-import { Key, CreditCard, Bell } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Key, CreditCard, Bell, Plus, Trash2 } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/common/Tabs"
 import { Badge } from "../components/common/Badge"
 import { Breadcrumb } from "../components/common/Breadcrumb"
+import { nodesApi, type Node } from "../api/endpoints/nodes"
 
 export default function Configuration() {
+    const [nodes, setNodes] = useState<Node[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchNodes = async () => {
+            try {
+                const response = await nodesApi.listNodes()
+                setNodes(response.data)
+            } catch (err) {
+                console.error('Error fetching nodes:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchNodes()
+    }, [])
+
     return (
         <div className="space-y-6">
             <Breadcrumb />
@@ -26,24 +45,56 @@ export default function Configuration() {
                     <Card className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black">
                         <CardHeader>
                             <CardTitle className="text-themed-primary">API Management</CardTitle>
-                            <CardDescription>Manage your API keys for external integrations.</CardDescription>
+                            <CardDescription>Manage your node API keys for agent authentication.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <h4 className="font-medium text-themed-primary">Default API Key</h4>
-                                        <Badge variant="success">Active</Badge>
-                                    </div>
-                                    <p className="text-sm text-themed-muted font-mono mt-1">dcv_live_8f92k3920dk20dk29d02kd92kd92</p>
-                                    <p className="text-xs text-themed-dimmed mt-2">Created on Nov 20, 2024</p>
+                            {loading ? (
+                                <div className="text-themed-muted">Loading API keys...</div>
+                            ) : nodes.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <p className="text-themed-muted mb-4">No API keys yet. Create a node to get started.</p>
+                                    <Button 
+                                        variant="outline" 
+                                        className="border-dashed border-white/10 hover:border-accent hover:text-accent rounded-xl"
+                                        onClick={() => window.location.href = '/nodes'}
+                                    >
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Create Node
+                                    </Button>
                                 </div>
-                                <Button variant="outline" size="sm" className="border-white/10 rounded-lg hover:bg-white/10">Revoke</Button>
-                            </div>
-                            <Button variant="outline" className="w-full border-dashed border-white/10 hover:border-accent hover:text-accent rounded-xl">
-                                <Key className="mr-2 h-4 w-4" />
-                                Generate New Key
-                            </Button>
+                            ) : (
+                                <>
+                                    {nodes.map((node, index) => (
+                                        <div key={node.id || node.node_id || index} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="font-medium text-themed-primary">{node.name || 'Unnamed Node'}</h4>
+                                                    <Badge variant={node.status === 'online' || node.status === 'active' ? 'success' : 'secondary'}>
+                                                        {node.status || 'offline'}
+                                                    </Badge>
+                                                </div>
+                                                <p className="text-sm text-themed-muted font-mono mt-1">
+                                                    {node.node_api_key || 'API key hidden'}
+                                                </p>
+                                                <p className="text-xs text-themed-dimmed mt-2">
+                                                    Node ID: {node.node_id || node.id}
+                                                </p>
+                                            </div>
+                                            <Button variant="outline" size="sm" className="border-white/10 rounded-lg hover:bg-status-danger/10 hover:text-status-danger hover:border-status-danger/20">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    <Button 
+                                        variant="outline" 
+                                        className="w-full border-dashed border-white/10 hover:border-accent hover:text-accent rounded-xl"
+                                        onClick={() => window.location.href = '/nodes'}
+                                    >
+                                        <Key className="mr-2 h-4 w-4" />
+                                        Add New Node
+                                    </Button>
+                                </>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>

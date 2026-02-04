@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Copy, CheckCircle2, RefreshCw, ArrowRight, Download } from "lucide-react"
+import { Copy, CheckCircle2, RefreshCw, ArrowRight, Download, Server } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/common/Card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/common/Tabs"
@@ -17,6 +17,11 @@ export default function Onboarding() {
     const [loading, setLoading] = useState(true)
     const [agentConnected, setAgentConnected] = useState(false)
     const [completing, setCompleting] = useState(false)
+    
+    // Node setup form
+    const [nodeName, setNodeName] = useState('')
+    const [nodeCreated, setNodeCreated] = useState(false)
+    const [creatingNode, setCreatingNode] = useState(false)
 
     // Navigate to dashboard when onboarding is complete
     useEffect(() => {
@@ -26,45 +31,52 @@ export default function Onboarding() {
     }, [completing, user?.isOnboarded, navigate]);
 
     useEffect(() => {
-        // Try to get the first node from the backend or create a new one
-        const setupNode = async () => {
+        // Check for existing nodes
+        const checkExistingNodes = async () => {
             try {
                 const response = await nodesApi.listNodes()
                 const existingNode = response.data && response.data.length > 0 ? response.data[0] : null
-                const existingNodeId = existingNode?.node_id || existingNode?.id
-                const existingApiKey = existingNode?.node_api_key || existingNode?.api_key
 
-                if (existingNode && existingApiKey) {
+                if (existingNode && existingNode.node_api_key) {
                     setNodeData(existingNode)
-                    // Check if already connected
+                    setNodeCreated(true)
+                    setNodeName(existingNode.name || '')
                     if (existingNode.status === 'active' || existingNode.status === 'online') {
                         setAgentConnected(true)
                     }
-                    return
                 }
-
-                // Create a new node for onboarding when token is missing
-                const createResponse = await nodesApi.createNode('Onboarding-Node')
-                console.log('Create node response:', createResponse);
-                const nodeInfo = createResponse.data || createResponse;
-                setNodeData({
-                    node_id: nodeInfo.node_id || nodeInfo.id || existingNodeId,
-                    node_api_key: nodeInfo.node_api_key || nodeInfo.api_key
-                })
             } catch (err) {
-                console.error('Error setting up node:', err)
-                // Fallback to default
-                setNodeData({
-                    node_id: 'dcv_node_' + Math.random().toString(36).substr(2, 9),
-                    node_api_key: 'dcv_live_' + Math.random().toString(36).substr(2, 20)
-                })
+                console.error('Error checking existing nodes:', err)
             } finally {
                 setLoading(false)
             }
         }
 
-        setupNode()
+        checkExistingNodes()
     }, [])
+
+    // Create a new node with the given name
+    const handleCreateNode = async () => {
+        if (!nodeName.trim()) {
+            return
+        }
+        
+        try {
+            setCreatingNode(true)
+            const createResponse = await nodesApi.createNode(nodeName.trim())
+            const nodeInfo = createResponse.data || createResponse
+            setNodeData({
+                node_id: nodeInfo.node_id || nodeInfo.id,
+                node_api_key: nodeInfo.node_api_key || nodeInfo.api_key,
+                name: nodeName.trim()
+            })
+            setNodeCreated(true)
+        } catch (err) {
+            console.error('Error creating node:', err)
+        } finally {
+            setCreatingNode(false)
+        }
+    }
 
     // Poll for agent connection status
     useEffect(() => {
@@ -83,7 +95,7 @@ export default function Onboarding() {
             } catch (err) {
                 console.error('Error polling node status:', err);
             }
-        }, 5000); // Poll every 5 seconds
+        }, 5000);
 
         return () => clearInterval(pollInterval);
     }, [nodeData?.node_id, agentConnected]);
@@ -98,20 +110,12 @@ export default function Onboarding() {
 
     const handleDownloadAgent = async () => {
         try {
-            console.log('Current nodeData:', nodeData);
-            console.log('Node ID:', nodeData?.node_id);
-            console.log('Node API Key:', nodeData?.node_api_key);
-            
             if (!nodeData?.node_id) {
                 console.error('No node ID available');
-                alert('Please create a node first');
                 return;
             }
             
             const nodeId = String(nodeData.node_id).trim();
-            console.log('Attempting to download agent for node:', nodeId);
-            console.log('Request URL will be: /nodes/' + nodeId + '/agent-download');
-            
             const blob = await nodesApi.downloadAgent(nodeId)
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement('a')
@@ -132,7 +136,7 @@ export default function Onboarding() {
     if (loading) {
         return (
             <div className="min-h-screen bg-themed-primary py-12 px-4 flex items-center justify-center">
-                <div className="text-themed-muted">Loading agent configuration...</div>
+                <div className="text-themed-muted">Loading...</div>
             </div>
         )
     }
@@ -142,29 +146,62 @@ export default function Onboarding() {
             <div className="max-w-4xl mx-auto space-y-8">
                 <div className="text-center space-y-4">
                     <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-accent/10 mb-4">
-                        <CheckCircle2 className="h-8 w-8 text-accent" />
+                        <Server className="h-8 w-8 text-accent" />
                     </div>
-                    <h1 className="text-3xl font-bold text-themed-primary font-heading">Setup your first Agent</h1>
+                    <h1 className="text-3xl font-bold text-themed-primary font-heading">Setup your first Node</h1>
                     <p className="text-themed-muted max-w-2xl mx-auto">
-                        You're almost there! Install the lightweight agent on your target machine to start deploying decoys.
+                        Create a node to represent your target machine, then install the agent to start deploying decoys.
                     </p>
                 </div>
 
-                {nodeData && (
+                {/* Step 1: Create Node */}
+                <Card className="card-gradient border-themed">
+                    <CardHeader>
+                        <CardTitle className="text-themed-primary">1. Create your Node</CardTitle>
+                        <CardDescription>Give your node a descriptive name (e.g., "Production-Server", "Dev-Workstation")</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {!nodeCreated ? (
+                            <div className="flex gap-2">
+                                <Input 
+                                    placeholder="Enter node name (e.g., Production-DB-01)" 
+                                    value={nodeName}
+                                    onChange={(e) => setNodeName(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleCreateNode()}
+                                    className="font-medium text-themed-secondary bg-themed-elevated rounded-xl" 
+                                />
+                                <Button 
+                                    onClick={handleCreateNode}
+                                    disabled={!nodeName.trim() || creatingNode}
+                                    className="shrink-0 bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
+                                >
+                                    {creatingNode ? 'Creating...' : 'Create Node'}
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-3 p-4 bg-status-success/10 border border-status-success/20 rounded-xl">
+                                <CheckCircle2 className="h-5 w-5 text-status-success" />
+                                <div>
+                                    <p className="font-medium text-themed-primary">Node Created: {nodeData?.name || nodeName}</p>
+                                    <p className="text-sm text-themed-muted">Node ID: <span className="font-mono text-accent">{nodeData?.node_id}</span></p>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {nodeCreated && nodeData && (
                     <>
                         <Card className="card-gradient border-themed">
                             <CardHeader>
-                                <CardTitle className="text-themed-primary">1. Get your API Token</CardTitle>
-                                <CardDescription>This token is used to authenticate your agent with the DecoyVerse platform.</CardDescription>
+                                <CardTitle className="text-themed-primary">2. Get your API Token</CardTitle>
+                                <CardDescription>This token authenticates your agent with DecoyVerse.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex gap-2">
                                     <Input value={nodeData.node_api_key || ''} readOnly className="font-mono text-themed-secondary bg-themed-elevated rounded-xl" />
                                     <Button variant="outline" onClick={handleCopy} className="shrink-0 rounded-xl border-themed hover:bg-themed-elevated">
                                         {copied ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                                    </Button>
-                                    <Button variant="ghost" size="icon" title="Rotate Token" className="rounded-xl">
-                                        <RefreshCw className="h-4 w-4" />
                                     </Button>
                                 </div>
                                 <div className="bg-status-warning/10 border border-status-warning/20 rounded-xl p-4 text-sm text-status-warning">
@@ -175,10 +212,10 @@ export default function Onboarding() {
 
                         <Card className="card-gradient border-themed">
                             <CardHeader>
-                                <CardTitle className="text-themed-primary">2. Download Agent</CardTitle>
-                                <CardDescription>Download the pre-configured agent for your machine.</CardDescription>
+                                <CardTitle className="text-themed-primary">3. Download & Install Agent</CardTitle>
+                                <CardDescription>Download the config and run the install command on your target machine.</CardDescription>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="space-y-4">
                                 <Button 
                                     onClick={handleDownloadAgent}
                                     className="w-full bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
@@ -186,24 +223,14 @@ export default function Onboarding() {
                                     <Download className="mr-2 h-4 w-4" />
                                     Download Agent Config
                                 </Button>
-                                <p className="text-sm text-themed-muted mt-4">
-                                    Node ID: <span className="font-mono text-accent">{nodeData.node_id}</span>
-                                </p>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="card-gradient border-themed">
-                            <CardHeader>
-                                <CardTitle className="text-themed-primary">3. Install the Agent</CardTitle>
-                                <CardDescription>Choose your operating system and run the installation command.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Tabs defaultValue="linux" className="w-full">
-                                    <TabsList className="grid w-full grid-cols-3 mb-4">
-                                        <TabsTrigger value="linux">Linux</TabsTrigger>
-                                        <TabsTrigger value="windows">Windows</TabsTrigger>
-                                        <TabsTrigger value="macos">macOS</TabsTrigger>
-                                    </TabsList>
+                                
+                                <div className="pt-4">
+                                    <Tabs defaultValue="linux" className="w-full">
+                                        <TabsList className="grid w-full grid-cols-3 mb-4">
+                                            <TabsTrigger value="linux">Linux</TabsTrigger>
+                                            <TabsTrigger value="windows">Windows</TabsTrigger>
+                                            <TabsTrigger value="macos">macOS</TabsTrigger>
+                                        </TabsList>
 
                                     <TabsContent value="linux" className="space-y-4">
                                         <div className="bg-themed-elevated rounded-xl p-4 font-mono text-sm text-themed-secondary border border-themed relative group">

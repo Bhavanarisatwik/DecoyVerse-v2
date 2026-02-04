@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { User, Palette, Check } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "../components/common/Card"
@@ -5,6 +6,7 @@ import { Input } from "../components/common/Input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/common/Tabs"
 import { Breadcrumb } from "../components/common/Breadcrumb"
 import { useTheme, ThemeMode } from "../context/ThemeContext"
+import { useAuth } from "../context/AuthContext"
 
 const themes: { id: ThemeMode; name: string; colors: string[]; description: string }[] = [
     { id: 'gold', name: 'Cyan', colors: ['#06B6D4', '#0891B2', '#0E7490'], description: 'Modern cyan accent' },
@@ -14,6 +16,24 @@ const themes: { id: ThemeMode; name: string; colors: string[]; description: stri
 
 export default function Settings() {
     const { theme, setTheme } = useTheme();
+    const { user } = useAuth();
+    
+    // Form state with user data
+    const [firstName, setFirstName] = useState(user?.name?.split(' ')[0] || '')
+    const [lastName, setLastName] = useState(user?.name?.split(' ').slice(1).join(' ') || '')
+    const [email, setEmail] = useState(user?.email || '')
+    const [saving, setSaving] = useState(false)
+    
+    // Get initials for avatar
+    const initials = user?.name 
+        ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+        : 'U'
+
+    const handleSaveProfile = async () => {
+        setSaving(true)
+        // TODO: Implement profile update API call
+        setTimeout(() => setSaving(false), 1000)
+    }
 
     return (
         <div className="space-y-6">
@@ -39,17 +59,35 @@ export default function Settings() {
                         <CardContent className="space-y-4">
                             <div className="flex items-center gap-4 mb-6">
                                 <div className="h-20 w-20 rounded-2xl bg-accent/10 flex items-center justify-center text-accent text-2xl font-bold">
-                                    JD
+                                    {initials}
                                 </div>
                                 <div>
-                                    <Button variant="outline" size="sm" className="border-white/10 rounded-lg hover:bg-white/10">Change Avatar</Button>
+                                    <p className="text-themed-primary font-medium">{user?.name || 'User'}</p>
+                                    <p className="text-sm text-themed-muted">{user?.email || ''}</p>
+                                    <Button variant="outline" size="sm" className="mt-2 border-white/10 rounded-lg hover:bg-white/10">Change Avatar</Button>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <Input label="First Name" defaultValue="John" className="rounded-xl" />
-                                <Input label="Last Name" defaultValue="Doe" className="rounded-xl" />
+                                <Input 
+                                    label="First Name" 
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                    className="rounded-xl" 
+                                />
+                                <Input 
+                                    label="Last Name" 
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    className="rounded-xl" 
+                                />
                             </div>
-                            <Input label="Email Address" defaultValue="john.doe@example.com" type="email" className="rounded-xl" />
+                            <Input 
+                                label="Email Address" 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                type="email" 
+                                className="rounded-xl" 
+                            />
                             <div className="pt-4 border-t border-white/10">
                                 <h3 className="text-lg font-medium text-themed-primary mb-4">Change Password</h3>
                                 <div className="space-y-4">
@@ -60,7 +98,13 @@ export default function Settings() {
                             </div>
                         </CardContent>
                         <CardFooter className="flex justify-end">
-                            <Button className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">Save Changes</Button>
+                            <Button 
+                                className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
+                                onClick={handleSaveProfile}
+                                disabled={saving}
+                            >
+                                {saving ? 'Saving...' : 'Save Changes'}
+                            </Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>

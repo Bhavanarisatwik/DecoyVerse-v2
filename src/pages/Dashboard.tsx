@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { ShieldAlert, Server, Ghost, Activity, ArrowUpRight, ArrowDownRight, AlertCircle } from "lucide-react"
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
@@ -6,25 +6,6 @@ import { Breadcrumb } from "../components/common/Breadcrumb"
 import { Badge } from "../components/common/Badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
 import { dashboardApi, type Alert, type DashboardStats, type Attack } from "../api/endpoints/dashboard"
-
-const data = [
-    { name: 'Mon', attacks: 40, blocked: 24 },
-    { name: 'Tue', attacks: 30, blocked: 13 },
-    { name: 'Wed', attacks: 20, blocked: 98 },
-    { name: 'Thu', attacks: 27, blocked: 39 },
-    { name: 'Fri', attacks: 18, blocked: 48 },
-    { name: 'Sat', attacks: 23, blocked: 38 },
-    { name: 'Sun', attacks: 34, blocked: 43 },
-];
-
-const activityData = [
-    { time: '00:00', value: 12 },
-    { time: '04:00', value: 8 },
-    { time: '08:00', value: 25 },
-    { time: '12:00', value: 45 },
-    { time: '16:00', value: 38 },
-    { time: '20:00', value: 22 },
-];
 
 export default function Dashboard() {
     const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -59,6 +40,65 @@ export default function Dashboard() {
         const interval = setInterval(fetchData, 30000)
         return () => clearInterval(interval)
     }, [])
+
+    // Generate dynamic chart data from attacks
+    const chartData = useMemo(() => {
+        if (!attacks.length) {
+            return [
+                { name: 'Mon', attacks: 0, blocked: 0 },
+                { name: 'Tue', attacks: 0, blocked: 0 },
+                { name: 'Wed', attacks: 0, blocked: 0 },
+                { name: 'Thu', attacks: 0, blocked: 0 },
+                { name: 'Fri', attacks: 0, blocked: 0 },
+                { name: 'Sat', attacks: 0, blocked: 0 },
+                { name: 'Sun', attacks: 0, blocked: 0 },
+            ]
+        }
+        
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        const dayCounts: Record<string, { attacks: number; blocked: number }> = {}
+        
+        days.forEach(day => { dayCounts[day] = { attacks: 0, blocked: 0 } })
+        
+        attacks.forEach(attack => {
+            const date = new Date(attack.timestamp)
+            const day = days[date.getDay()]
+            dayCounts[day].attacks++
+            if (attack.risk_score < 5) dayCounts[day].blocked++
+        })
+        
+        const today = new Date().getDay()
+        const orderedDays = [...days.slice(today + 1), ...days.slice(0, today + 1)]
+        
+        return orderedDays.map(day => ({
+            name: day,
+            attacks: dayCounts[day].attacks,
+            blocked: dayCounts[day].blocked,
+        }))
+    }, [attacks])
+
+    // Generate dynamic activity data by hour
+    const activityData = useMemo(() => {
+        const hours = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']
+        if (!attacks.length) {
+            return hours.map(time => ({ time, value: 0 }))
+        }
+        
+        const hourCounts: Record<string, number> = {}
+        hours.forEach(h => { hourCounts[h] = 0 })
+        
+        attacks.forEach(attack => {
+            const hour = new Date(attack.timestamp).getHours()
+            if (hour < 4) hourCounts['00:00']++
+            else if (hour < 8) hourCounts['04:00']++
+            else if (hour < 12) hourCounts['08:00']++
+            else if (hour < 16) hourCounts['12:00']++
+            else if (hour < 20) hourCounts['16:00']++
+            else hourCounts['20:00']++
+        })
+        
+        return hours.map(time => ({ time, value: hourCounts[time] }))
+    }, [attacks])
 
     if (error) {
         return (
@@ -132,9 +172,11 @@ export default function Dashboard() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-themed-primary">45</div>
+                        <div className="text-2xl font-bold text-themed-primary">
+                            {loading ? '...' : stats?.total_alerts || 0}
+                        </div>
                         <p className="text-xs text-themed-muted flex items-center mt-1">
-                            All systems operational
+                            {loading ? '...' : `${stats?.critical_alerts || 0} critical`}
                         </p>
                     </CardContent>
                 </Card>
@@ -165,7 +207,7 @@ export default function Dashboard() {
                     <CardContent className="pl-2">
                         <div className="h-[300px]">
                             <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={data}>
+                                <AreaChart data={chartData}>
                                     <defs>
                                         <linearGradient id="colorAttacks" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />

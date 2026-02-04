@@ -38,6 +38,11 @@ function AppRoutes() {
             } />
 
             {/* Onboarding Routes - Protected */}
+            <Route path="/onboarding" element={
+                <ProtectedRoute>
+                    <Onboarding />
+                </ProtectedRoute>
+            } />
             <Route path="/onboarding/subscription" element={
                 <ProtectedRoute>
                     <Subscription />

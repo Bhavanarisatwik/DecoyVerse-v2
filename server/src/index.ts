@@ -19,7 +19,8 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5174',
-    'https://decoy-verse-v2-bpsu.vercel.app',
+    'https://decoy-verse-v2.vercel.app',
+    'https://decoyverse.vercel.app',
     process.env.FRONTEND_URL || ''
 ].filter(Boolean);
 

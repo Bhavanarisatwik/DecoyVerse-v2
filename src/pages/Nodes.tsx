@@ -87,9 +87,9 @@ export default function Nodes() {
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
-            // Download as PowerShell installer script
+            // Download as batch installer script
             const safeName = nodeName.replace(/[^a-zA-Z0-9]/g, '_')
-            a.download = `DecoyVerse-Setup-${safeName}.ps1`
+            a.download = `DecoyVerse-Setup-${safeName}.bat`
             document.body.appendChild(a)
             a.click()
             window.URL.revokeObjectURL(url)

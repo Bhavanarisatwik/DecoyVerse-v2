@@ -1,7 +1,11 @@
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
-import { ShieldAlert, Server, Ghost, Activity, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { ShieldAlert, Server, Ghost, Activity, ArrowUpRight, ArrowDownRight, AlertCircle } from "lucide-react"
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Breadcrumb } from "../components/common/Breadcrumb"
+import { Badge } from "../components/common/Badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
+import { dashboardApi, type Alert, type DashboardStats, type Attack } from "../api/endpoints/dashboard"
 
 const data = [
     { name: 'Mon', attacks: 40, blocked: 24 },
@@ -13,17 +17,56 @@ const data = [
     { name: 'Sun', attacks: 34, blocked: 43 },
 ];
 
-const activityData = [
-    { time: '00:00', value: 12 },
-    { time: '04:00', value: 18 },
-    { time: '08:00', value: 45 },
-    { time: '12:00', value: 32 },
-    { time: '16:00', value: 56 },
-    { time: '20:00', value: 28 },
-    { time: '23:59', value: 15 },
-];
-
 export default function Dashboard() {
+    const [stats, setStats] = useState<DashboardStats | null>(null)
+    const [alerts, setAlerts] = useState<Alert[]>([])
+    const [attacks, setAttacks] = useState<Attack[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true)
+                const [statsResponse, alertsResponse, attacksResponse] = await Promise.all([
+                    dashboardApi.getStats(),
+                    dashboardApi.getAlerts(10),
+                    dashboardApi.getRecentAttacks(20),
+                ])
+                
+                setStats(statsResponse.data)
+                setAlerts(alertsResponse.data)
+                setAttacks(attacksResponse.data)
+            } catch (err) {
+                console.error('Error fetching dashboard data:', err)
+                setError('Failed to load dashboard data')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchData()
+        // Poll for updates every 30 seconds
+        const interval = setInterval(fetchData, 30000)
+        return () => clearInterval(interval)
+    }, [])
+
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <Breadcrumb />
+                <Card className="bg-status-danger/10 border-status-danger/50">
+                    <CardContent className="pt-6">
+                        <p className="text-status-danger flex items-center">
+                            <AlertCircle className="mr-2 h-4 w-4" />
+                            {error}
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-6">
             <Breadcrumb />
@@ -48,10 +91,11 @@ export default function Dashboard() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-themed-primary">2,543</div>
-                        <p className="text-xs text-status-danger flex items-center mt-1">
-                            <ArrowUpRight className="h-3 w-3 mr-1" />
-                            +20.1% from last week
+                        <div className="text-2xl font-bold text-themed-primary">
+                            {loading ? '...' : stats?.total_attacks_detected || 0}
+                        </div>
+                        <p className="text-xs text-themed-muted flex items-center mt-1">
+                            Avg Risk: {loading ? '...' : (stats?.avg_risk_score || 0).toFixed(1)}/10
                         </p>
                     </CardContent>
                 </Card>
@@ -63,18 +107,19 @@ export default function Dashboard() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-themed-primary">12</div>
+                        <div className="text-2xl font-bold text-themed-primary">
+                            {loading ? '...' : stats?.online_nodes || 0}
+                        </div>
                         <p className="text-xs text-accent flex items-center mt-1">
-                            <ArrowUpRight className="h-3 w-3 mr-1" />
-                            +2 new nodes
+                            {loading ? '...' : `of ${stats?.total_nodes || 0} nodes`}
                         </p>
                     </CardContent>
                 </Card>
                 <Card className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black hover:border-white/20 transition-all duration-300">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-themed-muted">Active Decoys</CardTitle>
+                        <CardTitle className="text-sm font-medium text-themed-muted">Alerts</CardTitle>
                         <div className="h-8 w-8 rounded-lg bg-status-warning/10 flex items-center justify-center">
-                            <Ghost className="h-4 w-4 text-status-warning" />
+                            <AlertCircle className="h-4 w-4 text-status-warning" />
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -166,28 +211,33 @@ export default function Dashboard() {
                     <CardDescription>Latest security events detected across your network</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-3">
-                        {[
-                            { title: "SSH Brute Force Attempt", source: "192.168.1.45", target: "Decoy-Linux-01", time: "2 mins ago", severity: "high" },
-                            { title: "Port Scan Detected", source: "10.0.0.12", target: "Decoy-Win-02", time: "15 mins ago", severity: "medium" },
-                            { title: "Honeytoken Access", source: "Unknown", target: "aws_keys.txt", time: "1 hour ago", severity: "critical" },
-                            { title: "RDP Connection Attempt", source: "172.16.0.5", target: "Decoy-Win-01", time: "2 hours ago", severity: "low" },
-                        ].map((alert, i) => (
-                            <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-themed-elevated/50 border border-themed hover:border-themed-secondary transition-all duration-200">
-                                <div className="flex items-center gap-4">
-                                    <div className={`h-2 w-2 rounded-full ${alert.severity === 'critical' ? 'bg-status-danger' :
-                                        alert.severity === 'high' ? 'bg-status-warning' :
-                                            alert.severity === 'medium' ? 'bg-status-warning' : 'bg-status-info'
-                                        }`} />
-                                    <div>
-                                        <p className="font-medium text-themed-primary">{alert.title}</p>
-                                        <p className="text-xs text-themed-muted">Source: {alert.source} • Target: {alert.target}</p>
+                    {loading ? (
+                        <div className="text-themed-muted">Loading alerts...</div>
+                    ) : alerts.length === 0 ? (
+                        <div className="text-themed-muted text-sm">No alerts yet - system is secure</div>
+                    ) : (
+                        <div className="space-y-3">
+                            {alerts.slice(0, 5).map((alert) => {
+                                const severityColor = alert.severity === 'critical' ? 'bg-status-danger' :
+                                    alert.severity === 'high' ? 'bg-status-warning' :
+                                        alert.severity === 'medium' ? 'bg-status-warning' : 'bg-status-info'
+                                return (
+                                    <div key={alert.id} className="flex items-center justify-between p-4 rounded-xl bg-themed-elevated/50 border border-themed hover:border-themed-secondary transition-all duration-200">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`h-2 w-2 rounded-full ${severityColor}`} />
+                                            <div>
+                                                <p className="font-medium text-themed-primary">{alert.message}</p>
+                                                <p className="text-xs text-themed-muted">{alert.alert_type}</p>
+                                            </div>
+                                        </div>
+                                        <span className="text-xs text-themed-dimmed">
+                                            {new Date(alert.created_at).toLocaleString()}
+                                        </span>
                                     </div>
-                                </div>
-                                <span className="text-xs text-themed-dimmed">{alert.time}</span>
-                            </div>
-                        ))}
-                    </div>
+                                )
+                            })}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>

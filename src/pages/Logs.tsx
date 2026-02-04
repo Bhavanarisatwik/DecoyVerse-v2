@@ -1,21 +1,89 @@
-import { Search, Filter, Download, Shield, FileKey } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Search, Filter, Download, Shield, FileKey, AlertCircle } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
 import { Input } from "../components/common/Input"
 import { Badge } from "../components/common/Badge"
 import { Breadcrumb } from "../components/common/Breadcrumb"
+import { logsApi, type Event } from "../api/endpoints/logs"
 
-const logs = [
-    { id: "LOG-9382", timestamp: "2024-11-23 14:32:11", node: "Production-DB-01", event: "SSH Login Attempt", source: "192.168.1.45", severity: "high", decoy: "Fake-SSH-Service" },
-    { id: "LOG-9381", timestamp: "2024-11-23 14:30:05", node: "Dev-Environment", event: "File Access", source: "10.0.0.12", severity: "medium", decoy: "Admin-Credentials.txt" },
-    { id: "LOG-9380", timestamp: "2024-11-23 14:15:22", node: "Web-Server-Main", event: "Port Scan", source: "172.16.0.5", severity: "low", decoy: "Backup-Port-8080" },
-    { id: "LOG-9379", timestamp: "2024-11-23 13:55:48", node: "Internal-Tooling", event: "Honeytoken Trigger", source: "Unknown", severity: "critical", decoy: "AWS-Keys.csv" },
-    { id: "LOG-9378", timestamp: "2024-11-23 13:42:10", node: "Backup-Server", event: "RDP Connection", source: "192.168.1.100", severity: "medium", decoy: "RDP-Honeypot" },
-    { id: "LOG-9377", timestamp: "2024-11-23 13:30:00", node: "Production-DB-01", event: "SSH Login Attempt", source: "192.168.1.45", severity: "high", decoy: "Fake-SSH-Service" },
-]
+const getSeverityColor = (severity: string) => {
+    switch (severity) {
+        case 'critical': return 'destructive';
+        case 'high': return 'warning';
+        case 'medium': return 'default';
+        case 'low': return 'secondary';
+        default: return 'secondary';
+    }
+};
+
+const formatTimestamp = (dateString: string) => {
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleString();
+    } catch {
+        return dateString;
+    }
+};
 
 export default function Logs() {
+    const [events, setEvents] = useState<Event[]>([])
+    const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [searchTerm, setSearchTerm] = useState('')
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                setLoading(true)
+                const response = await logsApi.getRecentEvents(100)
+                setEvents(response.data)
+                setFilteredEvents(response.data)
+            } catch (err) {
+                console.error('Error fetching events:', err)
+                setError('Failed to load events')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchEvents()
+    }, [])
+
+    // Handle search filtering
+    useEffect(() => {
+        if (!searchTerm.trim()) {
+            setFilteredEvents(events)
+        } else {
+            const term = searchTerm.toLowerCase()
+            const filtered = events.filter(e =>
+                e.event_type.toLowerCase().includes(term) ||
+                e.source_ip.toLowerCase().includes(term) ||
+                e.decoy_name.toLowerCase().includes(term) ||
+                e.node_id.toLowerCase().includes(term)
+            )
+            setFilteredEvents(filtered)
+        }
+    }, [searchTerm, events])
+
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <Breadcrumb />
+                <Card className="bg-status-danger/10 border-status-danger/50">
+                    <CardContent className="pt-6">
+                        <p className="text-status-danger flex items-center">
+                            <AlertCircle className="mr-2 h-4 w-4" />
+                            {error}
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-6">
             <Breadcrumb />
@@ -39,7 +107,12 @@ export default function Logs() {
                         <div className="flex flex-col sm:flex-row gap-2">
                             <div className="relative w-full sm:w-64">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themed-muted" />
-                                <Input placeholder="Search logs..." className="pl-9 bg-themed-elevated/50 border-themed rounded-xl" />
+                                <Input 
+                                    placeholder="Search logs..." 
+                                    className="pl-9 bg-themed-elevated/50 border-themed rounded-xl"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
                             </div>
                             <Button variant="outline" className="border-themed rounded-xl hover:bg-themed-elevated">
                                 <Filter className="mr-2 h-4 w-4" />
@@ -49,50 +122,64 @@ export default function Logs() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Timestamp</TableHead>
-                                <TableHead>Severity</TableHead>
-                                <TableHead>Event Type</TableHead>
-                                <TableHead>Node</TableHead>
-                                <TableHead>Decoy</TableHead>
-                                <TableHead>Source IP</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {logs.map((log) => (
-                                <TableRow key={log.id}>
-                                    <TableCell className="font-mono text-xs text-themed-muted">{log.timestamp}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={
-                                            log.severity === 'critical' ? 'destructive' :
-                                                log.severity === 'high' ? 'warning' :
-                                                    log.severity === 'medium' ? 'default' : 'secondary'
-                                        }>
-                                            {log.severity.toUpperCase()}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="font-medium text-themed-primary">{log.event}</TableCell>
-                                    <TableCell className="text-themed-secondary">{log.node}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2 text-xs text-themed-secondary">
-                                            {log.decoy.includes('SSH') && <Shield className="h-3 w-3 text-accent" />}
-                                            {log.decoy.includes('File') || log.decoy.includes('txt') || log.decoy.includes('csv') ? <FileKey className="h-3 w-3 text-status-warning" /> : null}
-                                            {log.decoy}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="font-mono text-xs text-themed-muted">{log.source}</TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm" className="text-accent hover:text-accent-400 rounded-lg">
-                                            View Details
-                                        </Button>
-                                    </TableCell>
+                    {loading ? (
+                        <div className="text-center py-8 text-themed-muted">Loading events...</div>
+                    ) : filteredEvents.length === 0 ? (
+                        <div className="text-center py-8 text-themed-muted">
+                            {searchTerm ? 'No events match your search.' : 'No events found.'}
+                        </div>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Timestamp</TableHead>
+                                    <TableHead>Severity</TableHead>
+                                    <TableHead>Event Type</TableHead>
+                                    <TableHead>Node</TableHead>
+                                    <TableHead>Decoy</TableHead>
+                                    <TableHead>Source IP</TableHead>
+                                    <TableHead>Risk Score</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredEvents.map((log) => (
+                                    <TableRow key={log.id}>
+                                        <TableCell className="font-mono text-xs text-themed-muted">{formatTimestamp(log.timestamp)}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={getSeverityColor(log.severity) as any}>
+                                                {log.severity.toUpperCase()}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="font-medium text-themed-primary">{log.event_type}</TableCell>
+                                        <TableCell className="text-themed-secondary">{log.node_id}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2 text-xs text-themed-secondary">
+                                                {log.decoy_name.includes('SSH') && <Shield className="h-3 w-3 text-accent" />}
+                                                {(log.decoy_name.includes('File') || log.decoy_name.includes('txt') || log.decoy_name.includes('csv') || log.decoy_name.includes('key')) ? <FileKey className="h-3 w-3 text-status-warning" /> : null}
+                                                {log.decoy_name}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="font-mono text-xs text-themed-muted">{log.source_ip}</TableCell>
+                                        <TableCell>
+                                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                                log.risk_score >= 80 ? 'bg-status-danger/20 text-status-danger' :
+                                                log.risk_score >= 60 ? 'bg-status-warning/20 text-status-warning' :
+                                                'bg-status-info/20 text-status-info'
+                                            }`}>
+                                                {log.risk_score}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button variant="ghost" size="sm" className="text-accent hover:text-accent-400 rounded-lg">
+                                                View Details
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
                 </CardContent>
             </Card>
         </div>

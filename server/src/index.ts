@@ -3,6 +3,11 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/database';
 import authRoutes from './routes/auth';
+import alertsRoutes from './routes/alerts';
+import decoysRoutes from './routes/decoys';
+import attacksRoutes from './routes/attacks';
+import statsRoutes from './routes/stats';
+import attackerProfilesRoutes from './routes/attacker-profiles';
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +43,11 @@ connectDB();
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/alerts', alertsRoutes);
+app.use('/api/decoys', decoysRoutes);
+app.use('/api/recent-attacks', attacksRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/attacker-profile', attackerProfilesRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

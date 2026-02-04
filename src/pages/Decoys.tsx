@@ -1,19 +1,91 @@
-import { Ghost, Plus, Play, Square, Settings2, Trash2 } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Ghost, Plus, Play, Square, Settings2, Trash2, AlertCircle } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
 import { Badge } from "../components/common/Badge"
 import { Breadcrumb } from "../components/common/Breadcrumb"
+import { decoysApi, type Decoy } from "../api/endpoints/decoys"
 
-const decoys = [
-    { id: "DCY-001", name: "Fake-SSH-Service", type: "Service", node: "Production-DB-01", status: "active", triggers: 24, lastTrigger: "2 mins ago" },
-    { id: "DCY-002", name: "Admin-Credentials.txt", type: "File", node: "Dev-Environment", status: "active", triggers: 5, lastTrigger: "1 day ago" },
-    { id: "DCY-003", name: "Backup-Port-8080", type: "Port", node: "Web-Server-Main", status: "inactive", triggers: 0, lastTrigger: "Never" },
-    { id: "DCY-004", name: "RDP-Honeypot", type: "Service", node: "Backup-Server", status: "active", triggers: 12, lastTrigger: "3 hours ago" },
-    { id: "DCY-005", name: "AWS-Keys.csv", type: "File", node: "Internal-Tooling", status: "active", triggers: 8, lastTrigger: "5 hours ago" },
-]
+const formatTime = (dateString?: string) => {
+    if (!dateString) return 'Never';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d ago`;
+};
 
 export default function Decoys() {
+    const [decoys, setDecoys] = useState<Decoy[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        const fetchDecoys = async () => {
+            try {
+                setLoading(true)
+                const response = await decoysApi.getDecoys()
+                setDecoys(response.data)
+            } catch (err) {
+                console.error('Error fetching decoys:', err)
+                setError('Failed to load decoys')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchDecoys()
+    }, [])
+
+    const handleToggleStatus = async (decoyId: string, currentStatus: string) => {
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        try {
+            await decoysApi.updateDecoyStatus(decoyId, newStatus)
+            setDecoys(decoys.map(d => d.id === decoyId ? { ...d, status: newStatus as any } : d))
+        } catch (err) {
+            console.error('Error updating decoy:', err)
+            setError('Failed to update decoy')
+        }
+    }
+
+    const handleDeleteDecoy = async (decoyId: string) => {
+        if (!window.confirm('Are you sure you want to delete this decoy?')) {
+            return
+        }
+        try {
+            setDecoys(decoys.filter(d => d.id !== decoyId))
+        } catch (err) {
+            console.error('Error deleting decoy:', err)
+            setError('Failed to delete decoy')
+        }
+    }
+
+    const activeCount = decoys.filter(d => d.status === 'active').length
+    const inactiveCount = decoys.filter(d => d.status === 'inactive').length
+
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <Breadcrumb />
+                <Card className="bg-status-danger/10 border-status-danger/50">
+                    <CardContent className="pt-6">
+                        <p className="text-status-danger flex items-center">
+                            <AlertCircle className="mr-2 h-4 w-4" />
+                            {error}
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-6">
             <Breadcrumb />
@@ -37,7 +109,7 @@ export default function Decoys() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-themed-primary">45</div>
+                        <div className="text-2xl font-bold text-themed-primary">{loading ? '...' : decoys.length}</div>
                     </CardContent>
                 </Card>
                 <Card className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black hover:border-white/20 transition-all duration-300">
@@ -48,7 +120,7 @@ export default function Decoys() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-themed-primary">38</div>
+                        <div className="text-2xl font-bold text-themed-primary">{loading ? '...' : activeCount}</div>
                     </CardContent>
                 </Card>
                 <Card className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black hover:border-white/20 transition-all duration-300">
@@ -59,7 +131,7 @@ export default function Decoys() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-themed-muted">7</div>
+                        <div className="text-2xl font-bold text-themed-muted">{loading ? '...' : inactiveCount}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -70,54 +142,72 @@ export default function Decoys() {
                     <CardDescription>List of all active and inactive decoys.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Decoy Name</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Target Node</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Triggers</TableHead>
-                                <TableHead>Last Trigger</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {decoys.map((decoy) => (
-                                <TableRow key={decoy.id}>
-                                    <TableCell className="font-medium text-themed-primary">
-                                        <div className="flex items-center gap-2">
-                                            <Ghost className="h-4 w-4 text-themed-muted" />
-                                            {decoy.name}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className="bg-themed-elevated/50">
-                                            {decoy.type}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-themed-secondary">{decoy.node}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={decoy.status === 'active' ? 'success' : 'secondary'}>
-                                            {decoy.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-themed-secondary">{decoy.triggers}</TableCell>
-                                    <TableCell className="text-themed-muted">{decoy.lastTrigger}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-1">
-                                            <Button variant="ghost" size="icon" title="Configure" className="rounded-lg hover:bg-themed-elevated">
-                                                <Settings2 className="h-4 w-4 text-themed-muted" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" title="Delete" className="rounded-lg hover:bg-status-danger/10">
-                                                <Trash2 className="h-4 w-4 text-status-danger" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
+                    {loading ? (
+                        <div className="text-center py-8 text-themed-muted">Loading decoys...</div>
+                    ) : decoys.length === 0 ? (
+                        <div className="text-center py-8 text-themed-muted">No decoys deployed yet.</div>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Decoy Name</TableHead>
+                                    <TableHead>Type</TableHead>
+                                    <TableHead>Target Node</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Triggers</TableHead>
+                                    <TableHead>Last Trigger</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {decoys.map((decoy) => (
+                                    <TableRow key={decoy.id}>
+                                        <TableCell className="font-medium text-themed-primary">
+                                            <div className="flex items-center gap-2">
+                                                <Ghost className="h-4 w-4 text-themed-muted" />
+                                                {decoy.name}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className="bg-themed-elevated/50">
+                                                {decoy.type}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-themed-secondary">{decoy.node_id}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={decoy.status === 'active' ? 'success' : 'secondary'}>
+                                                {decoy.status}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-themed-secondary">{decoy.triggers}</TableCell>
+                                        <TableCell className="text-themed-muted">{formatTime(decoy.last_triggered)}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-1">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    title="Toggle status"
+                                                    onClick={() => handleToggleStatus(decoy.id, decoy.status)}
+                                                    className="rounded-lg hover:bg-themed-elevated"
+                                                >
+                                                    {decoy.status === 'active' ? <Play className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+                                                </Button>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    title="Delete"
+                                                    onClick={() => handleDeleteDecoy(decoy.id)}
+                                                    className="rounded-lg hover:bg-status-danger/10"
+                                                >
+                                                    <Trash2 className="h-4 w-4 text-status-danger" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
                 </CardContent>
             </Card>
         </div>

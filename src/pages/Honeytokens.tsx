@@ -1,19 +1,70 @@
-import { FileKey, Download, Plus, MoreVertical, FileText, Database, Key } from "lucide-react"
+import { useState, useEffect } from "react"
+import { FileKey, Download, Plus, MoreVertical, FileText, Database, Key, AlertCircle } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
 import { Badge } from "../components/common/Badge"
 import { Breadcrumb } from "../components/common/Breadcrumb"
+import { decoysApi, type Decoy } from "../api/endpoints/decoys"
 
-const honeytokens = [
-    { id: "HT-001", name: "Q3_Financial_Report.pdf", type: "File", format: "PDF", status: "active", downloads: 0, created: "2 days ago" },
-    { id: "HT-002", name: "AWS_Root_Keys.csv", type: "Credentials", format: "CSV", status: "active", downloads: 3, created: "1 week ago" },
-    { id: "HT-003", name: "Production_DB_Config.xml", type: "Configuration", format: "XML", status: "active", downloads: 1, created: "3 days ago" },
-    { id: "HT-004", name: "Employee_Salaries_2024.xlsx", type: "File", format: "XLSX", status: "inactive", downloads: 0, created: "1 month ago" },
-    { id: "HT-005", name: "VPN_Access_Codes.txt", type: "Credentials", format: "TXT", status: "active", downloads: 12, created: "5 hours ago" },
-]
+const formatTime = (dateString?: string) => {
+    if (!dateString) return 'Never';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d ago`;
+};
 
 export default function Honeytokens() {
+    const [honeytokens, setHoneytokens] = useState<Decoy[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        const fetchTokens = async () => {
+            try {
+                setLoading(true)
+                const response = await decoysApi.getDecoys()
+                // Filter only honeytokens
+                const tokens = response.data.filter(d => d.type === 'honeytoken')
+                setHoneytokens(tokens)
+            } catch (err) {
+                console.error('Error fetching honeytokens:', err)
+                setError('Failed to load honeytokens')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchTokens()
+    }, [])
+
+    const activeCount = honeytokens.filter(t => t.status === 'active').length
+    const triggeredCount = honeytokens.reduce((sum, t) => sum + t.triggers, 0)
+
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <Breadcrumb />
+                <Card className="bg-status-danger/10 border-status-danger/50">
+                    <CardContent className="pt-6">
+                        <p className="text-status-danger flex items-center">
+                            <AlertCircle className="mr-2 h-4 w-4" />
+                            {error}
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-6">
             <Breadcrumb />
@@ -37,7 +88,7 @@ export default function Honeytokens() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-themed-primary">24</div>
+                        <div className="text-2xl font-bold text-themed-primary">{loading ? '...' : honeytokens.length}</div>
                     </CardContent>
                 </Card>
                 <Card className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black hover:border-white/20 transition-all duration-300">
@@ -48,7 +99,7 @@ export default function Honeytokens() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-themed-primary">5</div>
+                        <div className="text-2xl font-bold text-themed-primary">{loading ? '...' : triggeredCount}</div>
                         <p className="text-xs text-status-danger mt-1">Alerts generated</p>
                     </CardContent>
                 </Card>
@@ -60,7 +111,7 @@ export default function Honeytokens() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-themed-primary">18</div>
+                        <div className="text-2xl font-bold text-themed-primary">{loading ? '...' : activeCount}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -71,56 +122,54 @@ export default function Honeytokens() {
                     <CardDescription>Download and plant these files in your network.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Token Name</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Format</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Downloads/Triggers</TableHead>
-                                <TableHead>Created</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {honeytokens.map((token) => (
-                                <TableRow key={token.id}>
-                                    <TableCell className="font-medium text-themed-primary">
-                                        <div className="flex items-center gap-2">
-                                            {token.type === 'File' && <FileText className="h-4 w-4 text-themed-muted" />}
-                                            {token.type === 'Credentials' && <Key className="h-4 w-4 text-status-warning" />}
-                                            {token.type === 'Configuration' && <Database className="h-4 w-4 text-status-info" />}
-                                            {token.name}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-themed-secondary">{token.type}</TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className="bg-themed-elevated/50 font-mono text-xs">
-                                            {token.format}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={token.status === 'active' ? 'success' : 'secondary'}>
-                                            {token.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-themed-secondary">{token.downloads}</TableCell>
-                                    <TableCell className="text-themed-muted">{token.created}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-1">
-                                            <Button variant="ghost" size="icon" title="Download" className="rounded-lg hover:bg-accent/10">
-                                                <Download className="h-4 w-4 text-accent" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="rounded-lg hover:bg-themed-elevated">
-                                                <MoreVertical className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
+                    {loading ? (
+                        <div className="text-center py-8 text-themed-muted">Loading honeytokens...</div>
+                    ) : honeytokens.length === 0 ? (
+                        <div className="text-center py-8 text-themed-muted">No honeytokens created yet.</div>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Token Name</TableHead>
+                                    <TableHead>Type</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Triggers</TableHead>
+                                    <TableHead>Last Triggered</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {honeytokens.map((token) => (
+                                    <TableRow key={token.id}>
+                                        <TableCell className="font-medium text-themed-primary">
+                                            <div className="flex items-center gap-2">
+                                                <Key className="h-4 w-4 text-status-warning" />
+                                                {token.name}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-themed-secondary">{token.type}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={token.status === 'active' ? 'success' : 'secondary'}>
+                                                {token.status}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-themed-secondary">{token.triggers}</TableCell>
+                                        <TableCell className="text-themed-muted">{formatTime(token.last_triggered)}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-1">
+                                                <Button variant="ghost" size="icon" title="Download" className="rounded-lg hover:bg-accent/10">
+                                                    <Download className="h-4 w-4 text-accent" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="rounded-lg hover:bg-themed-elevated">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
                 </CardContent>
             </Card>
         </div>

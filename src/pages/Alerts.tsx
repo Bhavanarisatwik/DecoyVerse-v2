@@ -1,18 +1,96 @@
-import { AlertTriangle, ShieldAlert, CheckCircle2, Filter, Bell } from "lucide-react"
+import { useState, useEffect } from "react"
+import { AlertTriangle, ShieldAlert, CheckCircle2, Filter, Bell, AlertCircle } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/common/Card"
 import { Badge } from "../components/common/Badge"
 import { Breadcrumb } from "../components/common/Breadcrumb"
+import { alertsApi, type Alert as AlertType } from "../api/endpoints/alerts"
 
-const alerts = [
-    { id: "ALT-001", title: "SSH Brute Force Detected", description: "Multiple failed login attempts from IP 192.168.1.45 on node Production-DB-01.", severity: "critical", time: "2 mins ago", status: "open" },
-    { id: "ALT-002", title: "Honeytoken Accessed", description: "File 'AWS_Root_Keys.csv' was opened by user 'admin' on workstation WORKSTATION-05.", severity: "high", time: "1 hour ago", status: "investigating" },
-    { id: "ALT-003", title: "Port Scan Activity", description: "Port scan detected targeting range 10.0.0.0/24. Source IP: 10.0.0.12.", severity: "medium", time: "3 hours ago", status: "resolved" },
-    { id: "ALT-004", title: "Unexpected Service Stop", description: "Decoy service 'Fake-SSH-Service' stopped unexpectedly on node Dev-Environment.", severity: "low", time: "5 hours ago", status: "resolved" },
-    { id: "ALT-005", title: "New Device Detected", description: "Unrecognized device connected to the network segment 192.168.1.0/24.", severity: "medium", time: "1 day ago", status: "open" },
-]
+const getSeverityLabel = (severity: string) => {
+    switch (severity) {
+        case 'critical': return 'Critical';
+        case 'high': return 'High';
+        case 'medium': return 'Medium';
+        case 'low': return 'Low';
+        default: return 'Unknown';
+    }
+};
+
+const getSeverityColor = (severity: string) => {
+    switch (severity) {
+        case 'critical': return 'bg-status-danger';
+        case 'high': return 'bg-status-warning';
+        case 'medium': return 'bg-status-warning';
+        case 'low': return 'bg-status-info';
+        default: return 'bg-gray-500';
+    }
+};
+
+const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d ago`;
+};
 
 export default function Alerts() {
+    const [alerts, setAlerts] = useState<AlertType[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        const fetchAlerts = async () => {
+            try {
+                setLoading(true)
+                const response = await alertsApi.getAlerts(50)
+                setAlerts(response.data)
+            } catch (err) {
+                console.error('Error fetching alerts:', err)
+                setError('Failed to load alerts')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchAlerts()
+    }, [])
+
+    const openCount = alerts.filter(a => a.status === 'open').length
+    const investigatingCount = alerts.filter(a => a.status === 'investigating').length
+    const resolvedCount = alerts.filter(a => a.status === 'resolved').length
+
+    const handleStatusChange = async (alertId: string, newStatus: string) => {
+        try {
+            await alertsApi.updateAlertStatus(alertId, newStatus)
+            setAlerts(alerts.map(a => a.id === alertId ? { ...a, status: newStatus as any } : a))
+        } catch (err) {
+            console.error('Error updating alert:', err)
+        }
+    }
+
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <Breadcrumb />
+                <Card className="bg-status-danger/10 border-status-danger/50">
+                    <CardContent className="pt-6">
+                        <p className="text-status-danger flex items-center">
+                            <AlertCircle className="mr-2 h-4 w-4" />
+                            {error}
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-6">
             <Breadcrumb />
@@ -42,7 +120,7 @@ export default function Alerts() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-themed-primary">3</div>
+                        <div className="text-2xl font-bold text-themed-primary">{loading ? '...' : openCount}</div>
                         <p className="text-xs text-status-danger mt-1">Requires attention</p>
                     </CardContent>
                 </Card>
@@ -54,7 +132,7 @@ export default function Alerts() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-themed-primary">1</div>
+                        <div className="text-2xl font-bold text-themed-primary">{loading ? '...' : investigatingCount}</div>
                         <p className="text-xs text-status-warning mt-1">In progress</p>
                     </CardContent>
                 </Card>
@@ -66,55 +144,68 @@ export default function Alerts() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-themed-primary">12</div>
+                        <div className="text-2xl font-bold text-themed-primary">{loading ? '...' : resolvedCount}</div>
                     </CardContent>
                 </Card>
             </div>
 
             <div className="space-y-3">
-                {alerts.map((alert) => (
-                    <Card key={alert.id} className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black hover:border-white/20 transition-all duration-300">
+                {loading ? (
+                    <Card className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black">
                         <CardContent className="p-5">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex items-start gap-4">
-                                    <div className={`mt-1 h-2.5 w-2.5 rounded-full shrink-0 ${alert.severity === 'critical' ? 'bg-status-danger' :
-                                        alert.severity === 'high' ? 'bg-status-warning' :
-                                            alert.severity === 'medium' ? 'bg-status-warning' : 'bg-status-info'
-                                        }`} />
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="font-semibold text-themed-primary">{alert.title}</h3>
-                                            <Badge variant={
-                                                alert.status === 'open' ? 'destructive' :
-                                                    alert.status === 'investigating' ? 'warning' : 'success'
-                                            } className="text-[10px] px-1.5 py-0 h-5">
-                                                {alert.status.toUpperCase()}
-                                            </Badge>
-                                        </div>
-                                        <p className="text-sm text-themed-muted mb-2">{alert.description}</p>
-                                        <div className="flex items-center gap-4 text-xs text-themed-dimmed">
-                                            <span>ID: {alert.id}</span>
-                                            <span>•</span>
-                                            <span>{alert.time}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    {alert.status !== 'resolved' && (
-                                        <Button size="sm" variant="outline" className="border-themed rounded-lg hover:bg-themed-elevated">
-                                            Investigate
-                                        </Button>
-                                    )}
-                                    {alert.status === 'open' && (
-                                        <Button size="sm" variant="ghost" className="text-themed-muted hover:text-themed-primary rounded-lg">
-                                            Dismiss
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
+                            <p className="text-themed-muted">Loading alerts...</p>
                         </CardContent>
                     </Card>
-                ))}
+                ) : alerts.length === 0 ? (
+                    <Card className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black">
+                        <CardContent className="p-5">
+                            <p className="text-themed-muted">No alerts found</p>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    alerts.map((alert) => (
+                        <Card key={alert.id} className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black hover:border-white/20 transition-all duration-300">
+                            <CardContent className="p-5">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="flex items-start gap-4">
+                                        <div className={`mt-1 h-2.5 w-2.5 rounded-full shrink-0 ${getSeverityColor(alert.severity)}`} />
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h3 className="font-semibold text-themed-primary">{alert.alert_type}</h3>
+                                                <Badge variant={
+                                                    alert.status === 'open' ? 'destructive' :
+                                                        alert.status === 'investigating' ? 'warning' : 'success'
+                                                } className="text-[10px] px-1.5 py-0 h-5">
+                                                    {alert.status.toUpperCase()}
+                                                </Badge>
+                                            </div>
+                                            <p className="text-sm text-themed-muted mb-2">{alert.message}</p>
+                                            <div className="flex items-center gap-4 text-xs text-themed-dimmed">
+                                                <span>ID: {alert.id}</span>
+                                                <span>•</span>
+                                                <span>Severity: {getSeverityLabel(alert.severity)}</span>
+                                                <span>•</span>
+                                                <span>{formatTime(alert.created_at)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        {alert.status !== 'resolved' && (
+                                            <Button size="sm" variant="outline" onClick={() => handleStatusChange(alert.id, 'investigating')} className="border-themed rounded-lg hover:bg-themed-elevated">
+                                                Investigate
+                                            </Button>
+                                        )}
+                                        {alert.status === 'open' && (
+                                            <Button size="sm" variant="ghost" onClick={() => handleStatusChange(alert.id, 'resolved')} className="text-themed-muted hover:text-themed-primary rounded-lg">
+                                                Resolve
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))
+                )}
             </div>
         </div>
     )

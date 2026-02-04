@@ -277,6 +277,7 @@ export default function Onboarding() {
                                         <p className="text-sm text-themed-muted">Supports macOS 10.15+ (Intel & Apple Silicon).</p>
                                     </TabsContent>
                                 </Tabs>
+                                </div>
                             </CardContent>
                         </Card>
 

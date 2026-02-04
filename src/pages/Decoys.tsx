@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Ghost, Plus, Play, Square, Settings2, Trash2, AlertCircle } from "lucide-react"
+import { Ghost, Plus, Play, Square, Settings2, Trash2, AlertCircle, MapPin, Zap } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
@@ -87,6 +87,14 @@ export default function Decoys() {
 
     const activeCount = decoys.filter(d => d.status === 'active').length
     const inactiveCount = decoys.filter(d => d.status === 'inactive').length
+    const autoDeployedCount = decoys.filter(d => d.auto_deployed).length
+
+    // Create a map of node_id to node name
+    const nodeNameMap = nodes.reduce((map, node) => {
+        map[node.id || node.node_id || ''] = node.name
+        if (node.node_id) map[node.node_id] = node.name
+        return map
+    }, {} as Record<string, string>)
 
     if (error) {
         return (
@@ -184,10 +192,10 @@ export default function Decoys() {
                                 <TableRow>
                                     <TableHead>Decoy Name</TableHead>
                                     <TableHead>Type</TableHead>
-                                    <TableHead>Target Node</TableHead>
+                                    <TableHead>Deployed On</TableHead>
+                                    <TableHead>Location</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Triggers</TableHead>
-                                    <TableHead>Last Trigger</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -197,7 +205,15 @@ export default function Decoys() {
                                         <TableCell className="font-medium text-themed-primary">
                                             <div className="flex items-center gap-2">
                                                 <Ghost className="h-4 w-4 text-themed-muted" />
-                                                {decoy.name}
+                                                <div>
+                                                    <span>{decoy.name}</span>
+                                                    {decoy.auto_deployed && (
+                                                        <div className="flex items-center gap-1 text-xs text-accent mt-0.5">
+                                                            <Zap className="h-3 w-3" />
+                                                            <span>Auto-deployed</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -205,14 +221,27 @@ export default function Decoys() {
                                                 {decoy.type}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-themed-secondary">{decoy.node_id}</TableCell>
+                                        <TableCell className="text-themed-secondary">
+                                            {nodeNameMap[decoy.node_id] || decoy.node_name || decoy.node_id}
+                                        </TableCell>
+                                        <TableCell>
+                                            {decoy.file_path || decoy.deploy_location ? (
+                                                <div className="flex items-center gap-1 text-xs text-themed-muted font-mono max-w-[200px]">
+                                                    <MapPin className="h-3 w-3 shrink-0 text-status-info" />
+                                                    <span className="truncate" title={decoy.file_path || decoy.deploy_location}>
+                                                        {decoy.file_path || decoy.deploy_location}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-themed-dimmed">—</span>
+                                            )}
+                                        </TableCell>
                                         <TableCell>
                                             <Badge variant={decoy.status === 'active' ? 'success' : 'secondary'}>
                                                 {decoy.status}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-themed-secondary">{decoy.triggers}</TableCell>
-                                        <TableCell className="text-themed-muted">{formatTime(decoy.last_triggered)}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
                                                 <Button 

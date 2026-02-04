@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { FileKey, Download, Plus, MoreVertical, FileText, Database, Key, AlertCircle } from "lucide-react"
+import { FileKey, Download, Plus, MoreVertical, FileText, Database, Key, AlertCircle, MapPin, Zap } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
@@ -66,6 +66,14 @@ export default function Honeytokens() {
 
     const activeCount = honeytokens.filter(t => t.status === 'active').length
     const triggeredCount = honeytokens.reduce((sum, t) => sum + t.triggers, 0)
+    const autoDeployedCount = honeytokens.filter(t => t.auto_deployed).length
+
+    // Create a map of node_id to node name
+    const nodeNameMap = nodes.reduce((map, node) => {
+        map[node.id || node.node_id || ''] = node.name
+        if (node.node_id) map[node.node_id] = node.name
+        return map
+    }, {} as Record<string, string>)
 
     if (error) {
         return (
@@ -163,10 +171,10 @@ export default function Honeytokens() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Token Name</TableHead>
-                                    <TableHead>Type</TableHead>
+                                    <TableHead>Deployed On</TableHead>
+                                    <TableHead>Location</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Triggers</TableHead>
-                                    <TableHead>Last Triggered</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -176,17 +184,38 @@ export default function Honeytokens() {
                                         <TableCell className="font-medium text-themed-primary">
                                             <div className="flex items-center gap-2">
                                                 <Key className="h-4 w-4 text-status-warning" />
-                                                {token.name}
+                                                <div>
+                                                    <span>{token.name}</span>
+                                                    {token.auto_deployed && (
+                                                        <div className="flex items-center gap-1 text-xs text-accent mt-0.5">
+                                                            <Zap className="h-3 w-3" />
+                                                            <span>Auto-deployed</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-themed-secondary">{token.type}</TableCell>
+                                        <TableCell className="text-themed-secondary">
+                                            {nodeNameMap[token.node_id] || token.node_name || token.node_id}
+                                        </TableCell>
+                                        <TableCell>
+                                            {token.file_path || token.deploy_location ? (
+                                                <div className="flex items-center gap-1 text-xs text-themed-muted font-mono max-w-[200px]">
+                                                    <MapPin className="h-3 w-3 shrink-0 text-status-info" />
+                                                    <span className="truncate" title={token.file_path || token.deploy_location}>
+                                                        {token.file_path || token.deploy_location}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-themed-dimmed">—</span>
+                                            )}
+                                        </TableCell>
                                         <TableCell>
                                             <Badge variant={token.status === 'active' ? 'success' : 'secondary'}>
                                                 {token.status}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-themed-secondary">{token.triggers}</TableCell>
-                                        <TableCell className="text-themed-muted">{formatTime(token.last_triggered)}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
                                                 <Button variant="ghost" size="icon" title="Download" className="rounded-lg hover:bg-accent/10">

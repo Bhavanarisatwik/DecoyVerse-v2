@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Copy, CheckCircle2, RefreshCw, ArrowRight, Download, Server } from "lucide-react"
+import { Copy, CheckCircle2, ArrowRight, Download, Server } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/common/Card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/common/Tabs"
 import { Input } from "../components/common/Input"
 import { nodesApi } from "../api/endpoints/nodes"
 import { authApi } from "../api/endpoints/auth"
@@ -20,8 +19,13 @@ export default function Onboarding() {
     
     // Node setup form
     const [nodeName, setNodeName] = useState('')
+    const [nodeOs, setNodeOs] = useState('windows')
     const [nodeCreated, setNodeCreated] = useState(false)
     const [creatingNode, setCreatingNode] = useState(false)
+    
+    // Initial deployment config
+    const [initialDecoys, setInitialDecoys] = useState(3)
+    const [initialHoneytokens, setInitialHoneytokens] = useState(2)
 
     // Navigate to dashboard when onboarding is complete
     useEffect(() => {
@@ -55,7 +59,7 @@ export default function Onboarding() {
         checkExistingNodes()
     }, [])
 
-    // Create a new node with the given name
+    // Create a new node with the given name and initial deployment config
     const handleCreateNode = async () => {
         if (!nodeName.trim()) {
             return
@@ -63,12 +67,19 @@ export default function Onboarding() {
         
         try {
             setCreatingNode(true)
-            const createResponse = await nodesApi.createNode(nodeName.trim())
-            const nodeInfo = createResponse.data || createResponse
+            const createResponse = await nodesApi.createNode(nodeName.trim(), {
+                os: nodeOs,
+                initialDecoys,
+                initialHoneytokens
+            })
+            const nodeInfo = createResponse.data as any
             setNodeData({
                 node_id: nodeInfo.node_id || nodeInfo.id,
                 node_api_key: nodeInfo.node_api_key || nodeInfo.api_key,
-                name: nodeName.trim()
+                name: nodeName.trim(),
+                os: nodeOs,
+                initialDecoys,
+                initialHoneytokens
             })
             setNodeCreated(true)
         } catch (err) {
@@ -158,22 +169,70 @@ export default function Onboarding() {
                 <Card className="card-gradient border-themed">
                     <CardHeader>
                         <CardTitle className="text-themed-primary">1. Create your Node</CardTitle>
-                        <CardDescription>Give your node a descriptive name (e.g., "Production-Server", "Dev-Workstation")</CardDescription>
+                        <CardDescription>Give your node a descriptive name and choose the target OS.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {!nodeCreated ? (
-                            <div className="flex gap-2">
-                                <Input 
-                                    placeholder="Enter node name (e.g., Production-DB-01)" 
-                                    value={nodeName}
-                                    onChange={(e) => setNodeName(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleCreateNode()}
-                                    className="font-medium text-themed-secondary bg-themed-elevated rounded-xl" 
-                                />
+                            <div className="space-y-4">
+                                <div className="flex gap-2">
+                                    <Input 
+                                        placeholder="Enter node name (e.g., Production-DB-01)" 
+                                        value={nodeName}
+                                        onChange={(e) => setNodeName(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleCreateNode()}
+                                        className="font-medium text-themed-secondary bg-themed-elevated rounded-xl" 
+                                    />
+                                    <select
+                                        className="h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
+                                        value={nodeOs}
+                                        onChange={(e) => setNodeOs(e.target.value)}
+                                        aria-label="Select node OS"
+                                    >
+                                        <option value="windows">Windows</option>
+                                        <option value="linux">Linux</option>
+                                        <option value="macos">macOS</option>
+                                    </select>
+                                </div>
+                                
+                                <div className="p-4 bg-themed-elevated/50 rounded-xl border border-themed space-y-3">
+                                    <p className="text-sm font-medium text-themed-primary">Initial Deployment Configuration</p>
+                                    <p className="text-xs text-themed-muted">Choose how many decoys and honeytokens to deploy automatically when the agent starts.</p>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-xs text-themed-muted mb-1 block">Decoys to Deploy</label>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="10"
+                                                    value={initialDecoys}
+                                                    onChange={(e) => setInitialDecoys(Number(e.target.value))}
+                                                    className="flex-1 h-2 bg-themed-elevated rounded-lg appearance-none cursor-pointer accent-accent"
+                                                />
+                                                <span className="w-8 text-center text-sm font-bold text-accent">{initialDecoys}</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-themed-muted mb-1 block">Honeytokens to Deploy</label>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="10"
+                                                    value={initialHoneytokens}
+                                                    onChange={(e) => setInitialHoneytokens(Number(e.target.value))}
+                                                    className="flex-1 h-2 bg-themed-elevated rounded-lg appearance-none cursor-pointer accent-accent"
+                                                />
+                                                <span className="w-8 text-center text-sm font-bold text-accent">{initialHoneytokens}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <Button 
                                     onClick={handleCreateNode}
                                     disabled={!nodeName.trim() || creatingNode}
-                                    className="shrink-0 bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
+                                    className="w-full bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
                                 >
                                     {creatingNode ? 'Creating...' : 'Create Node'}
                                 </Button>
@@ -181,9 +240,10 @@ export default function Onboarding() {
                         ) : (
                             <div className="flex items-center gap-3 p-4 bg-status-success/10 border border-status-success/20 rounded-xl">
                                 <CheckCircle2 className="h-5 w-5 text-status-success" />
-                                <div>
+                                <div className="flex-1">
                                     <p className="font-medium text-themed-primary">Node Created: {nodeData?.name || nodeName}</p>
                                     <p className="text-sm text-themed-muted">Node ID: <span className="font-mono text-accent">{nodeData?.node_id}</span></p>
+                                    <p className="text-xs text-themed-dimmed">OS: {nodeOs} | Initial: {initialDecoys} decoys, {initialHoneytokens} honeytokens</p>
                                 </div>
                             </div>
                         )}
@@ -212,8 +272,8 @@ export default function Onboarding() {
 
                         <Card className="card-gradient border-themed">
                             <CardHeader>
-                                <CardTitle className="text-themed-primary">3. Download & Install Agent</CardTitle>
-                                <CardDescription>Download the config and run the install command on your target machine.</CardDescription>
+                                <CardTitle className="text-themed-primary">3. Download Agent</CardTitle>
+                                <CardDescription>Download the pre-configured agent for your target machine.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <Button 
@@ -223,61 +283,7 @@ export default function Onboarding() {
                                     <Download className="mr-2 h-4 w-4" />
                                     Download Agent Config
                                 </Button>
-                                
-                                <div className="pt-4">
-                                    <Tabs defaultValue="linux" className="w-full">
-                                        <TabsList className="grid w-full grid-cols-3 mb-4">
-                                            <TabsTrigger value="linux">Linux</TabsTrigger>
-                                            <TabsTrigger value="windows">Windows</TabsTrigger>
-                                            <TabsTrigger value="macos">macOS</TabsTrigger>
-                                        </TabsList>
-
-                                    <TabsContent value="linux" className="space-y-4">
-                                        <div className="bg-themed-elevated rounded-xl p-4 font-mono text-sm text-themed-secondary border border-themed relative group">
-                                            <p>curl -sSL https://ml-modle-v0-1.onrender.com/install/linux | sudo bash -s -- --token={nodeData.node_api_key}</p>
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
-                                                onClick={() => navigator.clipboard.writeText(`curl -sSL https://ml-modle-v0-1.onrender.com/install/linux | sudo bash -s -- --token=${nodeData.node_api_key}`)}
-                                            >
-                                                <Copy className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                        <p className="text-sm text-themed-muted">Supported distributions: Ubuntu, Debian, CentOS, RHEL, Fedora.</p>
-                                    </TabsContent>
-
-                                    <TabsContent value="windows" className="space-y-4">
-                                        <div className="bg-themed-elevated rounded-xl p-4 font-mono text-sm text-themed-secondary border border-themed relative group">
-                                            <p>$env:DECOY_TOKEN="{nodeData.node_api_key}"; iwr -useb https://ml-modle-v0-1.onrender.com/install/windows -OutFile install.ps1; .\install.ps1</p>
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
-                                                onClick={() => navigator.clipboard.writeText(`$env:DECOY_TOKEN="${nodeData.node_api_key}"; iwr -useb https://ml-modle-v0-1.onrender.com/install/windows -OutFile install.ps1; .\\install.ps1`)}
-                                            >
-                                                <Copy className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                        <p className="text-sm text-themed-muted">Run in PowerShell as Administrator.</p>
-                                    </TabsContent>
-
-                                    <TabsContent value="macos" className="space-y-4">
-                                        <div className="bg-themed-elevated rounded-xl p-4 font-mono text-sm text-themed-secondary border border-themed relative group">
-                                            <p>curl -sSL https://ml-modle-v0-1.onrender.com/install/macos | sudo bash -s -- --token={nodeData.node_api_key}</p>
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
-                                                onClick={() => navigator.clipboard.writeText(`curl -sSL https://ml-modle-v0-1.onrender.com/install/macos | sudo bash -s -- --token=${nodeData.node_api_key}`)}
-                                            >
-                                                <Copy className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                        <p className="text-sm text-themed-muted">Supports macOS 10.15+ (Intel & Apple Silicon).</p>
-                                    </TabsContent>
-                                </Tabs>
-                                </div>
+                                <p className="text-sm text-themed-muted">Selected OS: <span className="text-accent font-medium">{nodeOs}</span></p>
                             </CardContent>
                         </Card>
 

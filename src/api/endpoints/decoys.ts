@@ -10,6 +10,12 @@ export interface Decoy {
     last_triggered?: string;
     port?: number;
     format?: string;
+    // Deployment location info
+    file_path?: string;
+    deploy_location?: string;
+    node_name?: string;
+    deployed_at?: string;
+    auto_deployed?: boolean;
 }
 
 const normalizeDecoy = (decoy: any): Decoy => ({
@@ -22,6 +28,12 @@ const normalizeDecoy = (decoy: any): Decoy => ({
     last_triggered: decoy.last_triggered || decoy.last_accessed || decoy.last_seen,
     port: decoy.port,
     format: decoy.format,
+    // Deployment location info
+    file_path: decoy.file_path || decoy.path || decoy.location,
+    deploy_location: decoy.deploy_location || decoy.file_path || decoy.path,
+    node_name: decoy.node_name,
+    deployed_at: decoy.deployed_at || decoy.created_at,
+    auto_deployed: decoy.auto_deployed ?? false,
 });
 
 export const decoysApi = {

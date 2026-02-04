@@ -32,6 +32,9 @@ const normalizeNode = (node: any): Node => ({
 
 export interface CreateNodeRequest {
     name: string;
+    os?: string;
+    initialDecoys?: number;
+    initialHoneytokens?: number;
 }
 
 export interface CreateNodeResponse {
@@ -39,6 +42,9 @@ export interface CreateNodeResponse {
     name: string;
     node_api_key: string;
     user_id: string;
+    os?: string;
+    initialDecoys?: number;
+    initialHoneytokens?: number;
 }
 
 export interface NodeDetailResponse {
@@ -62,11 +68,18 @@ export interface NodeDetailResponse {
 
 export const nodesApi = {
     /**
-     * Create a new node
+     * Create a new node with optional initial deployment config
      */
-    async createNode(name: string): Promise<{ success: boolean; data: CreateNodeResponse }> {
+    async createNode(name: string, config?: { os?: string; initialDecoys?: number; initialHoneytokens?: number }): Promise<{ success: boolean; data: CreateNodeResponse }> {
         try {
-            const response = await apiClient.post('/nodes', { name });
+            const response = await apiClient.post('/nodes', { 
+                name,
+                os_type: config?.os || 'windows',
+                deployment_config: {
+                    initial_decoys: config?.initialDecoys ?? 3,
+                    initial_honeytokens: config?.initialHoneytokens ?? 5
+                }
+            });
             return {
                 success: true,
                 data: response.data,

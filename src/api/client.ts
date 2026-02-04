@@ -7,7 +7,7 @@ const FASTAPI_API_URL = import.meta.env.VITE_FASTAPI_API_URL || 'http://localhos
 // Express backend (auth only)
 export const authClient: AxiosInstance = axios.create({
     baseURL: EXPRESS_API_URL,
-    timeout: 10000,
+    timeout: 15000,  // 15 seconds
     headers: {
         'Content-Type': 'application/json',
     },
@@ -16,7 +16,7 @@ export const authClient: AxiosInstance = axios.create({
 // FastAPI backend (nodes, decoys, alerts, logs, ai-insights, honeytokels)
 export const apiClient: AxiosInstance = axios.create({
     baseURL: FASTAPI_API_URL,
-    timeout: 10000,
+    timeout: 30000,  // 30 seconds (Render cold starts can be slow)
     headers: {
         'Content-Type': 'application/json',
     },

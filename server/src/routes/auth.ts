@@ -79,6 +79,7 @@ router.post('/signup', signupValidation, async (req: Request, res: Response): Pr
                     name: user.name,
                     email: user.email,
                     role: user.role,
+                                       isOnboarded: user.isOnboarded,
                     createdAt: user.createdAt,
                 },
                 token,
@@ -168,6 +169,8 @@ router.post('/login', loginValidation, async (req: Request, res: Response): Prom
                     email: user.email,
                     role: user.role,
                     avatar: user.avatar,
+                                                       isOnboarded: user.isOnboarded,
+                                       isOnboarded: user.isOnboarded,
                     lastLogin: user.lastLogin,
                 },
                 token,
@@ -290,6 +293,51 @@ router.put('/update-password', protect, [
         });
     } catch (error) {
         console.error('Update password error:', error);
+
+        // @route   PUT /api/auth/complete-onboarding
+        // @desc    Mark user as onboarded after agent setup
+        // @access  Private
+        router.put('/complete-onboarding', protect, async (req: AuthRequest, res: Response): Promise<void> => {
+            try {
+                const user = await User.findById(req.user?._id);
+        
+                if (!user) {
+                    res.status(404).json({
+                        success: false,
+                        message: 'User not found',
+                    });
+                    return;
+                }
+
+                // Mark user as onboarded
+                user.isOnboarded = true;
+                await user.save();
+
+                res.json({
+                    success: true,
+                    message: 'Onboarding completed successfully',
+                    data: {
+                        user: {
+                            id: user._id,
+                            name: user.name,
+                            email: user.email,
+                            role: user.role,
+                            isOnboarded: user.isOnboarded,
+                            avatar: user.avatar,
+                            createdAt: user.createdAt,
+                            lastLogin: user.lastLogin,
+                        },
+                    },
+                });
+            } catch (error) {
+                console.error('Complete onboarding error:', error);
+                res.status(500).json({
+                    success: false,
+                    message: 'Server error',
+                });
+            }
+        });
+
         res.status(500).json({
             success: false,
             message: 'Server error',

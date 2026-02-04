@@ -6,13 +6,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/common/Tabs"
 import { Input } from "../components/common/Input"
 import { nodesApi } from "../api/endpoints/nodes"
+import { authApi } from "../api/endpoints/auth"
+import { useAuth } from "../context/AuthContext"
 
 export default function Onboarding() {
     const navigate = useNavigate();
+    const { updateUser } = useAuth();
     const [copied, setCopied] = useState(false);
     const [nodeData, setNodeData] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [agentConnected, setAgentConnected] = useState(false)
+    const [completing, setCompleting] = useState(false)
 
     useEffect(() => {
         // Try to get the first node from the backend or create a new one
@@ -230,9 +234,23 @@ export default function Onboarding() {
                     <Button
                         size="lg"
                         className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
-                        onClick={() => navigate('/dashboard')}
+                        onClick={async () => {
+                            try {
+                                setCompleting(true);
+                                const response = await authApi.completeOnboarding();
+                                if (response.success && response.data?.user) {
+                                    updateUser(response.data.user);
+                                }
+                            } catch (error) {
+                                console.error('Failed to complete onboarding:', error);
+                            } finally {
+                                setCompleting(false);
+                                navigate('/dashboard');
+                            }
+                        }}
+                        disabled={completing}
                     >
-                        Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                        {completing ? 'Finishing Setup...' : 'Go to Dashboard'} <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                 </div>
             </div>

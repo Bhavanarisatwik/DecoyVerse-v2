@@ -6,7 +6,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, user } = useAuth();
     const location = useLocation();
 
     // Show loading spinner while checking auth
@@ -24,6 +24,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     // Redirect to login if not authenticated
     if (!isAuthenticated) {
         return <Navigate to="/auth/login" state={{ from: location }} replace />;
+    }
+
+    // Redirect first-time users to onboarding flow
+    if (user?.isOnboarded !== true && !location.pathname.startsWith('/onboarding')) {
+        return <Navigate to="/onboarding/subscription" replace />;
     }
 
     return <>{children}</>;

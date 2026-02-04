@@ -9,6 +9,7 @@ export interface IUser extends Document {
     avatar?: string;
     role: 'admin' | 'user' | 'viewer';
     isActive: boolean;
+    isOnboarded: boolean;
     lastLogin?: Date;
     createdAt: Date;
     updatedAt: Date;
@@ -50,6 +51,10 @@ const userSchema = new Schema<IUser>(
         isActive: {
             type: Boolean,
             default: true,
+        },
+        isOnboarded: {
+            type: Boolean,
+            default: false,
         },
         lastLogin: {
             type: Date,

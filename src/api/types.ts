@@ -5,6 +5,7 @@ export interface User {
     email: string;
     role: 'admin' | 'user' | 'viewer';
     avatar?: string;
+        isOnboarded?: boolean;
     createdAt?: string;
     lastLogin?: string;
 }

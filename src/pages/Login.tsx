@@ -37,7 +37,13 @@ export default function Login() {
         setIsLoading(false);
 
         if (result.success) {
-            navigate('/dashboard');
+            // If first-time user, go to onboarding, else go to dashboard
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            if (storedUser.isOnboarded !== true) {
+                navigate('/onboarding/subscription');
+            } else {
+                navigate('/dashboard');
+            }
         } else {
             setError(result.message);
         }

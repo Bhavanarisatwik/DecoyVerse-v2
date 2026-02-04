@@ -29,6 +29,12 @@ export const authApi = {
     // Update password
     updatePassword: async (data: UpdatePasswordRequest): Promise<ApiResponse<{ token: string }>> => {
         const response = await authClient.put<ApiResponse<{ token: string }>>('/auth/update-password', data);
+
+            // Complete onboarding
+            completeOnboarding: async (): Promise<ApiResponse<{ user: User }>> => {
+                const response = await authClient.put<ApiResponse<{ user: User }>>('/auth/complete-onboarding');
+                return response.data;
+            },
         return response.data;
     },
 };

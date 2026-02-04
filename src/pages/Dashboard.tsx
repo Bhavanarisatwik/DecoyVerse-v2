@@ -17,6 +17,15 @@ const data = [
     { name: 'Sun', attacks: 34, blocked: 43 },
 ];
 
+const activityData = [
+    { time: '00:00', value: 12 },
+    { time: '04:00', value: 8 },
+    { time: '08:00', value: 25 },
+    { time: '12:00', value: 45 },
+    { time: '16:00', value: 38 },
+    { time: '20:00', value: 22 },
+];
+
 export default function Dashboard() {
     const [stats, setStats] = useState<DashboardStats | null>(null)
     const [alerts, setAlerts] = useState<Alert[]>([])

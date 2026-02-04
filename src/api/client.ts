@@ -16,7 +16,7 @@ export const authClient: AxiosInstance = axios.create({
 // FastAPI backend (nodes, decoys, alerts, logs, ai-insights, honeytokels)
 export const apiClient: AxiosInstance = axios.create({
     baseURL: FASTAPI_API_URL,
-    timeout: 30000,  // 30 seconds (Render cold starts can be slow)
+    timeout: 60000,  // 60 seconds (Render free tier cold starts can take 30-60s)
     headers: {
         'Content-Type': 'application/json',
     },

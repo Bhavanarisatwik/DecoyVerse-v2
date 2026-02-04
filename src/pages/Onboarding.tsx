@@ -24,9 +24,11 @@ export default function Onboarding() {
                 } else {
                     // Create a new node for onboarding
                     const createResponse = await nodesApi.createNode('Onboarding-Node')
+                    console.log('Create node response:', createResponse);
+                    const nodeInfo = createResponse.data || createResponse;
                     setNodeData({
-                        node_id: createResponse.data.node_id,
-                        node_api_key: createResponse.data.node_api_key
+                        node_id: nodeInfo.node_id || nodeInfo.id,
+                        node_api_key: nodeInfo.node_api_key || nodeInfo.api_key
                     })
                 }
             } catch (err) {

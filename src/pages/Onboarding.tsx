@@ -29,6 +29,10 @@ export default function Onboarding() {
 
                 if (existingNode && existingApiKey) {
                     setNodeData(existingNode)
+                    // Check if already connected
+                    if (existingNode.status === 'active' || existingNode.status === 'online') {
+                        setAgentConnected(true)
+                    }
                     return
                 }
 
@@ -54,6 +58,28 @@ export default function Onboarding() {
 
         setupNode()
     }, [])
+
+    // Poll for agent connection status
+    useEffect(() => {
+        if (!nodeData?.node_id || agentConnected) return;
+
+        const pollInterval = setInterval(async () => {
+            try {
+                const response = await nodesApi.listNodes();
+                const node = response.data?.find((n: any) => 
+                    n.node_id === nodeData.node_id || n.id === nodeData.node_id
+                );
+                if (node && (node.status === 'active' || node.status === 'online')) {
+                    setAgentConnected(true);
+                    clearInterval(pollInterval);
+                }
+            } catch (err) {
+                console.error('Error polling node status:', err);
+            }
+        }, 5000); // Poll every 5 seconds
+
+        return () => clearInterval(pollInterval);
+    }, [nodeData?.node_id, agentConnected]);
 
     const handleCopy = () => {
         if (nodeData?.node_api_key) {

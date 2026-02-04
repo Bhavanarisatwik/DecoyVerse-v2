@@ -131,7 +131,9 @@ export default function Onboarding() {
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
-            a.download = `agent_config_${nodeData.node_id}.json`
+            // Download as PowerShell installer
+            const safeName = nodeName.replace(/[^a-zA-Z0-9]/g, '_') || nodeData.node_id
+            a.download = `DecoyVerse-Setup-${safeName}.ps1`
             document.body.appendChild(a)
             a.click()
             window.URL.revokeObjectURL(url)
@@ -272,8 +274,8 @@ export default function Onboarding() {
 
                         <Card className="card-gradient border-themed">
                             <CardHeader>
-                                <CardTitle className="text-themed-primary">3. Download Agent</CardTitle>
-                                <CardDescription>Download the pre-configured agent for your target machine.</CardDescription>
+                                <CardTitle className="text-themed-primary">3. Download & Run Installer</CardTitle>
+                                <CardDescription>Download the PowerShell installer and run it as Administrator on your target machine.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <Button 
@@ -281,9 +283,17 @@ export default function Onboarding() {
                                     className="w-full bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
                                 >
                                     <Download className="mr-2 h-4 w-4" />
-                                    Download Agent Config
+                                    Download Agent Installer (.ps1)
                                 </Button>
-                                <p className="text-sm text-themed-muted">Selected OS: <span className="text-accent font-medium">{nodeOs}</span></p>
+                                <div className="text-sm text-themed-muted space-y-2">
+                                    <p>Selected OS: <span className="text-accent font-medium">{nodeOs}</span></p>
+                                    <div className="p-3 bg-themed-elevated/50 rounded-lg border border-themed text-xs">
+                                        <p className="font-medium text-themed-secondary mb-1">How to run:</p>
+                                        <p>1. Right-click the downloaded .ps1 file</p>
+                                        <p>2. Select "Run with PowerShell"</p>
+                                        <p>3. Click "Yes" if prompted for Admin access</p>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
 

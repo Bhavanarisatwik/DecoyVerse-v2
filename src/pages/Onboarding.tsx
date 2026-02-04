@@ -54,6 +54,11 @@ export default function Onboarding() {
 
     const handleDownloadAgent = async () => {
         try {
+            if (!nodeData?.node_id) {
+                console.error('No node ID available');
+                alert('Please create a node first');
+                return;
+            }
             const blob = await nodesApi.downloadAgent(nodeData.node_id)
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement('a')

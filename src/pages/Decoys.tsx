@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Badge } from "../components/common/Badge"
 import { Breadcrumb } from "../components/common/Breadcrumb"
 import { decoysApi, type Decoy } from "../api/endpoints/decoys"
+import { nodesApi, type Node } from "../api/endpoints/nodes"
 
 const formatTime = (dateString?: string) => {
     if (!dateString) return 'Never';
@@ -24,14 +25,31 @@ const formatTime = (dateString?: string) => {
 
 export default function Decoys() {
     const [decoys, setDecoys] = useState<Decoy[]>([])
+    const [nodes, setNodes] = useState<Node[]>([])
+    const [selectedNodeId, setSelectedNodeId] = useState<string>('all')
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        const fetchNodes = async () => {
+            try {
+                const response = await nodesApi.listNodes()
+                setNodes(response.data)
+            } catch (err) {
+                console.error('Error fetching nodes:', err)
+            }
+        }
+
+        fetchNodes()
+    }, [])
 
     useEffect(() => {
         const fetchDecoys = async () => {
             try {
                 setLoading(true)
-                const response = await decoysApi.getDecoys()
+                const response = selectedNodeId === 'all'
+                    ? await decoysApi.getDecoys()
+                    : await decoysApi.getNodeDecoys(selectedNodeId)
                 setDecoys(response.data)
             } catch (err) {
                 console.error('Error fetching decoys:', err)
@@ -42,7 +60,7 @@ export default function Decoys() {
         }
 
         fetchDecoys()
-    }, [])
+    }, [selectedNodeId])
 
     const handleToggleStatus = async (decoyId: string, currentStatus: string) => {
         const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
@@ -94,10 +112,24 @@ export default function Decoys() {
                     <h1 className="text-3xl font-bold text-themed-primary font-heading">Decoys</h1>
                     <p className="text-themed-muted">Deploy and manage deception assets across your network.</p>
                 </div>
-                <Button className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create New Decoy
-                </Button>
+                <div className="flex items-center gap-3">
+                    <select
+                        className="h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
+                        value={selectedNodeId}
+                        onChange={(e) => setSelectedNodeId(e.target.value)}
+                    >
+                        <option value="all">All Nodes</option>
+                        {nodes.map((node) => (
+                            <option key={node.id || node.node_id} value={node.id || node.node_id}>
+                                {node.name || node.id || node.node_id}
+                            </option>
+                        ))}
+                    </select>
+                    <Button className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create New Decoy
+                    </Button>
+                </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">

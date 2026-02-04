@@ -7,6 +7,7 @@ import { Input } from "../components/common/Input"
 import { Badge } from "../components/common/Badge"
 import { Breadcrumb } from "../components/common/Breadcrumb"
 import { logsApi, type Event } from "../api/endpoints/logs"
+import { nodesApi, type Node } from "../api/endpoints/nodes"
 
 const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -36,15 +37,33 @@ const formatTimestamp = (dateString: string) => {
 export default function Logs() {
     const [events, setEvents] = useState<Event[]>([])
     const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
+    const [nodes, setNodes] = useState<Node[]>([])
+    const [selectedNodeId, setSelectedNodeId] = useState<string>('all')
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
 
     useEffect(() => {
+        const fetchNodes = async () => {
+            try {
+                const response = await nodesApi.listNodes()
+                setNodes(response.data)
+            } catch (err) {
+                console.error('Error fetching nodes:', err)
+            }
+        }
+
+        fetchNodes()
+    }, [])
+
+    useEffect(() => {
         const fetchEvents = async () => {
             try {
                 setLoading(true)
-                const response = await logsApi.getRecentEvents(100)
+                const response = await logsApi.getRecentEvents(
+                    100,
+                    selectedNodeId === 'all' ? undefined : selectedNodeId
+                )
                 setEvents(response.data)
                 setFilteredEvents(response.data)
             } catch (err) {
@@ -56,7 +75,7 @@ export default function Logs() {
         }
 
         fetchEvents()
-    }, [])
+    }, [selectedNodeId])
 
     // Handle search filtering
     useEffect(() => {
@@ -111,6 +130,18 @@ export default function Logs() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <CardTitle className="text-themed-primary">Event Log</CardTitle>
                         <div className="flex flex-col sm:flex-row gap-2">
+                            <select
+                                className="h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
+                                value={selectedNodeId}
+                                onChange={(e) => setSelectedNodeId(e.target.value)}
+                            >
+                                <option value="all">All Nodes</option>
+                                {nodes.map((node) => (
+                                    <option key={node.id || node.node_id} value={node.id || node.node_id}>
+                                        {node.name || node.id || node.node_id}
+                                    </option>
+                                ))}
+                            </select>
                             <div className="relative w-full sm:w-64">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themed-muted" />
                                 <Input 

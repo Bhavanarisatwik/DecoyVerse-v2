@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/common/C
 import { Badge } from "../components/common/Badge"
 import { Breadcrumb } from "../components/common/Breadcrumb"
 import { alertsApi, type Alert as AlertType } from "../api/endpoints/alerts"
+import { nodesApi, type Node } from "../api/endpoints/nodes"
 
 const getSeverityLabel = (severity: string) => {
     switch (severity) {
@@ -42,8 +43,24 @@ const formatTime = (dateString: string) => {
 
 export default function Alerts() {
     const [alerts, setAlerts] = useState<AlertType[]>([])
+    const [filteredAlerts, setFilteredAlerts] = useState<AlertType[]>([])
+    const [nodes, setNodes] = useState<Node[]>([])
+    const [selectedNodeId, setSelectedNodeId] = useState<string>('all')
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        const fetchNodes = async () => {
+            try {
+                const response = await nodesApi.listNodes()
+                setNodes(response.data)
+            } catch (err) {
+                console.error('Error fetching nodes:', err)
+            }
+        }
+
+        fetchNodes()
+    }, [])
 
     useEffect(() => {
         const fetchAlerts = async () => {
@@ -62,9 +79,17 @@ export default function Alerts() {
         fetchAlerts()
     }, [])
 
-    const openCount = alerts.filter(a => a.status === 'open').length
-    const investigatingCount = alerts.filter(a => a.status === 'investigating').length
-    const resolvedCount = alerts.filter(a => a.status === 'resolved').length
+    useEffect(() => {
+        if (selectedNodeId === 'all') {
+            setFilteredAlerts(alerts)
+        } else {
+            setFilteredAlerts(alerts.filter(a => a.node_id === selectedNodeId))
+        }
+    }, [alerts, selectedNodeId])
+
+    const openCount = filteredAlerts.filter(a => a.status === 'open').length
+    const investigatingCount = filteredAlerts.filter(a => a.status === 'investigating').length
+    const resolvedCount = filteredAlerts.filter(a => a.status === 'resolved').length
 
     const handleStatusChange = async (alertId: string, newStatus: string) => {
         try {
@@ -100,6 +125,18 @@ export default function Alerts() {
                     <p className="text-themed-muted">Manage and investigate security incidents.</p>
                 </div>
                 <div className="flex gap-2">
+                    <select
+                        className="h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
+                        value={selectedNodeId}
+                        onChange={(e) => setSelectedNodeId(e.target.value)}
+                    >
+                        <option value="all">All Nodes</option>
+                        {nodes.map((node) => (
+                            <option key={node.id || node.node_id} value={node.id || node.node_id}>
+                                {node.name || node.id || node.node_id}
+                            </option>
+                        ))}
+                    </select>
                     <Button variant="outline" className="border-themed rounded-xl hover:bg-themed-elevated">
                         <Filter className="mr-2 h-4 w-4" />
                         Filter Alerts
@@ -156,14 +193,14 @@ export default function Alerts() {
                             <p className="text-themed-muted">Loading alerts...</p>
                         </CardContent>
                     </Card>
-                ) : alerts.length === 0 ? (
+                ) : filteredAlerts.length === 0 ? (
                     <Card className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black">
                         <CardContent className="p-5">
                             <p className="text-themed-muted">No alerts found</p>
                         </CardContent>
                     </Card>
                 ) : (
-                    alerts.map((alert) => (
+                    filteredAlerts.map((alert) => (
                         <Card key={alert.id} className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black hover:border-white/20 transition-all duration-300">
                             <CardContent className="p-5">
                                 <div className="flex items-start justify-between gap-4">

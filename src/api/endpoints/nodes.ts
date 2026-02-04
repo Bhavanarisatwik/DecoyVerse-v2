@@ -2,8 +2,9 @@ import { apiClient } from '../client';
 
 export interface Node {
     id: string;
+    node_id?: string;
     name: string;
-    status: 'online' | 'offline';
+    status: 'online' | 'offline' | 'active' | 'inactive';
     ip?: string;
     os?: string;
     version?: string;
@@ -13,6 +14,21 @@ export interface Node {
     user_id?: string;
     created_at?: string;
 }
+
+const normalizeNode = (node: any): Node => ({
+    id: node.id || node.node_id || '',
+    node_id: node.node_id || node.id,
+    name: node.name || 'Unnamed Node',
+    status: node.status || 'offline',
+    ip: node.ip,
+    os: node.os,
+    version: node.version,
+    decoys: node.decoys,
+    lastSeen: node.last_seen || node.lastSeen,
+    node_api_key: node.node_api_key,
+    user_id: node.user_id,
+    created_at: node.created_at,
+});
 
 export interface CreateNodeRequest {
     name: string;
@@ -68,7 +84,7 @@ export const nodesApi = {
             const response = await apiClient.get('/nodes');
             return {
                 success: true,
-                data: response.data,
+                data: Array.isArray(response.data) ? response.data.map(normalizeNode) : [],
             };
         } catch (error) {
             throw error;
@@ -98,7 +114,7 @@ export const nodesApi = {
             const response = await apiClient.patch(`/nodes/${nodeId}`, updates);
             return {
                 success: true,
-                data: response.data,
+                data: normalizeNode(response.data),
             };
         } catch (error) {
             throw error;

@@ -16,7 +16,7 @@ export const aiInsightsApi = {
      */
     async getAttackerProfile(ip: string): Promise<{ success: boolean; data: AttackerProfile }> {
         try {
-            const response = await apiClient.get(`/api/attacker-profile/${ip}`);
+            const response = await apiClient.get(`/api/ai/attacker-profile/${ip}`);
             return {
                 success: true,
                 data: response.data,

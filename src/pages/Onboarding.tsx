@@ -56,12 +56,21 @@ export default function Onboarding() {
 
     const handleDownloadAgent = async () => {
         try {
+            console.log('Current nodeData:', nodeData);
+            console.log('Node ID:', nodeData?.node_id);
+            console.log('Node API Key:', nodeData?.node_api_key);
+            
             if (!nodeData?.node_id) {
                 console.error('No node ID available');
                 alert('Please create a node first');
                 return;
             }
-            const blob = await nodesApi.downloadAgent(nodeData.node_id)
+            
+            const nodeId = String(nodeData.node_id).trim();
+            console.log('Attempting to download agent for node:', nodeId);
+            console.log('Request URL will be: /nodes/' + nodeId + '/agent-download');
+            
+            const blob = await nodesApi.downloadAgent(nodeId)
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
@@ -72,6 +81,9 @@ export default function Onboarding() {
             document.body.removeChild(a)
         } catch (err) {
             console.error('Error downloading agent:', err)
+            if (err instanceof Error) {
+                alert('Failed to download agent: ' + err.message);
+            }
         }
     };
 

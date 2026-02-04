@@ -124,11 +124,18 @@ export const nodesApi = {
      */
     async downloadAgent(nodeId: string): Promise<Blob> {
         try {
-            const response = await apiClient.get(`/nodes/${nodeId}/agent-download`, {
+            const url = `/nodes/${nodeId}/agent-download`;
+            console.log('nodesApi.downloadAgent - Full URL:', apiClient.defaults.baseURL + url);
+            console.log('nodesApi.downloadAgent - nodeId:', nodeId);
+            console.log('nodesApi.downloadAgent - Endpoint:', url);
+            
+            const response = await apiClient.get(url, {
                 responseType: 'blob',
             });
+            console.log('Download response received:', response.status);
             return response.data;
         } catch (error) {
+            console.error('downloadAgent error details:', error);
             throw error;
         }
     },

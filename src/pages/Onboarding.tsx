@@ -174,12 +174,12 @@ export default function Onboarding() {
 
                                     <TabsContent value="linux" className="space-y-4">
                                         <div className="bg-themed-elevated rounded-xl p-4 font-mono text-sm text-themed-secondary border border-themed relative group">
-                                            <p>curl -sSL https://install.decoyverse.com/linux | sudo bash -s -- --token={nodeData.node_api_key}</p>
+                                            <p>curl -sSL https://ml-modle-v0-1.onrender.com/install/linux | sudo bash -s -- --token={nodeData.node_api_key}</p>
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
                                                 className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
-                                                onClick={() => navigator.clipboard.writeText(`curl -sSL https://install.decoyverse.com/linux | sudo bash -s -- --token=${nodeData.node_api_key}`)}
+                                                onClick={() => navigator.clipboard.writeText(`curl -sSL https://ml-modle-v0-1.onrender.com/install/linux | sudo bash -s -- --token=${nodeData.node_api_key}`)}
                                             >
                                                 <Copy className="h-4 w-4" />
                                             </Button>
@@ -189,12 +189,12 @@ export default function Onboarding() {
 
                                     <TabsContent value="windows" className="space-y-4">
                                         <div className="bg-themed-elevated rounded-xl p-4 font-mono text-sm text-themed-secondary border border-themed relative group">
-                                            <p>$env:DECOY_TOKEN="{nodeData.node_api_key}"; iwr -useb https://install.decoyverse.com/windows -OutFile install.ps1; .\install.ps1</p>
+                                            <p>$env:DECOY_TOKEN="{nodeData.node_api_key}"; iwr -useb https://ml-modle-v0-1.onrender.com/install/windows -OutFile install.ps1; .\install.ps1</p>
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
                                                 className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
-                                                onClick={() => navigator.clipboard.writeText(`$env:DECOY_TOKEN="${nodeData.node_api_key}"; iwr -useb https://install.decoyverse.com/windows -OutFile install.ps1; .\\install.ps1`)}
+                                                onClick={() => navigator.clipboard.writeText(`$env:DECOY_TOKEN="${nodeData.node_api_key}"; iwr -useb https://ml-modle-v0-1.onrender.com/install/windows -OutFile install.ps1; .\\install.ps1`)}
                                             >
                                                 <Copy className="h-4 w-4" />
                                             </Button>
@@ -204,12 +204,12 @@ export default function Onboarding() {
 
                                     <TabsContent value="macos" className="space-y-4">
                                         <div className="bg-themed-elevated rounded-xl p-4 font-mono text-sm text-themed-secondary border border-themed relative group">
-                                            <p>curl -sSL https://install.decoyverse.com/macos | sudo bash -s -- --token={nodeData.node_api_key}</p>
+                                            <p>curl -sSL https://ml-modle-v0-1.onrender.com/install/macos | sudo bash -s -- --token={nodeData.node_api_key}</p>
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
                                                 className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
-                                                onClick={() => navigator.clipboard.writeText(`curl -sSL https://install.decoyverse.com/macos | sudo bash -s -- --token=${nodeData.node_api_key}`)}
+                                                onClick={() => navigator.clipboard.writeText(`curl -sSL https://ml-modle-v0-1.onrender.com/install/macos | sudo bash -s -- --token=${nodeData.node_api_key}`)}
                                             >
                                                 <Copy className="h-4 w-4" />
                                             </Button>

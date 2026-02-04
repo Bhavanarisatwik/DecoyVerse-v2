@@ -265,19 +265,26 @@ export default function Onboarding() {
                     <Button
                         size="lg"
                         className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
-                        onClick={async () => {
-                            try {
-                                setCompleting(true);
-                                const response = await authApi.completeOnboarding();
-                                if (response.success && response.data?.user) {
-                                    updateUser(response.data.user);
+                        onClick={() => {
+                            // Set loading state immediately to avoid INP violation
+                            setCompleting(true);
+                            
+                            // Defer async work to next task
+                            setTimeout(async () => {
+                                try {
+                                    const response = await authApi.completeOnboarding();
+                                    if (response.success && response.data?.user) {
+                                        updateUser(response.data.user);
+                                    }
+                                    // Small delay to ensure state updates are processed
+                                    setTimeout(() => {
+                                        navigate('/dashboard');
+                                    }, 50);
+                                } catch (error) {
+                                    console.error('Failed to complete onboarding:', error);
+                                    setCompleting(false);
                                 }
-                            } catch (error) {
-                                console.error('Failed to complete onboarding:', error);
-                            } finally {
-                                setCompleting(false);
-                                navigate('/dashboard');
-                            }
+                            }, 0);
                         }}
                         disabled={completing}
                     >

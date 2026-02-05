@@ -137,6 +137,17 @@ export default function Onboarding() {
         }
     };
 
+    const handleDownloadExe = async () => {
+        try {
+            await installApi.downloadWindowsExe()
+        } catch (err) {
+            console.error('Error downloading EXE installer:', err)
+            if (err instanceof Error) {
+                alert('Failed to download EXE installer: ' + err.message)
+            }
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-themed-primary py-12 px-4 flex items-center justify-center">
@@ -275,6 +286,13 @@ export default function Onboarding() {
                                 >
                                     <Download className="mr-2 h-4 w-4" />
                                     Download Agent Installer (.zip)
+                                </Button>
+                                <Button
+                                    onClick={handleDownloadExe}
+                                    className="w-full bg-gray-800 hover:bg-gray-700 text-themed-primary font-bold rounded-xl"
+                                >
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Download Windows EXE Installer
                                 </Button>
                                 <div className="text-sm text-themed-muted space-y-2">
                                     <p>Selected OS: <span className="text-accent font-medium">{nodeOs}</span></p>

@@ -7,6 +7,18 @@ import { apiClient } from '../client';
 
 export const installApi = {
   /**
+   * Download Windows EXE installer from GitHub release
+   */
+  async downloadWindowsExe(): Promise<void> {
+    const exeUrl = "https://github.com/Bhavanarisatwik/ML-modle-v0/releases/download/v2.0.0/DecoyVerse-Installer.exe";
+    const link = document.createElement('a');
+    link.href = exeUrl;
+    link.download = 'DecoyVerse-Installer.exe';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  },
+  /**
    * Generate and download a pre-configured installer for a node
    * Returns a ZIP file with agent config, installation script, and README
    */

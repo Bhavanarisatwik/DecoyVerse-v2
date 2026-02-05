@@ -103,6 +103,15 @@ export default function Nodes() {
         }
     }
 
+    const handleDownloadExe = async () => {
+        try {
+            await installApi.downloadWindowsExe()
+        } catch (err) {
+            console.error('Error downloading EXE installer:', err)
+            setError('Failed to download EXE installer')
+        }
+    }
+
     const handleDeleteNode = (nodeId: string, nodeName: string) => {
         setDeleteConfirm({ nodeId, nodeName })
     }
@@ -259,6 +268,15 @@ export default function Nodes() {
                                                     title="Download agent config"
                                                 >
                                                     <Download className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="rounded-lg hover:bg-themed-elevated text-xs font-semibold"
+                                                    onClick={handleDownloadExe}
+                                                    title="Download Windows EXE installer"
+                                                >
+                                                    EXE
                                                 </Button>
                                                 <Button
                                                     size="icon"

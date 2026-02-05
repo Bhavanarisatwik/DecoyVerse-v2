@@ -8,6 +8,7 @@ import { Breadcrumb } from "../components/common/Breadcrumb"
 import { Modal } from "../components/common/Modal"
 import { Input } from "../components/common/Input"
 import { nodesApi, type Node } from "../api/endpoints/nodes"
+import { installApi } from "../api/endpoints/install"
 
 export default function Nodes() {
     const [nodes, setNodes] = useState<Node[]>([])
@@ -83,20 +84,10 @@ export default function Nodes() {
 
     const handleDownloadAgent = async (nodeId: string, nodeName: string) => {
         try {
-            const blob = await nodesApi.downloadAgent(nodeId)
-            const url = window.URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            // Download as batch installer script
-            const safeName = nodeName.replace(/[^a-zA-Z0-9]/g, '_')
-            a.download = `DecoyVerse-Setup-${safeName}.bat`
-            document.body.appendChild(a)
-            a.click()
-            window.URL.revokeObjectURL(url)
-            document.body.removeChild(a)
+            await installApi.downloadInstaller(nodeId, nodeName)
         } catch (err) {
-            console.error('Error downloading agent:', err)
-            setError('Failed to download agent')
+            console.error('Error downloading agent installer:', err)
+            setError('Failed to download agent installer')
         }
     }
 

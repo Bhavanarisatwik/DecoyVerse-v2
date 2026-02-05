@@ -21,11 +21,12 @@ export interface Attack {
 
 export interface DashboardStats {
     total_nodes: number;
-    online_nodes: number;
-    total_alerts: number;
-    critical_alerts: number;
-    total_attacks_detected: number;
+    active_nodes: number;
+    total_attacks: number;
+    active_alerts: number;
+    high_risk_count: number;
     avg_risk_score: number;
+    recent_risk_average?: number;
 }
 
 export const dashboardApi = {

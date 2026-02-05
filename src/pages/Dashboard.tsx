@@ -141,7 +141,7 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-themed-primary">
-                            {loading ? '...' : stats?.total_attacks_detected || 0}
+                            {loading ? '...' : stats?.total_attacks || 0}
                         </div>
                         <p className="text-xs text-themed-muted flex items-center mt-1">
                             Avg Risk: {loading ? '...' : (stats?.avg_risk_score || 0).toFixed(1)}/10
@@ -157,7 +157,7 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-themed-primary">
-                            {loading ? '...' : stats?.online_nodes || 0}
+                            {loading ? '...' : stats?.active_nodes || 0}
                         </div>
                         <p className="text-xs text-accent flex items-center mt-1">
                             {loading ? '...' : `of ${stats?.total_nodes || 0} nodes`}
@@ -173,10 +173,10 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-themed-primary">
-                            {loading ? '...' : stats?.total_alerts || 0}
+                            {loading ? '...' : stats?.active_alerts || 0}
                         </div>
                         <p className="text-xs text-themed-muted flex items-center mt-1">
-                            {loading ? '...' : `${stats?.critical_alerts || 0} critical`}
+                            {loading ? '...' : `${stats?.high_risk_count || 0} critical`}
                         </p>
                     </CardContent>
                 </Card>

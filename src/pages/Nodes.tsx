@@ -20,6 +20,9 @@ export default function Nodes() {
     const [newNodeName, setNewNodeName] = useState("")
     const [creatingNode, setCreatingNode] = useState(false)
     const [deleteConfirm, setDeleteConfirm] = useState<{ nodeId: string; nodeName: string } | null>(null)
+    const [osType, setOsType] = useState<'windows' | 'linux' | 'macos'>('windows')
+    const [initialDecoys, setInitialDecoys] = useState(3)
+    const [initialHoneytokens, setInitialHoneytokens] = useState(5)
 
     // Fetch nodes data
     useEffect(() => {
@@ -62,7 +65,11 @@ export default function Nodes() {
 
         try {
             setCreatingNode(true)
-            const response = await nodesApi.createNode(newNodeName)
+            const response = await nodesApi.createNode(newNodeName, {
+                os: osType,
+                initialDecoys: initialDecoys,
+                initialHoneytokens: initialHoneytokens
+            })
             
             // Refresh nodes list
             const nodesResponse = await nodesApi.listNodes()
@@ -75,6 +82,9 @@ export default function Nodes() {
             
             setShowCreateModal(false)
             setNewNodeName("")
+            setOsType('windows')
+            setInitialDecoys(3)
+            setInitialHoneytokens(5)
             setError(null)
         } catch (err) {
             console.error('Error creating node:', err)
@@ -277,12 +287,54 @@ export default function Nodes() {
                 description="Add a new node to monitor with DecoyVerse"
             >
                 <div className="space-y-4">
-                    <Input
-                        placeholder="Node name (e.g., Production-DB-01)"
-                        value={newNodeName}
-                        onChange={(e) => setNewNodeName(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleCreateNode()}
-                    />
+                    <div>
+                        <label className="block text-sm font-medium text-themed-muted mb-2">Node Name</label>
+                        <Input
+                            placeholder="Production-DB-01, HR-Workstation, etc."
+                            value={newNodeName}
+                            onChange={(e) => setNewNodeName(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleCreateNode()}
+                        />
+                    </div>
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-themed-muted mb-2">Operating System</label>
+                        <select
+                            className="w-full h-10 px-3 rounded-md bg-themed-secondary border border-themed-secondary text-themed-primary focus:border-accent focus:outline-none"
+                            value={osType}
+                            onChange={(e) => setOsType(e.target.value as 'windows' | 'linux' | 'macos')}
+                        >
+                            <option value="windows">Windows</option>
+                            <option value="linux">Linux</option>
+                            <option value="macos">macOS</option>
+                        </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-themed-muted mb-2">Decoy Files</label>
+                            <Input
+                                type="number"
+                                min="1"
+                                max="20"
+                                value={initialDecoys}
+                                onChange={(e) => setInitialDecoys(parseInt(e.target.value) || 3)}
+                            />
+                            <p className="text-xs text-themed-muted mt-1">Fake files to deploy</p>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-themed-muted mb-2">Honeytokens</label>
+                            <Input
+                                type="number"
+                                min="1"
+                                max="50"
+                                value={initialHoneytokens}
+                                onChange={(e) => setInitialHoneytokens(parseInt(e.target.value) || 5)}
+                            />
+                            <p className="text-xs text-themed-muted mt-1">Trackable credentials</p>
+                        </div>
+                    </div>
+
                     <div className="flex gap-3 justify-end">
                         <Button
                             variant="ghost"

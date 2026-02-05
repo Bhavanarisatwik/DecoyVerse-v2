@@ -50,7 +50,9 @@ export default function Decoys() {
                 const response = selectedNodeId === 'all'
                     ? await decoysApi.getDecoys()
                     : await decoysApi.getNodeDecoys(selectedNodeId)
-                setDecoys(response.data)
+                // Filter out honeytokens - show only file/service/port decoys
+                const fileDecoys = response.data.filter(d => d.type !== 'honeytoken')
+                setDecoys(fileDecoys)
             } catch (err) {
                 console.error('Error fetching decoys:', err)
                 setError('Failed to load decoys')

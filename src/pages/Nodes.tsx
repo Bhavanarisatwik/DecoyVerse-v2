@@ -161,10 +161,16 @@ export default function Nodes() {
                     <h1 className="text-3xl font-bold text-themed-primary font-heading">Nodes</h1>
                     <p className="text-themed-muted">Manage your deployed agents and devices.</p>
                 </div>
-                <Button onClick={() => setShowCreateModal(true)} className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add New Node
-                </Button>
+                <div className="flex gap-3">
+                    <Button onClick={handleDownloadExe} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl">
+                        <Download className="mr-2 h-4 w-4" />
+                        Download Windows EXE
+                    </Button>
+                    <Button onClick={() => setShowCreateModal(true)} className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add New Node
+                    </Button>
+                </div>
             </div>
 
             {notice && (

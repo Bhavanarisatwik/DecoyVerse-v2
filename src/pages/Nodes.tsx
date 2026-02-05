@@ -15,6 +15,7 @@ export default function Nodes() {
     const [stats, setStats] = useState({ total: 0, online: 0, offline: 0 })
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [notice, setNotice] = useState<string | null>(null)
     const [showCreateModal, setShowCreateModal] = useState(false)
     const [newNodeName, setNewNodeName] = useState("")
     const [creatingNode, setCreatingNode] = useState(false)
@@ -92,13 +93,14 @@ export default function Nodes() {
     }
 
     const handleDeleteNode = (nodeId: string) => {
-        if (!window.confirm('Are you sure you want to delete this node?')) {
+        if (!window.confirm('Delete this node? This will request the agent to uninstall itself and remove it from the system.')) {
             return
         }
 
         // Optimistic UI update first to prevent INP violation
         setNodes(prev => prev.filter(n => n.id !== nodeId && n.node_id !== nodeId))
         setStats(s => ({ ...s, total: Math.max(0, s.total - 1) }))
+        setNotice('Uninstall requested. The agent will remove itself and the node will disappear once complete.')
 
         // Defer async work to next task
         setTimeout(async () => {
@@ -107,6 +109,7 @@ export default function Nodes() {
             } catch (err) {
                 console.error('Error deleting node:', err)
                 setError('Failed to delete node')
+                setNotice(null)
                 // Revert optimistic update on failure
                 const nodesResponse = await nodesApi.listNodes()
                 setNodes(nodesResponse.data)
@@ -138,6 +141,14 @@ export default function Nodes() {
                     Add New Node
                 </Button>
             </div>
+
+            {notice && (
+                <Card className="bg-status-info/10 border-status-info/50">
+                    <CardContent className="pt-6">
+                        <p className="text-status-info">{notice}</p>
+                    </CardContent>
+                </Card>
+            )}
 
             {error && (
                 <Card className="bg-status-danger/10 border-status-danger/50">

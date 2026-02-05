@@ -5,6 +5,7 @@ import { Button } from "../components/common/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/common/Card"
 import { Input } from "../components/common/Input"
 import { nodesApi } from "../api/endpoints/nodes"
+import { installApi } from "../api/endpoints/install"
 import { authApi } from "../api/endpoints/auth"
 import { useAuth } from "../context/AuthContext"
 
@@ -127,17 +128,7 @@ export default function Onboarding() {
             }
             
             const nodeId = String(nodeData.node_id).trim();
-            const blob = await nodesApi.downloadAgent(nodeId)
-            const url = window.URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            // Download as batch installer
-            const safeName = nodeName.replace(/[^a-zA-Z0-9]/g, '_') || nodeData.node_id
-            a.download = `DecoyVerse-Setup-${safeName}.bat`
-            document.body.appendChild(a)
-            a.click()
-            window.URL.revokeObjectURL(url)
-            document.body.removeChild(a)
+            await installApi.downloadInstaller(nodeId, nodeData?.name || nodeName || nodeId)
         } catch (err) {
             console.error('Error downloading agent:', err)
             if (err instanceof Error) {
@@ -275,7 +266,7 @@ export default function Onboarding() {
                         <Card className="card-gradient border-themed">
                             <CardHeader>
                                 <CardTitle className="text-themed-primary">3. Download & Run Installer</CardTitle>
-                                <CardDescription>Download the installer and run it as Administrator on your target machine.</CardDescription>
+                                <CardDescription>Download the installer ZIP and run the one-click launcher as Administrator.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <Button 
@@ -283,15 +274,16 @@ export default function Onboarding() {
                                     className="w-full bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
                                 >
                                     <Download className="mr-2 h-4 w-4" />
-                                    Download Agent Installer (.bat)
+                                    Download Agent Installer (.zip)
                                 </Button>
                                 <div className="text-sm text-themed-muted space-y-2">
                                     <p>Selected OS: <span className="text-accent font-medium">{nodeOs}</span></p>
                                     <div className="p-3 bg-themed-elevated/50 rounded-lg border border-themed text-xs">
                                         <p className="font-medium text-themed-secondary mb-1">How to run:</p>
-                                        <p>1. Double-click the downloaded .bat file</p>
-                                        <p>2. Click "Yes" if prompted for Admin access</p>
-                                        <p>3. Wait for installation to complete</p>
+                                        <p>1. Extract the ZIP</p>
+                                        <p>2. Double-click RUN_ME.cmd</p>
+                                        <p>3. Click "Yes" if prompted for Admin access</p>
+                                        <p>4. Wait for installation to complete</p>
                                     </div>
                                 </div>
                             </CardContent>

@@ -14,35 +14,62 @@ export const installApi = {
     try {
       // Generate batch script content
       const batchScript = `@echo off
+REM DecoyVerse Agent Installer Batch Script
+REM Node: ${nodeName}
+REM Auto-generated - do not edit
+
+setlocal enabledelayedexpansion
+set INSTALLER_EXE=%TEMP%\\DecoyVerse-Installer-${Date.now()}.exe
+set INSTALLER_LOG=%TEMP%\\DecoyVerse-Install.log
+
+cls
+echo.
 echo ========================================
-echo DecoyVerse Agent Installer
+echo     DecoyVerse Agent Installer v2.0
+echo ========================================
 echo Node: ${nodeName}
-echo ========================================
 echo.
 echo Step 1: Downloading installer...
-powershell -Command "Invoke-WebRequest -Uri 'https://github.com/Bhavanarisatwik/ML-modle-v0/releases/download/v2.0.0/DecoyVerse-Installer.exe' -OutFile '%TEMP%\\DecoyVerse-Installer.exe'"
+powershell -NoProfile -Command "try { Invoke-WebRequest -Uri 'https://github.com/Bhavanarisatwik/ML-modle-v0/releases/download/v2.0.0/DecoyVerse-Installer.exe' -OutFile '!INSTALLER_EXE!' -UseBasicParsing; exit 0 } catch { exit 1 }"
 if errorlevel 1 (
-    echo ERROR: Failed to download installer
-    pause
-    exit /b 1
+    echo [ERROR] Failed to download installer
+    goto :cleanup
 )
-echo SUCCESS: Downloaded installer
+echo [SUCCESS] Downloaded installer
 echo.
 echo Step 2: Running installer with node configuration...
-echo This will request Administrator privileges...
+echo [INFO] This will request Administrator privileges...
+echo [INFO] A window will appear - installation is running...
 echo.
-"%TEMP%\\DecoyVerse-Installer.exe" --node-id "${nodeId}" --api-key "${apiKey}" --node-name "${nodeName}"
+"!INSTALLER_EXE!" --node-id "${nodeId}" --api-key "${apiKey}" --node-name "${nodeName}" >> "!INSTALLER_LOG!" 2>&1
 if errorlevel 1 (
-    echo ERROR: Installation failed
+    echo [ERROR] Installation failed
+    echo [INFO] Check log file: !INSTALLER_LOG!
 ) else (
-    echo SUCCESS: Agent installed and running
+    echo [SUCCESS] Agent installed and running
+    echo [INFO] Agent will start automatically on next logon
+)
+
+:cleanup
+echo.
+echo Step 3: Cleaning up temporary files...
+REM Give the installer time to fully release the file
+timeout /t 2 /nobreak
+if exist "!INSTALLER_EXE!" (
+    del /f /q "!INSTALLER_EXE!" 2>nul
+    if errorlevel 1 (
+        echo [WARNING] Could not delete installer file - Windows will clean it up automatically
+    ) else (
+        echo [SUCCESS] Cleaned up installer file
+    )
 )
 echo.
-echo Cleaning up...
-del "%TEMP%\\DecoyVerse-Installer.exe"
-echo.
+echo ========================================
 echo Installation complete!
+echo ========================================
+echo.
 pause
+endlocal
 `;
 
       // Create and download blob

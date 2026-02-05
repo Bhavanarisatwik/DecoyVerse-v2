@@ -312,7 +312,31 @@ export default function Onboarding() {
                     </>
                 )}
 
-                <div className="flex justify-end">
+                <div className="flex justify-between items-center gap-4">
+                    <Button
+                        variant="outline"
+                        className="border-themed hover:bg-themed-elevated rounded-xl"
+                        onClick={() => {
+                            // Skip onboarding and go directly to dashboard
+                            // This is for users who already have existing nodes
+                            setCompleting(true);
+                            
+                            setTimeout(async () => {
+                                try {
+                                    const response = await authApi.completeOnboarding();
+                                    if (response.success && response.data?.user) {
+                                        updateUser(response.data.user);
+                                    }
+                                } catch (error) {
+                                    console.error('Failed to complete onboarding:', error);
+                                    setCompleting(false);
+                                }
+                            }, 0);
+                        }}
+                        disabled={completing}
+                    >
+                        Skip to Dashboard
+                    </Button>
                     <Button
                         size="lg"
                         className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"

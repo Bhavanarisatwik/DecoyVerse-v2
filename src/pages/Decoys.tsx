@@ -29,6 +29,9 @@ export default function Decoys() {
     const [selectedNodeId, setSelectedNodeId] = useState<string>('all')
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [showCreateModal, setShowCreateModal] = useState(false)
+    const [createCount, setCreateCount] = useState(1)
+    const [creating, setCreating] = useState(false)
 
     useEffect(() => {
         const fetchNodes = async () => {
@@ -135,7 +138,7 @@ export default function Decoys() {
                             </option>
                         ))}
                     </select>
-                    <Button className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">
+                    <Button className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl" onClick={() => setShowCreateModal(true)}>
                         <Plus className="mr-2 h-4 w-4" />
                         Create New Decoy
                     </Button>
@@ -273,6 +276,89 @@ export default function Decoys() {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Create New Decoy Modal */}
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 rounded-2xl">
+                    <Card className="w-96 rounded-2xl border border-white/10 bg-gray-900">
+                        <CardHeader>
+                            <CardTitle className="text-themed-primary font-heading">Deploy New Honeytokens</CardTitle>
+                            <CardDescription>Select a node and specify how many honeytokens to create</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-themed-primary mb-2">
+                                    Target Node
+                                </label>
+                                <select
+                                    className="w-full h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
+                                    value={selectedNodeId === 'all' ? '' : selectedNodeId}
+                                    onChange={(e) => {
+                                        setSelectedNodeId(e.target.value || 'all')
+                                    }}
+                                >
+                                    <option value="">Select a node...</option>
+                                    {nodes.map((node) => (
+                                        <option key={node.id || node.node_id} value={node.id || node.node_id}>
+                                            {node.name || node.id || node.node_id}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-themed-primary mb-2">
+                                    Number of Honeytokens to Deploy
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="50"
+                                    value={createCount}
+                                    onChange={(e) => setCreateCount(parseInt(e.target.value) || 1)}
+                                    className="w-full h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
+                                />
+                                <p className="text-xs text-themed-muted mt-1">Create between 1 and 50 honeytokens</p>
+                            </div>
+
+                            <div className="flex gap-3 pt-4">
+                                <Button
+                                    className="flex-1 bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
+                                    disabled={!selectedNodeId || selectedNodeId === 'all' || creating}
+                                    onClick={async () => {
+                                        setCreating(true)
+                                        try {
+                                            // Call backend to deploy honeytokens on selected node
+                                            await decoysApi.deployHoneytokens(selectedNodeId, createCount)
+                                            // Refresh decoys list
+                                            const response = await decoysApi.getNodeDecoys(selectedNodeId)
+                                            const fileDecoys = response.data.filter(d => d.type !== 'honeytoken')
+                                            setDecoys(fileDecoys)
+                                            setShowCreateModal(false)
+                                            setCreateCount(1)
+                                        } catch (err) {
+                                            console.error('Error deploying honeytokens:', err)
+                                            setError('Failed to deploy honeytokens')
+                                        } finally {
+                                            setCreating(false)
+                                        }
+                                    }}
+                                >
+                                    {creating ? 'Deploying...' : 'Deploy'}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="flex-1 rounded-xl"
+                                    onClick={() => setShowCreateModal(false)}
+                                    disabled={creating}
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
         </div>
     )
 }

@@ -6,17 +6,19 @@ The DecoyVerse agent runs automatically in the background. Here are multiple way
 
 ### Method 1: Check Running Processes (Recommended)
 ```powershell
-Get-Process python -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "*DecoyVerse*" } | Select-Object Id, ProcessName, Path, StartTime
+Get-Process pythonw -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime, @{Name='Status';Expression={'Running in background'}}
 ```
 
 **Expected Output:**
 ```
-Id ProcessName Path                      StartTime
--- ----------- ----                      ---------
-1234 python    C:\DecoyVerse\agent.py    2/5/2026 10:30:15 AM
+Id ProcessName StartTime              Status
+-- ----------- ---------              ------
+35376 pythonw  2/5/2026 10:30:15 AM   Running in background
 ```
 
 If **no output** appears, the agent isn't running.
+
+**Note:** The agent runs using `pythonw.exe` (windowless Python) so it has **no visible console window** and runs completely hidden in the background.
 
 ### Method 2: Check Scheduled Task
 ```powershell
@@ -78,11 +80,13 @@ AtLogon     COMPUTERNAME\YourUsername
 Start-ScheduledTask -TaskName "DecoyVerseAgent"
 ```
 
-### Or run directly:
+### Or run directly in background (hidden):
 ```powershell
 cd C:\DecoyVerse
-python agent.py
+Start-Process -FilePath "pythonw.exe" -ArgumentList "agent.py" -WorkingDirectory "C:\DecoyVerse" -WindowStyle Hidden
 ```
+
+**Note:** Use `pythonw.exe` (not `python.exe`) to run without a visible console window.
 
 ---
 
@@ -305,17 +309,18 @@ Start-ScheduledTask -TaskName "DecoyVerseAgent"
 
 ### Check if agent is running:
 ```powershell
-Get-Process python | Where-Object { $_.Path -like "*DecoyVerse*" }
+Get-Process pythonw -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime
 ```
 
-### Start agent manually:
+### Start agent manually (hidden in background):
 ```powershell
-Start-ScheduledTask -TaskName "DecoyVerseAgent"
+cd C:\DecoyVerse
+Start-Process -FilePath "pythonw.exe" -ArgumentList "agent.py" -WorkingDirectory "C:\DecoyVerse" -WindowStyle Hidden
 ```
 
 ### Stop agent:
 ```powershell
-Stop-Process -Name python -Force
+Stop-Process -Name pythonw -Force
 ```
 
 ### View recent logs:
@@ -330,8 +335,8 @@ Get-ChildItem -Path "$env:USERPROFILE\Documents","$env:USERPROFILE\.aws","$env:U
 
 ### Restart agent:
 ```powershell
-Stop-Process -Name python -Force
-Start-ScheduledTask -TaskName "DecoyVerseAgent"
+Stop-Process -Name pythonw -Force -ErrorAction SilentlyContinue
+Start-Process -FilePath "pythonw.exe" -ArgumentList "agent.py" -WorkingDirectory "C:\DecoyVerse" -WindowStyle Hidden
 ```
 
 ---

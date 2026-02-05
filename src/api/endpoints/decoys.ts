@@ -81,4 +81,22 @@ export const decoysApi = {
             throw error;
         }
     },
+
+    /**
+     * Deploy new honeytokens on a node
+     */
+    async deployHoneytokens(nodeId: string, count: number): Promise<{ success: boolean; data: Decoy[] }> {
+        try {
+            const response = await apiClient.post(`/api/decoys/deploy`, {
+                node_id: nodeId,
+                count: count,
+            });
+            return {
+                success: true,
+                data: Array.isArray(response.data) ? response.data.map(normalizeDecoy) : [],
+            };
+        } catch (error) {
+            throw error;
+        }
+    },
 };

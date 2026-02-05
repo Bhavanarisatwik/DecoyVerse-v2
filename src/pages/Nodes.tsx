@@ -19,6 +19,7 @@ export default function Nodes() {
     const [showCreateModal, setShowCreateModal] = useState(false)
     const [newNodeName, setNewNodeName] = useState("")
     const [creatingNode, setCreatingNode] = useState(false)
+    const [deleteConfirm, setDeleteConfirm] = useState<{ nodeId: string; nodeName: string } | null>(null)
 
     // Fetch nodes data
     useEffect(() => {
@@ -92,10 +93,15 @@ export default function Nodes() {
         }
     }
 
-    const handleDeleteNode = (nodeId: string) => {
-        if (!window.confirm('Delete this node? This will request the agent to uninstall itself and remove it from the system.')) {
-            return
-        }
+    const handleDeleteNode = (nodeId: string, nodeName: string) => {
+        setDeleteConfirm({ nodeId, nodeName })
+    }
+
+    const confirmDelete = async () => {
+        if (!deleteConfirm) return
+        
+        const { nodeId } = deleteConfirm
+        setDeleteConfirm(null)
 
         // Optimistic UI update first to prevent INP violation
         setNodes(prev => prev.filter(n => n.id !== nodeId && n.node_id !== nodeId))
@@ -248,7 +254,7 @@ export default function Nodes() {
                                                     size="icon"
                                                     variant="ghost"
                                                     className="rounded-lg hover:bg-status-danger/10 hover:text-status-danger"
-                                                    onClick={() => handleDeleteNode(node.id || '')}
+                                                    onClick={() => handleDeleteNode(node.id || '', node.name)}
                                                     title="Delete node"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
@@ -290,6 +296,38 @@ export default function Nodes() {
                             disabled={creatingNode}
                         >
                             {creatingNode ? 'Creating...' : 'Create Node'}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={!!deleteConfirm}
+                onClose={() => setDeleteConfirm(null)}
+                title="Delete Node"
+                description="Are you sure you want to delete this node?"
+            >
+                <div className="space-y-4">
+                    <div className="p-4 bg-status-danger/10 border border-status-danger/20 rounded-lg">
+                        <p className="text-sm text-status-danger font-medium">Node: {deleteConfirm?.nodeName}</p>
+                        <p className="text-sm text-gray-400 mt-2">
+                            This will request the agent to uninstall itself and remove it from the system.
+                            The node will disappear once the agent completes the uninstall process.
+                        </p>
+                    </div>
+                    <div className="flex gap-3 justify-end">
+                        <Button
+                            variant="outline"
+                            onClick={() => setDeleteConfirm(null)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="danger"
+                            onClick={confirmDelete}
+                        >
+                            Delete Node
                         </Button>
                     </div>
                 </div>

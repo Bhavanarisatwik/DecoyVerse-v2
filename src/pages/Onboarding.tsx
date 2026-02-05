@@ -144,7 +144,8 @@ export default function Onboarding() {
         }
         try {
             const nodeId = String(nodeData.node_id).trim();
-            await installApi.downloadWindowsInstaller(nodeId, nodeData?.name || nodeName || nodeId)
+            const apiKey = nodeData.node_api_key || '';
+            await installApi.downloadWindowsInstaller(nodeId, nodeData?.name || nodeName || nodeId, apiKey)
         } catch (err) {
             console.error('Error downloading Windows installer:', err)
             if (err instanceof Error) {

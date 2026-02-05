@@ -103,9 +103,9 @@ export default function Nodes() {
         }
     }
 
-    const handleDownloadExe = async (nodeId: string, nodeName: string) => {
+    const handleDownloadExe = async (node: Node) => {
         try {
-            await installApi.downloadWindowsInstaller(nodeId, nodeName)
+            await installApi.downloadWindowsInstaller(node.node_id || node.id || '', node.name, node.node_api_key || '')
         } catch (err) {
             console.error('Error downloading Windows installer:', err)
             setError('Failed to download Windows installer')
@@ -273,7 +273,7 @@ export default function Nodes() {
                                                     size="icon"
                                                     variant="ghost"
                                                     className="rounded-lg hover:bg-themed-elevated"
-                                                    onClick={() => handleDownloadExe(node.id || '', node.name)}
+                                                    onClick={() => handleDownloadExe(node)}
                                                     title="Download Windows installer"
                                                 >
                                                     <Monitor className="h-4 w-4" />

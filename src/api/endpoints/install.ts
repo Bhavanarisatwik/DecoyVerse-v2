@@ -10,12 +10,8 @@ export const installApi = {
    * Download node-specific Windows installer
    * Creates a batch script that downloads EXE and runs it with node configuration
    */
-  async downloadWindowsInstaller(nodeId: string, nodeName: string): Promise<void> {
+  async downloadWindowsInstaller(nodeId: string, nodeName: string, apiKey: string): Promise<void> {
     try {
-      // Fetch node details to get API key
-      const nodeResponse = await apiClient.get(`/nodes/${nodeId}`);
-      const node = nodeResponse.data;
-      
       // Generate batch script content
       const batchScript = `@echo off
 echo ========================================
@@ -35,7 +31,7 @@ echo.
 echo Step 2: Running installer with node configuration...
 echo This will request Administrator privileges...
 echo.
-"%TEMP%\\DecoyVerse-Installer.exe" --node-id "${nodeId}" --api-key "${node.api_key || ''}" --node-name "${nodeName}"
+"%TEMP%\\DecoyVerse-Installer.exe" --node-id "${nodeId}" --api-key "${apiKey}" --node-name "${nodeName}"
 if errorlevel 1 (
     echo ERROR: Installation failed
 ) else (

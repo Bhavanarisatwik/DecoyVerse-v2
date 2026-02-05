@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Server, MoreVertical, Activity, Clock, Download, Trash2, Plus } from "lucide-react"
+import { Server, MoreVertical, Activity, Clock, Download, Trash2, Plus, Monitor } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
@@ -103,12 +103,12 @@ export default function Nodes() {
         }
     }
 
-    const handleDownloadExe = async () => {
+    const handleDownloadExe = async (nodeId: string, nodeName: string) => {
         try {
-            await installApi.downloadWindowsExe()
+            await installApi.downloadWindowsInstaller(nodeId, nodeName)
         } catch (err) {
-            console.error('Error downloading EXE installer:', err)
-            setError('Failed to download EXE installer')
+            console.error('Error downloading Windows installer:', err)
+            setError('Failed to download Windows installer')
         }
     }
 
@@ -161,16 +161,10 @@ export default function Nodes() {
                     <h1 className="text-3xl font-bold text-themed-primary font-heading">Nodes</h1>
                     <p className="text-themed-muted">Manage your deployed agents and devices.</p>
                 </div>
-                <div className="flex gap-3">
-                    <Button onClick={handleDownloadExe} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl">
-                        <Download className="mr-2 h-4 w-4" />
-                        Download Windows EXE
-                    </Button>
-                    <Button onClick={() => setShowCreateModal(true)} className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add New Node
-                    </Button>
-                </div>
+                <Button onClick={() => setShowCreateModal(true)} className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add New Node
+                </Button>
             </div>
 
             {notice && (
@@ -271,18 +265,18 @@ export default function Nodes() {
                                                     variant="ghost"
                                                     className="rounded-lg hover:bg-themed-elevated"
                                                     onClick={() => handleDownloadAgent(node.id || '', node.name)}
-                                                    title="Download agent config"
+                                                    title="Download ZIP installer"
                                                 >
                                                     <Download className="h-4 w-4" />
                                                 </Button>
                                                 <Button
-                                                    size="sm"
+                                                    size="icon"
                                                     variant="ghost"
-                                                    className="rounded-lg hover:bg-themed-elevated text-xs font-semibold"
-                                                    onClick={handleDownloadExe}
-                                                    title="Download Windows EXE installer"
+                                                    className="rounded-lg hover:bg-themed-elevated"
+                                                    onClick={() => handleDownloadExe(node.id || '', node.name)}
+                                                    title="Download Windows installer"
                                                 >
-                                                    EXE
+                                                    <Monitor className="h-4 w-4" />
                                                 </Button>
                                                 <Button
                                                     size="icon"

@@ -138,12 +138,17 @@ export default function Onboarding() {
     };
 
     const handleDownloadExe = async () => {
+        if (!nodeData?.node_id) {
+            alert('Please create a node first')
+            return
+        }
         try {
-            await installApi.downloadWindowsExe()
+            const nodeId = String(nodeData.node_id).trim();
+            await installApi.downloadWindowsInstaller(nodeId, nodeData?.name || nodeName || nodeId)
         } catch (err) {
-            console.error('Error downloading EXE installer:', err)
+            console.error('Error downloading Windows installer:', err)
             if (err instanceof Error) {
-                alert('Failed to download EXE installer: ' + err.message)
+                alert('Failed to download Windows installer: ' + err.message)
             }
         }
     };

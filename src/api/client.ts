@@ -7,7 +7,7 @@ const FASTAPI_API_URL = import.meta.env.VITE_FASTAPI_API_URL || 'http://localhos
 // Express backend (auth only)
 export const authClient: AxiosInstance = axios.create({
     baseURL: EXPRESS_API_URL,
-    timeout: 15000,  // 15 seconds
+    timeout: 60000,  // 60 seconds (Fixed for Render cold starts)
     headers: {
         'Content-Type': 'application/json',
     },

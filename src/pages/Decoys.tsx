@@ -126,7 +126,7 @@ export default function Decoys() {
                     <h1 className="text-3xl font-bold text-themed-primary font-heading">Decoys</h1>
                     <p className="text-themed-muted">Deploy and manage deception assets across your network.</p>
                 </div>
-                <div className="flex items-center gap-3 w-64">
+                <div className="flex items-center gap-3">
                     <Select
                         value={selectedNodeId}
                         onChange={(val) => setSelectedNodeId(val)}
@@ -134,6 +134,7 @@ export default function Decoys() {
                             { value: 'all', label: 'All Nodes' },
                             ...nodes.map(n => ({ value: n.id || n.node_id || '', label: n.name || n.id || n.node_id || '' }))
                         ]}
+                        className="w-48"
                     />
                     <Button
                         onClick={() => setShowCreateModal(true)}

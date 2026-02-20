@@ -123,11 +123,23 @@
 }
 
 @layer base {
+
+  html,
   body {
     background-color: var(--bg-primary);
     color: var(--text-secondary);
     @apply font-sans antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    /* Stop the window itself from spawning scrollbars, let Layout components handle it */
+  }
+
+  #root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   h1,
@@ -589,28 +601,33 @@
   }
 
   /* Custom Scrollbar Styles */
-  .scrollbar-thin {
+  .scrollbar-thin,
+  * {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
   }
 
-  .scrollbar-thin::-webkit-scrollbar {
+  .scrollbar-thin::-webkit-scrollbar,
+  *::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-track {
+  .scrollbar-thin::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-track {
     background: transparent;
     border-radius: 10px;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
+  .scrollbar-thin::-webkit-scrollbar-thumb,
+  *::-webkit-scrollbar-thumb {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover,
+  *::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, var(--accent-500) 0%, var(--accent-600) 100%);
     border-color: var(--accent-400);
   }

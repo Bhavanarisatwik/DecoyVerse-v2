@@ -1,4 +1,11 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
+import {
+    generateMockStats,
+    generateMockAlerts,
+    generateMockAttacks,
+    generateMockNodes,
+    generateMockDecoys,
+} from './mockData';
 
 // Backend URLs
 const EXPRESS_API_URL = import.meta.env.VITE_EXPRESS_API_URL || 'http://localhost:5000/api';
@@ -52,5 +59,55 @@ const addAuthInterceptors = (client: AxiosInstance) => {
 
 addAuthInterceptors(authClient);
 addAuthInterceptors(apiClient);
+
+// ----- DEMO MODE OVERRIDES -----
+const isDemoMode = () => localStorage.getItem('isDemo') === 'true';
+
+const originalGet = apiClient.get;
+apiClient.get = (async function (this: any, url: string, config?: any) {
+    if (isDemoMode()) {
+        if (url.includes('/api/stats') || url.includes('/nodes/stats')) {
+            return Promise.resolve({ data: generateMockStats(), status: 200, statusText: 'OK', headers: {} as any, config: config || {} as any });
+        }
+        if (url.includes('/api/alerts')) {
+            return Promise.resolve({ data: generateMockAlerts(), status: 200, statusText: 'OK', headers: {} as any, config: config || {} as any });
+        }
+        if (url.includes('/api/recent-attacks') || url.includes('/api/logs')) {
+            return Promise.resolve({ data: generateMockAttacks(), status: 200, statusText: 'OK', headers: {} as any, config: config || {} as any });
+        }
+        if (url === '/nodes') {
+            return Promise.resolve({ data: generateMockNodes(), status: 200, statusText: 'OK', headers: {} as any, config: config || {} as any });
+        }
+        if (url.includes('/decoys')) {
+            return Promise.resolve({ data: generateMockDecoys(), status: 200, statusText: 'OK', headers: {} as any, config: config || {} as any });
+        }
+        // Fallback for demo mode matching nothing
+        return Promise.resolve({ data: {}, status: 200, statusText: 'OK', headers: {} as any, config: config || {} as any });
+    }
+    return originalGet.apply(this, [url, config]);
+}) as any;
+
+const originalPost = apiClient.post;
+apiClient.post = (async function (this: any, url: string, data?: any, config?: any) {
+    if (isDemoMode()) {
+        if (url.includes('/nodes')) {
+            return Promise.resolve({ data: { ...data, node_id: 'mock-node-xxx', node_api_key: 'mock-key' }, status: 200, statusText: 'OK', headers: {} as any, config: config || {} as any });
+        }
+        if (url.includes('/decoys')) {
+            return Promise.resolve({ data: [], status: 200, statusText: 'OK', headers: {} as any, config: config || {} as any });
+        }
+        return Promise.resolve({ data: {}, status: 200, statusText: 'OK', headers: {} as any, config: config || {} as any });
+    }
+    return originalPost.apply(this, [url, data, config]);
+}) as any;
+
+const originalDelete = apiClient.delete;
+apiClient.delete = (async function (this: any, url: string, config?: any) {
+    if (isDemoMode()) {
+        return Promise.resolve({ data: { success: true }, status: 200, statusText: 'OK', headers: {} as any, config: config || {} as any });
+    }
+    return originalDelete.apply(this, [url, config]);
+}) as any;
+// ------------------------------
 
 export default apiClient;

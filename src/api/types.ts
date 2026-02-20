@@ -5,9 +5,10 @@ export interface User {
     email: string;
     role: 'admin' | 'user' | 'viewer';
     avatar?: string;
-        isOnboarded?: boolean;
+    isOnboarded?: boolean;
     createdAt?: string;
     lastLogin?: string;
+    notifications?: NotificationSettings;
 }
 
 // API Response types
@@ -38,4 +39,20 @@ export interface AuthResponse {
 export interface UpdatePasswordRequest {
     currentPassword: string;
     newPassword: string;
+}
+
+// Notification Settings
+export interface NotificationSettings {
+    slackWebhook?: string;
+    emailSmtpUser?: string;
+    emailSmtpPass?: string;
+    emailAlertTo?: string;
+    whatsappNumber?: string;
+}
+
+export interface UserProfileUpdateRequest {
+    id: string;
+    name?: string;
+    email?: string;
+    notifications?: NotificationSettings;
 }

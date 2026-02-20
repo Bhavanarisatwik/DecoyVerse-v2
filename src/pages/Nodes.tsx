@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Server, MoreVertical, Activity, Clock, Download, Trash2, Plus, Monitor } from "lucide-react"
+import { Server, Activity, Clock, Download, Trash2, Plus, Monitor } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
@@ -65,7 +65,7 @@ export default function Nodes() {
 
         try {
             setCreatingNode(true)
-            const response = await nodesApi.createNode(newNodeName, {
+            await nodesApi.createNode(newNodeName, {
                 os: osType,
                 initialDecoys: initialDecoys,
                 initialHoneytokens: initialHoneytokens

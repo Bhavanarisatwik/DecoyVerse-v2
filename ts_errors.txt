@@ -1,0 +1,20 @@
+﻿src/components/common/Select.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/Configuration.tsx(2,27): error TS6133: 'Bell' is declared but its value is never read.
+src/pages/Dashboard.tsx(317,57): error TS2367: This comparison appears to be unintentional because the types '"new" | "acknowledged"' and '"investigating"' have no overlap.
+src/pages/Dashboard.tsx(325,52): error TS2339: Property 'attack_type' does not exist on type 'Alert'.
+src/pages/Dashboard.tsx(330,59): error TS2339: Property 'risk_score' does not exist on type 'Alert'.
+src/pages/Dashboard.tsx(331,63): error TS2339: Property 'risk_score' does not exist on type 'Alert'.
+src/pages/Dashboard.tsx(335,62): error TS2339: Property 'risk_score' does not exist on type 'Alert'.
+src/pages/Dashboard.tsx(339,61): error TS2339: Property 'timestamp' does not exist on type 'Alert'.
+src/pages/Dashboard.tsx(369,52): error TS2339: Property 'attack_type' does not exist on type 'Alert'.
+src/pages/Dashboard.tsx(369,111): error TS2339: Property 'source_ip' does not exist on type 'Alert'.
+src/pages/Dashboard.tsx(390,17): error TS2322: Type 'import("C:/Users/satwi/Downloads/DecoyVerse-v2/src/api/endpoints/dashboard").Alert | null' is not assignable to type 'import("C:/Users/satwi/Downloads/DecoyVerse-v2/src/components/common/ThreatModal").Alert | null'.
+  Type 'Alert' is missing the following properties from type 'Alert': _id, alert_id, timestamp, source_ip, and 6 more.
+src/pages/Decoys.tsx(2,37): error TS6133: 'Settings2' is declared but its value is never read.
+src/pages/Decoys.tsx(11,7): error TS6133: 'formatTime' is declared but its value is never read.
+src/pages/Decoys.tsx(95,11): error TS6133: 'autoDeployedCount' is declared but its value is never read.
+src/pages/Honeytokens.tsx(2,59): error TS6133: 'Database' is declared but its value is never read.
+src/pages/Honeytokens.tsx(11,7): error TS6133: 'formatTime' is declared but its value is never read.
+src/pages/Honeytokens.tsx(69,11): error TS6133: 'autoDeployedCount' is declared but its value is never read.
+src/pages/Nodes.tsx(2,18): error TS6133: 'MoreVertical' is declared but its value is never read.
+src/pages/Nodes.tsx(68,19): error TS6133: 'response' is declared but its value is never read.

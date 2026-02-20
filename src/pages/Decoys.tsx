@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Ghost, Plus, Play, Square, Settings2, Trash2, AlertCircle, MapPin, Zap } from "lucide-react"
+import { Ghost, Plus, Play, Square, Trash2, AlertCircle, MapPin, Zap } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
@@ -8,20 +8,6 @@ import { Breadcrumb } from "../components/common/Breadcrumb"
 import { decoysApi, type Decoy } from "../api/endpoints/decoys"
 import { nodesApi, type Node } from "../api/endpoints/nodes"
 
-const formatTime = (dateString?: string) => {
-    if (!dateString) return 'Never';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 1) return 'now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d ago`;
-};
 
 export default function Decoys() {
     const [decoys, setDecoys] = useState<Decoy[]>([])
@@ -92,7 +78,6 @@ export default function Decoys() {
 
     const activeCount = decoys.filter(d => d.status === 'active').length
     const inactiveCount = decoys.filter(d => d.status === 'inactive').length
-    const autoDeployedCount = decoys.filter(d => d.auto_deployed).length
 
     // Create a map of node_id to node name
     const nodeNameMap = nodes.reduce((map, node) => {

@@ -1,11 +1,13 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
-import { ShieldAlert, Server, Ghost, Activity, ArrowUpRight, ArrowDownRight, AlertCircle } from "lucide-react"
+import { ShieldAlert, Server, Activity, ArrowDownRight, AlertCircle, X, AlertTriangle } from "lucide-react"
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Breadcrumb } from "../components/common/Breadcrumb"
 import { Badge } from "../components/common/Badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
 import { dashboardApi, type Alert, type DashboardStats, type Attack } from "../api/endpoints/dashboard"
+import { ThreatModal } from "../components/common/ThreatModal"
 
 export default function Dashboard() {
     const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -13,6 +15,11 @@ export default function Dashboard() {
     const [attacks, setAttacks] = useState<Attack[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+
+    // Modal & Toast State
+    const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null)
+    const [newAlertToast, setNewAlertToast] = useState<Alert | null>(null)
+    const lastSeenAlertId = useRef<string | null>(null)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -23,10 +30,29 @@ export default function Dashboard() {
                     dashboardApi.getAlerts(10),
                     dashboardApi.getRecentAttacks(20),
                 ])
-                
+
                 setStats(statsResponse.data)
-                setAlerts(alertsResponse.data)
+
+                const fetchedAlerts = alertsResponse.data
+                setAlerts(fetchedAlerts)
                 setAttacks(attacksResponse.data)
+
+                // Check for new alerts for toast notification
+                if (fetchedAlerts.length > 0) {
+                    const latestAlert = fetchedAlerts[0]
+
+                    if (lastSeenAlertId.current === null) {
+                        // First load, just record the latest ID
+                        lastSeenAlertId.current = latestAlert.id
+                    } else if (lastSeenAlertId.current !== latestAlert.id) {
+                        // We have a newly detected alert!
+                        lastSeenAlertId.current = latestAlert.id
+                        setNewAlertToast(latestAlert)
+
+                        // Auto-hide toast after 10 seconds
+                        setTimeout(() => setNewAlertToast(null), 10000)
+                    }
+                }
             } catch (err) {
                 console.error('Error fetching dashboard data:', err)
                 setError('Failed to load dashboard data')
@@ -54,22 +80,22 @@ export default function Dashboard() {
                 { name: 'Sun', attacks: 0, blocked: 0 },
             ]
         }
-        
+
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
         const dayCounts: Record<string, { attacks: number; blocked: number }> = {}
-        
+
         days.forEach(day => { dayCounts[day] = { attacks: 0, blocked: 0 } })
-        
+
         attacks.forEach(attack => {
             const date = new Date(attack.timestamp)
             const day = days[date.getDay()]
             dayCounts[day].attacks++
             if (attack.risk_score < 5) dayCounts[day].blocked++
         })
-        
+
         const today = new Date().getDay()
         const orderedDays = [...days.slice(today + 1), ...days.slice(0, today + 1)]
-        
+
         return orderedDays.map(day => ({
             name: day,
             attacks: dayCounts[day].attacks,
@@ -83,10 +109,10 @@ export default function Dashboard() {
         if (!attacks.length) {
             return hours.map(time => ({ time, value: 0 }))
         }
-        
+
         const hourCounts: Record<string, number> = {}
         hours.forEach(h => { hourCounts[h] = 0 })
-        
+
         attacks.forEach(attack => {
             const hour = new Date(attack.timestamp).getHours()
             if (hour < 4) hourCounts['00:00']++
@@ -96,7 +122,7 @@ export default function Dashboard() {
             else if (hour < 20) hourCounts['16:00']++
             else hourCounts['20:00']++
         })
-        
+
         return hours.map(time => ({ time, value: hourCounts[time] }))
     }, [attacks])
 
@@ -267,30 +293,115 @@ export default function Dashboard() {
                     ) : alerts.length === 0 ? (
                         <div className="text-themed-muted text-sm">No alerts yet - system is secure</div>
                     ) : (
-                        <div className="space-y-3">
-                            {alerts.slice(0, 5).map((alert) => {
-                                const severityColor = alert.severity === 'critical' ? 'bg-status-danger' :
-                                    alert.severity === 'high' ? 'bg-status-warning' :
-                                        alert.severity === 'medium' ? 'bg-status-warning' : 'bg-status-info'
-                                return (
-                                    <div key={alert.id} className="flex items-center justify-between p-4 rounded-xl bg-themed-elevated/50 border border-themed hover:border-themed-secondary transition-all duration-200">
-                                        <div className="flex items-center gap-4">
-                                            <div className={`h-2 w-2 rounded-full ${severityColor}`} />
-                                            <div>
-                                                <p className="font-medium text-themed-primary">{alert.message}</p>
-                                                <p className="text-xs text-themed-muted">{alert.alert_type}</p>
-                                            </div>
-                                        </div>
-                                        <span className="text-xs text-themed-dimmed">
-                                            {new Date(alert.created_at).toLocaleString()}
-                                        </span>
-                                    </div>
-                                )
-                            })}
-                        </div>
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="border-white/10 hover:bg-transparent">
+                                    <TableHead className="text-themed-muted">Status</TableHead>
+                                    <TableHead className="text-themed-muted">Attack Type</TableHead>
+                                    <TableHead className="text-themed-muted">Severity</TableHead>
+                                    <TableHead className="text-themed-muted text-right">Time</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {alerts.map((alert) => (
+                                    <TableRow
+                                        key={alert.id}
+                                        className="cursor-pointer hover:bg-white/5 transition-colors border-white/10"
+                                        onClick={() => setSelectedAlert(alert)}
+                                    >
+                                        <TableCell>
+                                            <Badge
+                                                variant="outline"
+                                                className={
+                                                    alert.status === 'resolved' ? 'border-status-success text-status-success' :
+                                                        alert.status === 'acknowledged' ? 'border-status-warning text-status-warning' :
+                                                            'border-status-danger text-status-danger'
+                                                }
+                                            >
+                                                {alert.status}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="font-medium text-themed-primary capitalize">
+                                            {alert.alert_type.replace('_', ' ')}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge
+                                                className={
+                                                    alert.severity === 'critical' ? 'bg-status-danger/20 text-status-danger hover:bg-status-danger/30' :
+                                                        (alert.severity === 'high' || alert.severity === 'medium') ? 'bg-status-warning/20 text-status-warning hover:bg-status-warning/30' :
+                                                            'bg-status-info/20 text-status-info hover:bg-status-info/30'
+                                                }
+                                            >
+                                                Severity: {alert.severity}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right text-themed-muted">
+                                            {new Date(alert.created_at).toLocaleTimeString()}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     )}
                 </CardContent>
             </Card>
+
+            {/* Custom Floating Toast Warning for New Alerts */}
+            <AnimatePresence>
+                {newAlertToast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                        className="fixed bottom-6 right-6 z-50 w-full max-w-sm rounded-xl border border-status-danger bg-gradient-to-r from-gray-900 to-black p-4 shadow-2xl shadow-status-danger/20 cursor-pointer"
+                        onClick={() => {
+                            setSelectedAlert(newAlertToast)
+                            setNewAlertToast(null)
+                        }}
+                    >
+                        <div className="flex items-start gap-4">
+                            <div className="rounded-full bg-status-danger/20 p-2 text-status-danger flex-shrink-0 animate-pulse">
+                                <AlertTriangle className="h-6 w-6" />
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="text-base font-bold text-white mb-1">Critical Threat Detected</h4>
+                                <p className="text-sm text-gray-400 leading-tight">
+                                    {newAlertToast.alert_type.replace('_', ' ')} - {newAlertToast.message}
+                                </p>
+                            </div>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    setNewAlertToast(null)
+                                }}
+                                className="text-gray-500 hover:text-white"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Detailed Threat Modal */}
+            <ThreatModal
+                isOpen={!!selectedAlert}
+                onClose={() => setSelectedAlert(null)}
+                alert={selectedAlert ? {
+                    _id: selectedAlert.id,
+                    alert_id: selectedAlert.id,
+                    timestamp: selectedAlert.created_at,
+                    source_ip: "Unknown",
+                    service: "Unknown",
+                    attack_type: selectedAlert.alert_type,
+                    risk_score: selectedAlert.severity === 'critical' ? 9 : selectedAlert.severity === 'high' ? 7 : selectedAlert.severity === 'medium' ? 5 : 2,
+                    confidence: 0.9,
+                    activity: selectedAlert.message,
+                    payload: "",
+                    status: selectedAlert.status,
+                    node_id: selectedAlert.node_id
+                } : null}
+            />
         </div>
     )
 }

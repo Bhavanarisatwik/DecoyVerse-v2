@@ -6,10 +6,11 @@ export interface InputProps
     label?: string;
     error?: string;
     icon?: React.ReactNode;
+    helpText?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-    ({ className, type, label, error, icon, ...props }, ref) => {
+    ({ className, type, label, error, icon, helpText, ...props }, ref) => {
         return (
             <div className="w-full space-y-1">
                 {label && (
@@ -35,8 +36,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         {...props}
                     />
                 </div>
+                {helpText && !error && (
+                    <p className="text-xs text-themed-muted mt-1">{helpText}</p>
+                )}
                 {error && (
-                    <p className="text-xs text-status-danger">{error}</p>
+                    <p className="text-xs text-status-danger mt-1">{error}</p>
                 )}
             </div>
         )

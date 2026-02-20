@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { FileKey, Download, Plus, MoreVertical, FileText, Database, Key, AlertCircle, MapPin, Zap } from "lucide-react"
+import { FileKey, Download, Plus, MoreVertical, FileText, Key, AlertCircle, MapPin, Zap } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
@@ -8,20 +8,6 @@ import { Breadcrumb } from "../components/common/Breadcrumb"
 import { decoysApi, type Decoy } from "../api/endpoints/decoys"
 import { nodesApi, type Node } from "../api/endpoints/nodes"
 
-const formatTime = (dateString?: string) => {
-    if (!dateString) return 'Never';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    
-    if (diffMins < 1) return 'now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d ago`;
-};
 
 export default function Honeytokens() {
     const [honeytokens, setHoneytokens] = useState<Decoy[]>([])
@@ -66,7 +52,6 @@ export default function Honeytokens() {
 
     const activeCount = honeytokens.filter(t => t.status === 'active').length
     const triggeredCount = honeytokens.reduce((sum, t) => sum + t.triggers, 0)
-    const autoDeployedCount = honeytokens.filter(t => t.auto_deployed).length
 
     // Create a map of node_id to node name
     const nodeNameMap = nodes.reduce((map, node) => {

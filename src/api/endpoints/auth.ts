@@ -1,5 +1,5 @@
 import { authClient } from '../client';
-import type { ApiResponse, AuthResponse, LoginRequest, SignupRequest, User, UpdatePasswordRequest } from '../types';
+import type { ApiResponse, AuthResponse, LoginRequest, SignupRequest, User, UpdatePasswordRequest, UserProfileUpdateRequest } from '../types';
 
 export const authApi = {
     // Login
@@ -35,6 +35,13 @@ export const authApi = {
     // Complete onboarding
     completeOnboarding: async (): Promise<ApiResponse<{ user: User }>> => {
         const response = await authClient.put<ApiResponse<{ user: User }>>('/auth/complete-onboarding');
+        return response.data;
+    },
+
+    // Update profile (including notification settings)
+    updateProfile: async (data: UserProfileUpdateRequest): Promise<ApiResponse<User>> => {
+        // Create an authenticated client instance passing the auth token explicitly if needed, but interceptor handles it
+        const response = await authClient.put<ApiResponse<User>>('/auth/profile', data);
         return response.data;
     },
 };

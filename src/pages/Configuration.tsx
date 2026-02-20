@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Key, CreditCard, Bell, Plus, Trash2 } from "lucide-react"
+import { Key, CreditCard, Plus, Trash2 } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/common/Tabs"
@@ -28,7 +28,7 @@ export default function Configuration() {
     return (
         <div className="space-y-6">
             <Breadcrumb />
-            
+
             <div>
                 <h1 className="text-3xl font-bold text-themed-primary font-heading">Configuration</h1>
                 <p className="text-themed-muted">Manage your API keys, billing, and notification preferences.</p>
@@ -53,8 +53,8 @@ export default function Configuration() {
                             ) : nodes.length === 0 ? (
                                 <div className="text-center py-8">
                                     <p className="text-themed-muted mb-4">No API keys yet. Create a node to get started.</p>
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         className="border-dashed border-white/10 hover:border-accent hover:text-accent rounded-xl"
                                         onClick={() => window.location.href = '/nodes'}
                                     >
@@ -85,8 +85,8 @@ export default function Configuration() {
                                             </Button>
                                         </div>
                                     ))}
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         className="w-full border-dashed border-white/10 hover:border-accent hover:text-accent rounded-xl"
                                         onClick={() => window.location.href = '/nodes'}
                                     >

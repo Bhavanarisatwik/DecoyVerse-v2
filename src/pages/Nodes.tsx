@@ -32,9 +32,9 @@ export default function Nodes() {
                 const [nodesResponse] = await Promise.all([
                     nodesApi.listNodes(),
                 ])
-                
+
                 setNodes(nodesResponse.data)
-                
+
                 // Calculate stats
                 const online = nodesResponse.data.filter(n => n.status === 'online').length
                 const total = nodesResponse.data.length
@@ -70,16 +70,16 @@ export default function Nodes() {
                 initialDecoys: initialDecoys,
                 initialHoneytokens: initialHoneytokens
             })
-            
+
             // Refresh nodes list
             const nodesResponse = await nodesApi.listNodes()
             setNodes(nodesResponse.data)
-            
+
             // Update stats
             const online = nodesResponse.data.filter(n => n.status === 'online').length
             const total = nodesResponse.data.length
             setStats({ total, online, offline: total - online })
-            
+
             setShowCreateModal(false)
             setNewNodeName("")
             setOsType('windows')
@@ -105,7 +105,13 @@ export default function Nodes() {
 
     const handleDownloadExe = async (node: Node) => {
         try {
-            await installApi.downloadWindowsInstaller(node.node_id || node.id || '', node.name, node.node_api_key || '')
+            await installApi.downloadWindowsInstaller(
+                node.node_id || node.id || '',
+                node.name,
+                node.node_api_key || '',
+                node.deployment_config?.initial_decoys,
+                node.deployment_config?.initial_honeytokens
+            )
         } catch (err) {
             console.error('Error downloading Windows installer:', err)
             setError('Failed to download Windows installer')
@@ -118,7 +124,7 @@ export default function Nodes() {
 
     const confirmDelete = async () => {
         if (!deleteConfirm) return
-        
+
         const { nodeId } = deleteConfirm
         setDeleteConfirm(null)
 
@@ -314,7 +320,7 @@ export default function Nodes() {
                             onKeyPress={(e) => e.key === 'Enter' && handleCreateNode()}
                         />
                     </div>
-                    
+
                     <div>
                         <label className="block text-sm font-medium text-themed-muted mb-2">Operating System</label>
                         <select

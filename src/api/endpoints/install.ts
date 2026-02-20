@@ -10,7 +10,7 @@ export const installApi = {
    * Download node-specific Windows installer
    * Creates a batch script that downloads EXE and runs it with node configuration
    */
-  async downloadWindowsInstaller(nodeId: string, nodeName: string, apiKey: string): Promise<void> {
+  async downloadWindowsInstaller(nodeId: string, nodeName: string, apiKey: string, initialDecoys: number = 3, initialHoneytokens: number = 5): Promise<void> {
     try {
       // Generate batch script content
       const batchScript = `@echo off
@@ -41,7 +41,7 @@ echo Step 2: Running installer with node configuration...
 echo [INFO] This will request Administrator privileges...
 echo [INFO] A window will appear - installation is running...
 echo.
-"!INSTALLER_EXE!" --node-id "${nodeId}" --api-key "${apiKey}" --node-name "${nodeName}" >> "!INSTALLER_LOG!" 2>&1
+"!INSTALLER_EXE!" --node-id "${nodeId}" --api-key "${apiKey}" --node-name "${nodeName}" --initial-decoys ${initialDecoys} --initial-honeytokens ${initialHoneytokens} >> "!INSTALLER_LOG!" 2>&1
 if errorlevel 1 (
     echo [ERROR] Installation failed
     echo [INFO] Check log file: !INSTALLER_LOG!
@@ -110,17 +110,17 @@ endlocal
   async downloadInstaller(nodeId: string, nodeName: string): Promise<void> {
     try {
       const blob = await this.generateInstaller(nodeId);
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `DecoyVerse-Agent-${nodeName.replace(/\s+/g, '-')}.zip`;
-      
+
       // Trigger download
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);

@@ -13,6 +13,11 @@ export interface Node {
     node_api_key?: string;
     user_id?: string;
     created_at?: string;
+    deployment_config?: {
+        initial_decoys: number;
+        initial_honeytokens: number;
+        deploy_path?: string | null;
+    };
 }
 
 const normalizeNode = (node: any): Node => ({
@@ -23,11 +28,12 @@ const normalizeNode = (node: any): Node => ({
     ip: node.ip_address || node.ip,
     os: node.os_type || node.os,
     version: node.version,
-    decoys: node.decoys,
-    lastSeen: node.last_seen || node.lastSeen,
-    node_api_key: node.node_api_key,
+    decoys: node.decoys || node.decoy_count || 0,
+    lastSeen: node.lastSeen || node.last_seen || 'Never',
+    node_api_key: node.node_api_key || node.api_key || '',
     user_id: node.user_id,
     created_at: node.created_at,
+    deployment_config: node.deployment_config,
 });
 
 export interface CreateNodeRequest {
@@ -72,7 +78,7 @@ export const nodesApi = {
      */
     async createNode(name: string, config?: { os?: string; initialDecoys?: number; initialHoneytokens?: number }): Promise<{ success: boolean; data: CreateNodeResponse }> {
         try {
-            const response = await apiClient.post('/nodes', { 
+            const response = await apiClient.post('/nodes', {
                 name,
                 os_type: config?.os || 'windows',
                 deployment_config: {
@@ -157,7 +163,7 @@ export const nodesApi = {
             console.log('nodesApi.downloadAgent - Full URL:', apiClient.defaults.baseURL + url);
             console.log('nodesApi.downloadAgent - nodeId:', nodeId);
             console.log('nodesApi.downloadAgent - Endpoint:', url);
-            
+
             const response = await apiClient.get(url, {
                 responseType: 'blob',
             });

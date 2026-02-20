@@ -14,7 +14,7 @@ const formatTime = (dateString?: string) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'now';
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
@@ -249,18 +249,18 @@ export default function Decoys() {
                                         <TableCell className="text-themed-secondary">{decoy.triggers}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     title="Toggle status"
                                                     onClick={() => handleToggleStatus(decoy.id, decoy.status)}
                                                     className="rounded-lg hover:bg-themed-elevated"
                                                 >
                                                     {decoy.status === 'active' ? <Play className="h-4 w-4" /> : <Square className="h-4 w-4" />}
                                                 </Button>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     title="Delete"
                                                     onClick={() => handleDeleteDecoy(decoy.id)}
                                                     className="rounded-lg hover:bg-status-danger/10"
@@ -282,8 +282,8 @@ export default function Decoys() {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 rounded-2xl">
                     <Card className="w-96 rounded-2xl border border-white/10 bg-gray-900">
                         <CardHeader>
-                            <CardTitle className="text-themed-primary font-heading">Deploy New Honeytokens</CardTitle>
-                            <CardDescription>Select a node and specify how many honeytokens to create</CardDescription>
+                            <CardTitle className="text-themed-primary font-heading">Deploy New Decoys</CardTitle>
+                            <CardDescription>Select a node and specify how many decoys to create</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
@@ -308,7 +308,7 @@ export default function Decoys() {
 
                             <div>
                                 <label className="block text-sm font-medium text-themed-primary mb-2">
-                                    Number of Honeytokens to Deploy
+                                    Number of Decoys to Deploy
                                 </label>
                                 <input
                                     type="number"
@@ -318,7 +318,7 @@ export default function Decoys() {
                                     onChange={(e) => setCreateCount(parseInt(e.target.value) || 1)}
                                     className="w-full h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
                                 />
-                                <p className="text-xs text-themed-muted mt-1">Create between 1 and 50 honeytokens</p>
+                                <p className="text-xs text-themed-muted mt-1">Create between 1 and 50 decoys</p>
                             </div>
 
                             <div className="flex gap-3 pt-4">
@@ -328,7 +328,7 @@ export default function Decoys() {
                                     onClick={async () => {
                                         setCreating(true)
                                         try {
-                                            // Call backend to deploy honeytokens on selected node
+                                            // Call backend to deploy decoys on selected node
                                             await decoysApi.deployHoneytokens(selectedNodeId, createCount)
                                             // Refresh decoys list
                                             const response = await decoysApi.getNodeDecoys(selectedNodeId)
@@ -337,8 +337,8 @@ export default function Decoys() {
                                             setShowCreateModal(false)
                                             setCreateCount(1)
                                         } catch (err) {
-                                            console.error('Error deploying honeytokens:', err)
-                                            setError('Failed to deploy honeytokens')
+                                            console.error('Error deploying decoys:', err)
+                                            setError('Failed to deploy decoys - endpoint may not be implemented')
                                         } finally {
                                             setCreating(false)
                                         }

@@ -17,13 +17,13 @@ export default function Onboarding() {
     const [loading, setLoading] = useState(true)
     const [agentConnected, setAgentConnected] = useState(false)
     const [completing, setCompleting] = useState(false)
-    
+
     // Node setup form
     const [nodeName, setNodeName] = useState('')
     const [nodeOs, setNodeOs] = useState('windows')
     const [nodeCreated, setNodeCreated] = useState(false)
     const [creatingNode, setCreatingNode] = useState(false)
-    
+
     // Initial deployment config
     const [initialDecoys, setInitialDecoys] = useState(3)
     const [initialHoneytokens, setInitialHoneytokens] = useState(2)
@@ -65,7 +65,7 @@ export default function Onboarding() {
         if (!nodeName.trim()) {
             return
         }
-        
+
         try {
             setCreatingNode(true)
             const createResponse = await nodesApi.createNode(nodeName.trim(), {
@@ -97,7 +97,7 @@ export default function Onboarding() {
         const pollInterval = setInterval(async () => {
             try {
                 const response = await nodesApi.listNodes();
-                const node = response.data?.find((n: any) => 
+                const node = response.data?.find((n: any) =>
                     n.node_id === nodeData.node_id || n.id === nodeData.node_id
                 );
                 if (node && (node.status === 'active' || node.status === 'online')) {
@@ -126,7 +126,7 @@ export default function Onboarding() {
                 console.error('No node ID available');
                 return;
             }
-            
+
             const nodeId = String(nodeData.node_id).trim();
             await installApi.downloadInstaller(nodeId, nodeData?.name || nodeName || nodeId)
         } catch (err) {
@@ -145,7 +145,9 @@ export default function Onboarding() {
         try {
             const nodeId = String(nodeData.node_id).trim();
             const apiKey = nodeData.node_api_key || '';
-            await installApi.downloadWindowsInstaller(nodeId, nodeData?.name || nodeName || nodeId, apiKey)
+            const decoys = nodeData?.initialDecoys || nodeData?.deployment_config?.initial_decoys || 3;
+            const honeytokens = nodeData?.initialHoneytokens || nodeData?.deployment_config?.initial_honeytokens || 5;
+            await installApi.downloadWindowsInstaller(nodeId, nodeData?.name || nodeName || nodeId, apiKey, decoys, honeytokens)
         } catch (err) {
             console.error('Error downloading Windows installer:', err)
             if (err instanceof Error) {
@@ -185,12 +187,12 @@ export default function Onboarding() {
                         {!nodeCreated ? (
                             <div className="space-y-4">
                                 <div className="flex gap-2">
-                                    <Input 
-                                        placeholder="Enter node name (e.g., Production-DB-01)" 
+                                    <Input
+                                        placeholder="Enter node name (e.g., Production-DB-01)"
                                         value={nodeName}
                                         onChange={(e) => setNodeName(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleCreateNode()}
-                                        className="font-medium text-themed-secondary bg-themed-elevated rounded-xl" 
+                                        className="font-medium text-themed-secondary bg-themed-elevated rounded-xl"
                                     />
                                     <select
                                         className="h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
@@ -203,7 +205,7 @@ export default function Onboarding() {
                                         <option value="macos">macOS</option>
                                     </select>
                                 </div>
-                                
+
                                 <div className="p-4 bg-themed-elevated/50 rounded-xl border border-themed space-y-3">
                                     <p className="text-sm font-medium text-themed-primary">Initial Deployment Configuration</p>
                                     <p className="text-xs text-themed-muted">Choose how many decoys and honeytokens to deploy automatically when the agent starts.</p>
@@ -238,8 +240,8 @@ export default function Onboarding() {
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <Button 
+
+                                <Button
                                     onClick={handleCreateNode}
                                     disabled={!nodeName.trim() || creatingNode}
                                     className="w-full bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
@@ -286,7 +288,7 @@ export default function Onboarding() {
                                 <CardDescription>Download the installer ZIP and run the one-click launcher as Administrator.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <Button 
+                                <Button
                                     onClick={handleDownloadAgent}
                                     className="w-full bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
                                 >
@@ -336,7 +338,7 @@ export default function Onboarding() {
                             // Skip onboarding and go directly to dashboard
                             // This is for users who already have existing nodes
                             setCompleting(true);
-                            
+
                             setTimeout(async () => {
                                 try {
                                     const response = await authApi.completeOnboarding();
@@ -359,7 +361,7 @@ export default function Onboarding() {
                         onClick={() => {
                             // Set loading state immediately to avoid INP violation
                             setCompleting(true);
-                            
+
                             // Defer async work to next task
                             setTimeout(async () => {
                                 try {

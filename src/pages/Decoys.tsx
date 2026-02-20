@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react"
-import { Ghost, Plus, Play, Square, Trash2, AlertCircle, MapPin, Zap } from "lucide-react"
+import { Ghost, Plus, Play, Square, Trash2, AlertCircle, MapPin, Zap, Copy, Check } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
 import { Badge } from "../components/common/Badge"
 import { Breadcrumb } from "../components/common/Breadcrumb"
+import { Select } from "../components/common/Select"
+import { Modal } from "../components/common/Modal"
+import { Input } from "../components/common/Input"
 import { decoysApi, type Decoy } from "../api/endpoints/decoys"
 import { nodesApi, type Node } from "../api/endpoints/nodes"
 
@@ -17,7 +20,9 @@ export default function Decoys() {
     const [error, setError] = useState<string | null>(null)
     const [showCreateModal, setShowCreateModal] = useState(false)
     const [createCount, setCreateCount] = useState(1)
+    const [createNodeId, setCreateNodeId] = useState<string>('')
     const [creating, setCreating] = useState(false)
+    const [copiedPath, setCopiedPath] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchNodes = async () => {
@@ -69,12 +74,23 @@ export default function Decoys() {
             return
         }
         try {
+            await decoysApi.deleteDecoy?.(decoyId) || Promise.resolve(); // Assuming this or similar endpoint later
             setDecoys(decoys.filter(d => d.id !== decoyId))
         } catch (err) {
             console.error('Error deleting decoy:', err)
             setError('Failed to delete decoy')
         }
     }
+
+    const copyToClipboard = async (text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedPath(text);
+            setTimeout(() => setCopiedPath(null), 2000);
+        } catch (err) {
+            console.error('Failed to copy text:', err);
+        }
+    };
 
     const activeCount = decoys.filter(d => d.status === 'active').length
     const inactiveCount = decoys.filter(d => d.status === 'inactive').length
@@ -110,20 +126,19 @@ export default function Decoys() {
                     <h1 className="text-3xl font-bold text-themed-primary font-heading">Decoys</h1>
                     <p className="text-themed-muted">Deploy and manage deception assets across your network.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <select
-                        className="h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
+                <div className="flex items-center gap-3 w-64">
+                    <Select
                         value={selectedNodeId}
-                        onChange={(e) => setSelectedNodeId(e.target.value)}
+                        onChange={(val) => setSelectedNodeId(val)}
+                        options={[
+                            { value: 'all', label: 'All Nodes' },
+                            ...nodes.map(n => ({ value: n.id || n.node_id || '', label: n.name || n.id || n.node_id || '' }))
+                        ]}
+                    />
+                    <Button
+                        onClick={() => setShowCreateModal(true)}
+                        className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl whitespace-nowrap"
                     >
-                        <option value="all">All Nodes</option>
-                        {nodes.map((node) => (
-                            <option key={node.id || node.node_id} value={node.id || node.node_id}>
-                                {node.name || node.id || node.node_id}
-                            </option>
-                        ))}
-                    </select>
-                    <Button className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl" onClick={() => setShowCreateModal(true)}>
                         <Plus className="mr-2 h-4 w-4" />
                         Create New Decoy
                     </Button>
@@ -216,11 +231,24 @@ export default function Decoys() {
                                         </TableCell>
                                         <TableCell>
                                             {decoy.file_path || decoy.deploy_location ? (
-                                                <div className="flex items-center gap-1 text-xs text-themed-muted font-mono max-w-[200px]">
-                                                    <MapPin className="h-3 w-3 shrink-0 text-status-info" />
-                                                    <span className="truncate" title={decoy.file_path || decoy.deploy_location}>
-                                                        {decoy.file_path || decoy.deploy_location}
-                                                    </span>
+                                                <div className="flex items-center gap-2 group">
+                                                    <div className="flex items-center gap-1 text-xs text-themed-muted font-mono max-w-[200px]">
+                                                        <MapPin className="h-3 w-3 shrink-0 text-status-info" />
+                                                        <span className="truncate" title={decoy.file_path || decoy.deploy_location}>
+                                                            {decoy.file_path || decoy.deploy_location}
+                                                        </span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => copyToClipboard(decoy.file_path || decoy.deploy_location || '')}
+                                                        className="text-themed-muted hover:text-accent transition-colors opacity-0 group-hover:opacity-100"
+                                                        title="Copy path"
+                                                    >
+                                                        {copiedPath === (decoy.file_path || decoy.deploy_location) ? (
+                                                            <Check className="h-3 w-3 text-status-success" />
+                                                        ) : (
+                                                            <Copy className="h-3 w-3" />
+                                                        )}
+                                                    </button>
                                                 </div>
                                             ) : (
                                                 <span className="text-xs text-themed-dimmed">—</span>
@@ -262,88 +290,67 @@ export default function Decoys() {
                 </CardContent>
             </Card>
 
-            {/* Create New Decoy Modal */}
-            {showCreateModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 rounded-2xl">
-                    <Card className="w-96 rounded-2xl border border-white/10 bg-gray-900">
-                        <CardHeader>
-                            <CardTitle className="text-themed-primary font-heading">Deploy New Decoys</CardTitle>
-                            <CardDescription>Select a node and specify how many decoys to create</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-themed-primary mb-2">
-                                    Target Node
-                                </label>
-                                <select
-                                    className="w-full h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
-                                    value={selectedNodeId === 'all' ? '' : selectedNodeId}
-                                    onChange={(e) => {
-                                        setSelectedNodeId(e.target.value || 'all')
-                                    }}
-                                >
-                                    <option value="">Select a node...</option>
-                                    {nodes.map((node) => (
-                                        <option key={node.id || node.node_id} value={node.id || node.node_id}>
-                                            {node.name || node.id || node.node_id}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-themed-primary mb-2">
-                                    Number of Decoys to Deploy
-                                </label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    max="50"
-                                    value={createCount}
-                                    onChange={(e) => setCreateCount(parseInt(e.target.value) || 1)}
-                                    className="w-full h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
-                                />
-                                <p className="text-xs text-themed-muted mt-1">Create between 1 and 50 decoys</p>
-                            </div>
-
-                            <div className="flex gap-3 pt-4">
-                                <Button
-                                    className="flex-1 bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
-                                    disabled={!selectedNodeId || selectedNodeId === 'all' || creating}
-                                    onClick={async () => {
-                                        setCreating(true)
-                                        try {
-                                            // Call backend to deploy decoys on selected node
-                                            await decoysApi.deployHoneytokens(selectedNodeId, createCount)
-                                            // Refresh decoys list
-                                            const response = await decoysApi.getNodeDecoys(selectedNodeId)
-                                            const fileDecoys = response.data.filter(d => d.type !== 'honeytoken')
-                                            setDecoys(fileDecoys)
-                                            setShowCreateModal(false)
-                                            setCreateCount(1)
-                                        } catch (err) {
-                                            console.error('Error deploying decoys:', err)
-                                            setError('Failed to deploy decoys - endpoint may not be implemented')
-                                        } finally {
-                                            setCreating(false)
-                                        }
-                                    }}
-                                >
-                                    {creating ? 'Deploying...' : 'Deploy'}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="flex-1 rounded-xl"
-                                    onClick={() => setShowCreateModal(false)}
-                                    disabled={creating}
-                                >
-                                    Cancel
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+            <Modal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                title="Deploy New Decoys"
+                description="Select a node and specify how many decoys to create."
+            >
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-themed-muted mb-2">Target Node</label>
+                        <Select
+                            value={createNodeId}
+                            onChange={(val) => setCreateNodeId(val)}
+                            options={nodes.map(n => ({ value: n.id || n.node_id || '', label: n.name || n.id || n.node_id || '' }))}
+                            placeholder="Select a node..."
+                            className="w-full"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-themed-muted mb-2">Number of Decoys to Deploy</label>
+                        <Input
+                            type="number"
+                            min="1"
+                            max="50"
+                            value={createCount}
+                            onChange={(e) => setCreateCount(parseInt(e.target.value) || 1)}
+                        />
+                        <p className="text-xs text-themed-muted mt-1">Create between 1 and 50 decoys</p>
+                    </div>
+                    <div className="flex gap-3 justify-end pt-4">
+                        <Button variant="ghost" onClick={() => setShowCreateModal(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            className="bg-accent"
+                            disabled={!createNodeId || creating}
+                            onClick={async () => {
+                                setCreating(true)
+                                try {
+                                    // Call backend to deploy decoys on selected node
+                                    await decoysApi.deployHoneytokens(createNodeId, createCount)
+                                    // Refresh decoys list
+                                    const response = selectedNodeId === 'all'
+                                        ? await decoysApi.getDecoys()
+                                        : await decoysApi.getNodeDecoys(selectedNodeId)
+                                    const fileDecoys = response.data.filter(d => d.type !== 'honeytoken')
+                                    setDecoys(fileDecoys)
+                                    setShowCreateModal(false)
+                                    setCreateCount(1)
+                                } catch (err) {
+                                    console.error('Error deploying decoys:', err)
+                                    setError('Failed to deploy decoys - endpoint may not be implemented')
+                                } finally {
+                                    setCreating(false)
+                                }
+                            }}
+                        >
+                            {creating ? 'Deploying...' : 'Deploy'}
+                        </Button>
+                    </div>
                 </div>
-            )}
-        </div>
+            </Modal>
+        </div >
     )
 }

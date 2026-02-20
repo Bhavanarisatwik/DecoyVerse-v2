@@ -99,4 +99,16 @@ export const decoysApi = {
             throw error;
         }
     },
+
+    /**
+     * Delete a decoy
+     */
+    async deleteDecoy(id: string): Promise<{ success: boolean; decoy_id: string }> {
+        try {
+            const response = await apiClient.delete(`/api/decoys/${id}`);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
 };

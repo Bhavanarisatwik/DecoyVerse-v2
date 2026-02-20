@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react"
-import { FileKey, Download, Plus, MoreVertical, FileText, Key, AlertCircle, MapPin, Zap } from "lucide-react"
+import { FileKey, Download, Plus, MoreVertical, FileText, Key, AlertCircle, MapPin, Zap, Copy, Check } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
 import { Badge } from "../components/common/Badge"
 import { Breadcrumb } from "../components/common/Breadcrumb"
+import { Select } from "../components/common/Select"
+import { Modal } from "../components/common/Modal"
+import { Input } from "../components/common/Input"
 import { decoysApi, type Decoy } from "../api/endpoints/decoys"
 import { nodesApi, type Node } from "../api/endpoints/nodes"
 
@@ -15,6 +18,11 @@ export default function Honeytokens() {
     const [selectedNodeId, setSelectedNodeId] = useState<string>('all')
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [showCreateModal, setShowCreateModal] = useState(false)
+    const [createCount, setCreateCount] = useState(1)
+    const [createNodeId, setCreateNodeId] = useState<string>('')
+    const [creating, setCreating] = useState(false)
+    const [copiedPath, setCopiedPath] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchNodes = async () => {
@@ -53,6 +61,40 @@ export default function Honeytokens() {
     const activeCount = honeytokens.filter(t => t.status === 'active').length
     const triggeredCount = honeytokens.reduce((sum, t) => sum + t.triggers, 0)
 
+    const handleCreateHoneytoken = async () => {
+        if (!createNodeId) {
+            setError('Please select a node');
+            return;
+        }
+        try {
+            setCreating(true);
+            await decoysApi.deployHoneytokens(createNodeId, createCount);
+            setShowCreateModal(false);
+            // Refresh data
+            const response = selectedNodeId === 'all'
+                ? await decoysApi.getDecoys()
+                : await decoysApi.getNodeDecoys(selectedNodeId);
+            const tokens = response.data.filter(d => d.type === 'honeytoken');
+            setHoneytokens(tokens);
+            setCreateCount(1);
+        } catch (err) {
+            console.error('Error creating honeytokens:', err);
+            setError('Failed to deploy honeytokens');
+        } finally {
+            setCreating(false);
+        }
+    };
+
+    const copyToClipboard = async (text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedPath(text);
+            setTimeout(() => setCopiedPath(null), 2000);
+        } catch (err) {
+            console.error('Failed to copy text:', err);
+        }
+    };
+
     // Create a map of node_id to node name
     const nodeNameMap = nodes.reduce((map, node) => {
         map[node.id || node.node_id || ''] = node.name
@@ -84,20 +126,19 @@ export default function Honeytokens() {
                     <h1 className="text-3xl font-bold text-themed-primary font-heading">Honeytokens</h1>
                     <p className="text-themed-muted">Create and manage trackable assets to detect data theft.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <select
-                        className="h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
+                <div className="flex items-center gap-3 w-64">
+                    <Select
                         value={selectedNodeId}
-                        onChange={(e) => setSelectedNodeId(e.target.value)}
+                        onChange={(val) => setSelectedNodeId(val)}
+                        options={[
+                            { value: 'all', label: 'All Nodes' },
+                            ...nodes.map(n => ({ value: n.id || n.node_id || '', label: n.name || n.id || n.node_id || '' }))
+                        ]}
+                    />
+                    <Button
+                        onClick={() => setShowCreateModal(true)}
+                        className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl whitespace-nowrap"
                     >
-                        <option value="all">All Nodes</option>
-                        {nodes.map((node) => (
-                            <option key={node.id || node.node_id} value={node.id || node.node_id}>
-                                {node.name || node.id || node.node_id}
-                            </option>
-                        ))}
-                    </select>
-                    <Button className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">
                         <Plus className="mr-2 h-4 w-4" />
                         Create Honeytoken
                     </Button>
@@ -185,11 +226,24 @@ export default function Honeytokens() {
                                         </TableCell>
                                         <TableCell>
                                             {token.file_path || token.deploy_location ? (
-                                                <div className="flex items-center gap-1 text-xs text-themed-muted font-mono max-w-[200px]">
-                                                    <MapPin className="h-3 w-3 shrink-0 text-status-info" />
-                                                    <span className="truncate" title={token.file_path || token.deploy_location}>
-                                                        {token.file_path || token.deploy_location}
-                                                    </span>
+                                                <div className="flex items-center gap-2 group">
+                                                    <div className="flex items-center gap-1 text-xs text-themed-muted font-mono max-w-[200px]">
+                                                        <MapPin className="h-3 w-3 shrink-0 text-status-info" />
+                                                        <span className="truncate" title={token.file_path || token.deploy_location}>
+                                                            {token.file_path || token.deploy_location}
+                                                        </span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => copyToClipboard(token.file_path || token.deploy_location || '')}
+                                                        className="text-themed-muted hover:text-accent transition-colors opacity-0 group-hover:opacity-100"
+                                                        title="Copy path"
+                                                    >
+                                                        {copiedPath === (token.file_path || token.deploy_location) ? (
+                                                            <Check className="h-3 w-3 text-status-success" />
+                                                        ) : (
+                                                            <Copy className="h-3 w-3" />
+                                                        )}
+                                                    </button>
                                                 </div>
                                             ) : (
                                                 <span className="text-xs text-themed-dimmed">—</span>
@@ -218,6 +272,49 @@ export default function Honeytokens() {
                     )}
                 </CardContent>
             </Card>
+
+            <Modal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                title="Deploy Honeytokens"
+                description="Generate and deploy new honeytokens to a specific node to trap attackers."
+            >
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-themed-muted mb-2">Target Node</label>
+                        <Select
+                            value={createNodeId}
+                            onChange={(val) => setCreateNodeId(val)}
+                            options={nodes.map(n => ({ value: n.id || n.node_id || '', label: n.name || n.id || n.node_id || '' }))}
+                            placeholder="Select a node..."
+                            className="w-full"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-themed-muted mb-2">Number of Honeytokens</label>
+                        <Input
+                            type="number"
+                            min="1"
+                            max="50"
+                            value={createCount}
+                            onChange={(e) => setCreateCount(parseInt(e.target.value) || 1)}
+                        />
+                        <p className="text-xs text-themed-muted mt-1">Number of credentials/files to deploy randomly</p>
+                    </div>
+                    <div className="flex gap-3 justify-end pt-4">
+                        <Button variant="ghost" onClick={() => setShowCreateModal(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            className="bg-accent"
+                            onClick={handleCreateHoneytoken}
+                            disabled={creating || !createNodeId}
+                        >
+                            {creating ? 'Deploying...' : 'Deploy'}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     )
 }

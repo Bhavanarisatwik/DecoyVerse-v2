@@ -1,14 +1,37 @@
-import { Bell, Search, User, Settings, LogOut } from "lucide-react"
+import { Bell, Search, User, Settings, LogOut, AlertCircle, ShieldAlert } from "lucide-react"
 import { Button } from "../common/Button"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { useState, useRef, useEffect } from "react"
 import { useAuth } from "../../context/AuthContext"
+import { alertsApi, type Alert } from "../../api/endpoints/alerts"
 
 export function Navbar() {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
     const [showUserMenu, setShowUserMenu] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+
+    const [alerts, setAlerts] = useState<Alert[]>([]);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const notificationsRef = useRef<HTMLDivElement>(null);
+
+    const [searchQuery, setSearchQuery] = useState("");
+    const [showSearch, setShowSearch] = useState(false);
+    const searchRef = useRef<HTMLDivElement>(null);
+
+    const searchLinks = [
+        { name: 'Dashboard', path: '/dashboard' },
+        { name: 'Nodes', path: '/nodes' },
+        { name: 'Decoys', path: '/decoys' },
+        { name: 'Honeytokens', path: '/honeytokens' },
+        { name: 'Alerts', path: '/alerts' },
+        { name: 'Configuration', path: '/configuration' },
+        { name: 'Logs', path: '/logs' },
+    ];
+
+    useEffect(() => {
+        alertsApi.getAlerts(5).then(res => setAlerts(res.data)).catch(console.error);
+    }, []);
 
     // Get user initials for avatar
     const getUserInitials = (name: string) => {
@@ -26,6 +49,12 @@ export function Navbar() {
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
                 setShowUserMenu(false);
             }
+            if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+                setShowNotifications(false);
+            }
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+                setShowSearch(false);
+            }
         }
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -40,22 +69,97 @@ export function Navbar() {
             {/* Right: Actions */}
             <div className="flex items-center gap-1">
                 {/* Search */}
-                <div className="relative mr-2">
-                    <div className="flex items-center gap-2 h-9 w-64 rounded-full border border-white/10 bg-white/5 px-4 text-sm text-themed-muted cursor-pointer hover:border-white/20 hover:bg-white/[0.08] transition-all duration-200">
-                        <Search className="h-4 w-4" />
-                        <span>Search Anything...</span>
+                <div className="relative mr-2" ref={searchRef}>
+                    <div className="flex items-center gap-2 h-9 w-64 rounded-full border border-white/10 bg-white/5 px-4 text-sm text-themed-muted transition-all duration-200 focus-within:border-white/20 focus-within:bg-white/[0.08]">
+                        <Search className="h-4 w-4 shrink-0" />
+                        <input
+                            type="text"
+                            placeholder="Search pages..."
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                setShowSearch(true);
+                            }}
+                            onFocus={() => setShowSearch(true)}
+                            className="w-full bg-transparent border-none outline-none text-themed-primary placeholder:text-themed-muted"
+                        />
                     </div>
+                    {/* Search Dropdown */}
+                    {showSearch && searchQuery && (
+                        <div className="absolute left-0 top-12 w-64 rounded-xl bg-gradient-to-b from-[#1a1a1c] to-[#141416] border border-white/10 shadow-xl overflow-hidden z-50 py-2">
+                            {searchLinks.filter(link => link.name.toLowerCase().includes(searchQuery.toLowerCase())).map((link, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => {
+                                        navigate(link.path);
+                                        setShowSearch(false);
+                                        setSearchQuery("");
+                                    }}
+                                    className="flex items-center w-full px-4 py-2 text-sm text-themed-secondary hover:bg-white/5 hover:text-themed-primary transition-colors text-left"
+                                >
+                                    {link.name}
+                                </button>
+                            ))}
+                            {searchLinks.filter(link => link.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                                <div className="px-4 py-3 text-sm text-themed-muted text-center">
+                                    No results found
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
-                
-                <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full hover:bg-white/5">
-                    <Bell className="h-[18px] w-[18px] text-themed-muted" />
-                    <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-accent" />
-                </Button>
+                {/* Notifications */}
+                <div className="relative" ref={notificationsRef}>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowNotifications(!showNotifications)}
+                        className="relative h-9 w-9 rounded-full hover:bg-white/5"
+                    >
+                        <Bell className="h-[18px] w-[18px] text-themed-muted" />
+                        {alerts.filter(a => a.status === 'open').length > 0 && (
+                            <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-accent" />
+                        )}
+                    </Button>
+
+                    {/* Notifications Dropdown */}
+                    {showNotifications && (
+                        <div className="absolute right-0 top-12 w-80 rounded-xl bg-gradient-to-b from-[#1a1a1c] to-[#141416] border border-white/10 shadow-xl overflow-hidden z-50 flex flex-col max-h-[400px]">
+                            <div className="px-4 py-3 border-b border-white/10 flex justify-between items-center">
+                                <h3 className="font-semibold text-themed-primary">Notifications</h3>
+                                <Link to="/alerts" onClick={() => setShowNotifications(false)} className="text-xs text-accent hover:text-accent-hover transition-colors">
+                                    View All
+                                </Link>
+                            </div>
+                            <div className="overflow-y-auto flex-1 p-2 space-y-1">
+                                {alerts.length === 0 ? (
+                                    <div className="text-center py-6 text-sm text-themed-muted">
+                                        No new notifications
+                                    </div>
+                                ) : (
+                                    alerts.slice(0, 5).map(alert => (
+                                        <div key={alert.id} className="p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer" onClick={() => { navigate('/alerts'); setShowNotifications(false); }}>
+                                            <div className="flex gap-3">
+                                                <div className={`mt-0.5 shrink-0 ${alert.severity === 'critical' ? 'text-status-danger' : alert.severity === 'high' ? 'text-status-warning' : 'text-status-info'}`}>
+                                                    {alert.severity === 'critical' || alert.severity === 'high' ? <ShieldAlert className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-themed-primary leading-tight">{alert.message}</p>
+                                                    <p className="text-xs text-themed-muted mt-1 opacity-80">{new Date(alert.created_at).toLocaleString()}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* User Avatar with Dropdown */}
                 <div className="relative ml-2" ref={menuRef}>
-                    <button 
+                    <button
                         onClick={() => setShowUserMenu(!showUserMenu)}
                         className="h-9 w-9 rounded-full bg-gradient-to-br from-accent to-accent-600 flex items-center justify-center cursor-pointer ring-2 ring-white/10 hover:ring-white/20 transition-all"
                     >
@@ -76,17 +180,17 @@ export function Navbar() {
                                 <p className="text-sm font-medium text-themed-primary">{user?.name || 'User'}</p>
                                 <p className="text-xs text-themed-muted">{user?.email || 'user@example.com'}</p>
                             </div>
-                            
+
                             {/* Menu Items */}
                             <div className="py-1">
-                                <button 
+                                <button
                                     onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
                                     className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-themed-secondary hover:bg-white/5 transition-colors"
                                 >
                                     <Settings className="h-4 w-4" />
                                     Settings
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => { logout(); setShowUserMenu(false); }}
                                     className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-status-danger hover:bg-red-500/10 transition-colors"
                                 >

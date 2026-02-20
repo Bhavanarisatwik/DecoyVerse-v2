@@ -7,6 +7,7 @@ import { Badge } from "../components/common/Badge"
 import { Breadcrumb } from "../components/common/Breadcrumb"
 import { Modal } from "../components/common/Modal"
 import { Input } from "../components/common/Input"
+import { Select } from "../components/common/Select"
 import { nodesApi, type Node } from "../api/endpoints/nodes"
 import { installApi } from "../api/endpoints/install"
 
@@ -36,7 +37,7 @@ export default function Nodes() {
                 setNodes(nodesResponse.data)
 
                 // Calculate stats
-                const online = nodesResponse.data.filter(n => n.status === 'online').length
+                const online = nodesResponse.data.filter(n => n.status === 'online' || n.status === 'active').length
                 const total = nodesResponse.data.length
                 setStats({
                     total,
@@ -76,7 +77,7 @@ export default function Nodes() {
             setNodes(nodesResponse.data)
 
             // Update stats
-            const online = nodesResponse.data.filter(n => n.status === 'online').length
+            const online = nodesResponse.data.filter(n => n.status === 'online' || n.status === 'active').length
             const total = nodesResponse.data.length
             setStats({ total, online, offline: total - online })
 
@@ -323,15 +324,16 @@ export default function Nodes() {
 
                     <div>
                         <label className="block text-sm font-medium text-themed-muted mb-2">Operating System</label>
-                        <select
-                            className="w-full h-10 px-3 rounded-md bg-themed-secondary border border-themed-secondary text-themed-primary focus:border-accent focus:outline-none"
+                        <Select
                             value={osType}
-                            onChange={(e) => setOsType(e.target.value as 'windows' | 'linux' | 'macos')}
-                        >
-                            <option value="windows">Windows</option>
-                            <option value="linux">Linux</option>
-                            <option value="macos">macOS</option>
-                        </select>
+                            onChange={(val) => setOsType(val as 'windows' | 'linux' | 'macos')}
+                            options={[
+                                { value: "windows", label: "Windows" },
+                                { value: "linux", label: "Linux" },
+                                { value: "macos", label: "macOS" }
+                            ]}
+                            className="w-full"
+                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

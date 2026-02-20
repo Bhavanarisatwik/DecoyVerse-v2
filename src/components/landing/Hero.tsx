@@ -37,10 +37,10 @@ export function Hero() {
                     className="text-center mb-6"
                 >
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-themed-primary mb-2 font-heading leading-tight">
-                        Every threat and decoy you own,
+                        Deception technology,
                     </h1>
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-themed-primary font-heading leading-tight">
-                        clearly in <span className="text-accent">one place</span>
+                        <span className="text-accent">reimagined.</span>
                     </h1>
                 </motion.div>
 
@@ -155,19 +155,19 @@ export function Hero() {
                                     <div className="h-32 flex items-end justify-between gap-1">
                                         {[40, 65, 45, 80, 55, 70, 90].map((height, i) => (
                                             <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                                                <div 
+                                                <div
                                                     className="w-full rounded-t transition-all duration-300 hover:opacity-80"
-                                                    style={{ 
+                                                    style={{
                                                         height: `${height}%`,
                                                         background: `linear-gradient(to top, var(--accent-700), var(--accent-400))`
                                                     }}
                                                 ></div>
-                                                <span className="text-[10px] text-themed-dimmed">{['M','T','W','T','F','S','S'][i]}</span>
+                                                <span className="text-[10px] text-themed-dimmed">{['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}</span>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
-                                
+
                                 {/* Area/Line Chart */}
                                 <div className="rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900/60 to-black p-4">
                                     <div className="flex items-center justify-between mb-4">
@@ -183,14 +183,14 @@ export function Hero() {
                                                     <stop offset="100%" style={{ stopColor: 'var(--accent-500)', stopOpacity: 0 }} />
                                                 </linearGradient>
                                             </defs>
-                                            <path 
-                                                d="M0,60 Q20,55 40,45 T80,35 T120,25 T160,20 T200,15 L200,80 L0,80 Z" 
+                                            <path
+                                                d="M0,60 Q20,55 40,45 T80,35 T120,25 T160,20 T200,15 L200,80 L0,80 Z"
                                                 fill="url(#areaGradient)"
                                             />
-                                            <path 
-                                                d="M0,60 Q20,55 40,45 T80,35 T120,25 T160,20 T200,15" 
-                                                fill="none" 
-                                                stroke="var(--accent-500)" 
+                                            <path
+                                                d="M0,60 Q20,55 40,45 T80,35 T120,25 T160,20 T200,15"
+                                                fill="none"
+                                                stroke="var(--accent-500)"
                                                 strokeWidth="2"
                                             />
                                         </svg>
@@ -252,18 +252,18 @@ export function Hero() {
                     <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[var(--bg-primary)] to-transparent pointer-events-none"></div>
                 </motion.div>
 
-                {/* Trust badges */}
+                {/* Capabilities */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.6, delay: 1 }}
                     className="mt-20 text-center"
                 >
-                    <p className="text-themed-dimmed text-sm mb-6">Trusted by 2,000+ security teams worldwide</p>
+                    <p className="text-themed-dimmed text-sm mb-6">Securing next-generation infrastructure</p>
                     <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-50">
-                        {['Acme Corp', 'TechFlow', 'SecureNet', 'CloudGuard'].map((company) => (
-                            <div key={company} className="text-themed-muted font-semibold text-lg">
-                                {company}
+                        {['Zero-Day Protection', 'Real-Time Alerts', 'Proactive Defense', 'ML-Powered Intelligence'].map((cap) => (
+                            <div key={cap} className="text-themed-muted font-semibold text-lg">
+                                {cap}
                             </div>
                         ))}
                     </div>

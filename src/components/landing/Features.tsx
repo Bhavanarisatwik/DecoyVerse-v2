@@ -118,7 +118,7 @@ export function Features() {
                         Juggling security tools?
                     </h2>
                     <h2 className="text-3xl md:text-5xl font-bold text-themed-primary mb-6 font-heading">
-                        Chaos isn't <span className="text-themed-muted">management.</span>
+                        Chaos isn't <span className="text-accent">management.</span>
                     </h2>
                     <p className="text-themed-muted max-w-2xl mx-auto">
                         Most organizations use fragmented security tools that leave gaps attackers exploit.
@@ -155,7 +155,7 @@ export function Features() {
                     className="text-center mb-12"
                 >
                     <h2 className="text-3xl md:text-5xl font-bold text-themed-primary mb-4 font-heading">
-                        One Platform. <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 to-accent-600">Total Control.</span>
+                        One Platform. <span className="text-accent underline decoration-2 underline-offset-8">Total Control.</span>
                     </h2>
                     <p className="text-themed-muted max-w-2xl mx-auto">
                         DecoyVerse consolidates all your deception capabilities into one powerful,

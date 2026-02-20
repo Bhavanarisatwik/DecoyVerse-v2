@@ -47,27 +47,28 @@
 }
 
 /* ===== CYAN THEME (Default - Modern Enterprise) ===== */
-:root, .theme-gold {
+:root,
+.theme-gold {
   --accent-400: #22D3EE;
   --accent-500: #06B6D4;
   --accent-600: #0891B2;
   --accent-700: #0E7490;
   --accent-glow: rgba(6, 182, 212, 0.25);
   --accent-rgb: 6, 182, 212;
-  
+
   --bg-primary: #09090B;
   --bg-secondary: #0A0A0C;
   --bg-card: #18181B;
   --bg-elevated: #27272A;
-  
+
   --border-primary: #27272A;
   --border-secondary: #3F3F46;
-  
+
   --text-primary: #FAFAFA;
   --text-secondary: #E4E4E7;
   --text-muted: #A1A1AA;
   --text-dimmed: #71717A;
-  
+
   --text-on-accent: #000000;
 }
 
@@ -79,20 +80,20 @@
   --accent-700: #CC4A1A;
   --accent-glow: rgba(255, 107, 53, 0.3);
   --accent-rgb: 255, 107, 53;
-  
+
   --bg-primary: #09090B;
   --bg-secondary: #0A0A0C;
   --bg-card: #18181B;
   --bg-elevated: #27272A;
-  
+
   --border-primary: #27272A;
   --border-secondary: #3F3F46;
-  
+
   --text-primary: #FAFAFA;
   --text-secondary: #E4E4E7;
   --text-muted: #A1A1AA;
   --text-dimmed: #71717A;
-  
+
   --text-on-accent: #FFFFFF;
 }
 
@@ -104,20 +105,20 @@
   --accent-700: #CC4A1A;
   --accent-glow: rgba(255, 107, 53, 0.15);
   --accent-rgb: 255, 107, 53;
-  
+
   --bg-primary: #FFFFFF;
   --bg-secondary: #FAFAFA;
   --bg-card: #FFFFFF;
   --bg-elevated: #F4F4F5;
-  
+
   --border-primary: #E4E4E7;
   --border-secondary: #D4D4D8;
-  
+
   --text-primary: #09090B;
   --text-secondary: #27272A;
   --text-muted: #71717A;
   --text-dimmed: #A1A1AA;
-  
+
   --text-on-accent: #FFFFFF;
 }
 
@@ -129,68 +130,422 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     color: var(--text-primary);
     @apply font-heading font-bold;
   }
 }
 
+
+/* ── Auth pages: left branding panel always stays dark regardless of theme ── */
+.auth-panel-left {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #000000 100%) !important;
+  background-image: linear-gradient(135deg, #111827, #1f2937, #000000) !important;
+  color: #ffffff;
+}
+
+/* Ensure text inside the panel stays white in all themes */
+.auth-panel-left p,
+.auth-panel-left h2,
+.auth-panel-left span,
+.auth-panel-left a {
+  color: inherit;
+}
+
+/* Restore dark-mode transparent styles for child elements inside the panel.
+   Global .theme-light rules override bg-white/5 and border-white/10 app-wide,
+   which breaks the testimonial card and icon boxes on the always-dark panel. */
+.auth-panel-left .bg-white\/5 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.auth-panel-left .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.auth-panel-left .border-white\/10 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.auth-panel-left .border-white\/20 {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Restore icon box backgrounds inside panel */
+.auth-panel-left .from-gray-800,
+.auth-panel-left .from-gray-800\/80 {
+  background-image: none !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.auth-panel-left .to-gray-800,
+.auth-panel-left .to-gray-800\/40 {
+  background-image: none !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.auth-panel-left .border-gray-700 {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* ================================================================
+   LIGHT THEME — Global overrides
+   Targets original dark-hardcoded classes without touching dark themes
+   ================================================================ */
+
+/* ── 1. LANDING PAGE CARDS & ALL DARK CARDS ── */
+/* 
+  Universal dark card identifiers: to-black, to-gray-900/30, to-gray-900/90.
+  Catches: Features, Pricing, Footer, Hero dashboard preview stat cards,
+  and floating "Threat Blocked" / "99% Detection Rate" cards.
+*/
+.theme-light .to-black,
+.theme-light .to-gray-900\/30,
+.theme-light .to-gray-900\/40,
+.theme-light .to-gray-900\/90,
+.theme-light .to-gray-900\/80 {
+  background-image: none !important;
+  background-color: var(--bg-card) !important;
+}
+
+/* Pricing Pro card specific (from-accent/10 via-gray-900/80 to-black) */
+.theme-light .from-accent\/10.to-black {
+  background-color: color-mix(in srgb, var(--accent-500) 5%, var(--bg-card)) !important;
+  border-color: color-mix(in srgb, var(--accent-500) 30%, transparent) !important;
+}
+
+.theme-light .border-gray-800 {
+  border-color: var(--border-primary) !important;
+}
+
+.theme-light .hover\:border-gray-700:hover,
+.theme-light .border-gray-700 {
+  border-color: var(--border-secondary) !important;
+}
+
+/* ── Icon container backgrounds (from-gray-800 variants) ── */
+/* Targets icon boxes in Features, Hero floating cards, etc. */
+.theme-light .from-gray-800\/80,
+.theme-light .from-gray-800 {
+  background-image: none !important;
+  background-color: var(--bg-elevated) !important;
+}
+
+.theme-light .to-gray-800\/40,
+.theme-light .to-gray-800 {
+  background-image: none !important;
+  background-color: var(--bg-elevated) !important;
+}
+
+/* ── 2. GET STARTED / PRIMARY BUTTONS in light mode ── */
+/*
+  Problem: Orange gradient button (white text) on a peach/light hero = invisible.
+  Fix: In light theme, force solid deep-orange background + dark text for contrast.
+  Only affects .theme-light - dark theme is untouched.
+*/
+.theme-light .from-accent-400 {
+  background-image: none !important;
+  background-color: var(--accent-600, #c2410c) !important;
+}
+
+.theme-light .from-accent-400 span,
+.theme-light .from-accent-400 * {
+  color: #FFFFFF !important;
+}
+
+/* Ensure on-accent text is always white */
+.theme-light .text-on-accent {
+  color: #FFFFFF !important;
+}
+
+/* btn-primary class in light theme */
+.theme-light .btn-primary {
+  background-color: var(--accent-600, #c2410c) !important;
+  background-image: none !important;
+  color: #FFFFFF !important;
+}
+
+
+
+/* ── 2. INNER PAGE CARDS (border-white/10 + dark gradients) ── */
+.theme-light .border-white\/10.bg-gradient-to-br,
+.theme-light .bg-gradient-to-br.border-white\/10 {
+  background-image: none !important;
+  background-color: var(--bg-card) !important;
+}
+
+/* ── 3. NAVBAR / HEADER ── */
+/* App header dark gradient */
+.theme-light header.bg-gradient-to-r,
+.theme-light .from-\[\#0c0c0e\] {
+  background-image: none !important;
+  background-color: var(--bg-card) !important;
+}
+
+/* Navbar user profile dropdown */
+.theme-light .from-\[\#1a1a1c\] {
+  background-image: none !important;
+  background-color: var(--bg-card) !important;
+}
+
+/* Ring around user avatar */
+.theme-light .ring-white\/10 {
+  --tw-ring-color: var(--border-secondary) !important;
+}
+
+/* ── 4. BORDER & BACKGROUND OVERRIDES ── */
+.theme-light .border-white\/10,
+.theme-light .border-white\/5 {
+  border-color: var(--border-primary) !important;
+}
+
+.theme-light .hover\:border-white\/20:hover {
+  border-color: var(--border-secondary) !important;
+}
+
+.theme-light .bg-white\/5 {
+  background-color: var(--bg-elevated) !important;
+}
+
+.theme-light .hover\:bg-white\/5:hover,
+.theme-light .hover\:bg-white\/10:hover {
+  background-color: var(--bg-secondary) !important;
+}
+
+/* ── 5. GET STARTED / GRADIENT BUTTONS ── */
+/* Ensure from-accent gradient buttons are visible */
+.theme-light .from-accent-400 {
+  --tw-gradient-from: var(--accent-400);
+}
+
+/* "View Live Demo" outline button text visibility */
+.theme-light .border-accent\/30 {
+  border-color: color-mix(in srgb, var(--accent-500) 40%, transparent) !important;
+}
+
+/* ── 6. INPUTS / FORM FIELDS ── */
+.theme-light input,
+.theme-light textarea,
+.theme-light select {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-light input:focus,
+.theme-light textarea:focus,
+.theme-light select:focus {
+  border-color: var(--accent-500) !important;
+  outline: none;
+}
+
+.theme-light input::placeholder,
+.theme-light textarea::placeholder {
+  color: var(--text-dimmed) !important;
+}
+
+/* ── 7. LOGIN/SIGNUP CARD ── */
+/* card-gradient in light mode → plain white card */
+.theme-light .card-gradient {
+  background: var(--bg-card) !important;
+  border-color: var(--border-primary) !important;
+}
+
+/* Divider "Or continue with" background fix */
+.theme-light .bg-black-900 {
+  background-color: var(--bg-card) !important;
+}
+
+/* ── 8. ICONS (lucide-react) ── */
+.theme-light .lucide,
+.theme-light svg.lucide {
+  color: inherit;
+}
+
+/* ── 9. SCROLLBAR ── */
+.theme-light .scrollbar-thin {
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+/* ── 10. CHART TOOLTIPS ── */
+.theme-light .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+
 /* Utility classes for theming */
 @layer utilities {
-  .bg-themed-primary { background-color: var(--bg-primary); }
-  .bg-themed-secondary { background-color: var(--bg-secondary); }
-  .bg-themed-card { background-color: var(--bg-card); }
-  .bg-themed-elevated { background-color: var(--bg-elevated); }
-  
-  .border-themed { border-color: var(--border-primary); }
-  .border-themed-secondary { border-color: var(--border-secondary); }
-  
-  .text-themed-primary { color: var(--text-primary); }
-  .text-themed-secondary { color: var(--text-secondary); }
-  .text-themed-muted { color: var(--text-muted); }
-  .text-themed-dimmed { color: var(--text-dimmed); }
-  
-  .text-accent { color: var(--accent-500); }
-  .text-accent-400 { color: var(--accent-400); }
-  .text-accent-600 { color: var(--accent-600); }
-  
-  .bg-accent { background-color: var(--accent-500); }
-  .bg-accent-400 { background-color: var(--accent-400); }
-  .bg-accent-600 { background-color: var(--accent-600); }
-  
-  .text-on-accent { color: var(--text-on-accent); }
-  
-  .border-accent { border-color: var(--accent-500); }
-  .border-accent\/50 { border-color: color-mix(in srgb, var(--accent-500) 50%, transparent); }
-  .border-accent\/30 { border-color: color-mix(in srgb, var(--accent-500) 30%, transparent); }
-  .border-accent\/20 { border-color: color-mix(in srgb, var(--accent-500) 20%, transparent); }
-  
-  .shadow-accent-glow { box-shadow: 0 0 25px var(--accent-glow); }
-  .shadow-accent-sm { box-shadow: 0 0 15px var(--accent-glow); }
-  
-  .from-accent-400 { --tw-gradient-from: var(--accent-400); }
-  .via-accent-500 { --tw-gradient-via: var(--accent-500); }
-  .to-accent-600 { --tw-gradient-to: var(--accent-600); }
-  .to-accent-700 { --tw-gradient-to: var(--accent-700); }
-  
-  .bg-accent\/5 { background-color: color-mix(in srgb, var(--accent-500) 5%, transparent); }
-  .bg-accent\/10 { background-color: color-mix(in srgb, var(--accent-500) 10%, transparent); }
-  .bg-accent\/20 { background-color: color-mix(in srgb, var(--accent-500) 20%, transparent); }
-  .bg-accent\/30 { background-color: color-mix(in srgb, var(--accent-500) 30%, transparent); }
-  
-  .hover\:bg-accent-400:hover { background-color: var(--accent-400); }
-  .hover\:bg-accent-600:hover { background-color: var(--accent-600); }
-  .hover\:text-accent:hover { color: var(--accent-500); }
-  .hover\:border-accent:hover { border-color: var(--accent-500); }
-  .hover\:border-accent\/50:hover { border-color: color-mix(in srgb, var(--accent-500) 50%, transparent); }
+
+  .bg-themed-primary {
+    background-color: var(--bg-primary);
+  }
+
+  .bg-themed-secondary {
+    background-color: var(--bg-secondary);
+  }
+
+  .bg-themed-card {
+    background-color: var(--bg-card);
+  }
+
+  .bg-themed-elevated {
+    background-color: var(--bg-elevated);
+  }
+
+  .border-themed {
+    border-color: var(--border-primary);
+  }
+
+  .border-themed-secondary {
+    border-color: var(--border-secondary);
+  }
+
+  .text-themed-primary {
+    color: var(--text-primary);
+  }
+
+  .text-themed-secondary {
+    color: var(--text-secondary);
+  }
+
+  .text-themed-muted {
+    color: var(--text-muted);
+  }
+
+  .text-themed-dimmed {
+    color: var(--text-dimmed);
+  }
+
+  .text-accent {
+    color: var(--accent-500);
+  }
+
+  .text-accent-400 {
+    color: var(--accent-400);
+  }
+
+  .text-accent-600 {
+    color: var(--accent-600);
+  }
+
+  .bg-accent {
+    background-color: var(--accent-500);
+  }
+
+  .bg-accent-400 {
+    background-color: var(--accent-400);
+  }
+
+  .bg-accent-600 {
+    background-color: var(--accent-600);
+  }
+
+  .text-on-accent {
+    color: var(--text-on-accent);
+  }
+
+  .border-accent {
+    border-color: var(--accent-500);
+  }
+
+  .border-accent\/50 {
+    border-color: color-mix(in srgb, var(--accent-500) 50%, transparent);
+  }
+
+  .border-accent\/30 {
+    border-color: color-mix(in srgb, var(--accent-500) 30%, transparent);
+  }
+
+  .border-accent\/20 {
+    border-color: color-mix(in srgb, var(--accent-500) 20%, transparent);
+  }
+
+  .shadow-accent-glow {
+    box-shadow: 0 0 25px var(--accent-glow);
+  }
+
+  .shadow-accent-sm {
+    box-shadow: 0 0 15px var(--accent-glow);
+  }
+
+  .from-accent-400 {
+    --tw-gradient-from: var(--accent-400);
+  }
+
+  .via-accent-500 {
+    --tw-gradient-via: var(--accent-500);
+  }
+
+  .to-accent-600 {
+    --tw-gradient-to: var(--accent-600);
+  }
+
+  .to-accent-700 {
+    --tw-gradient-to: var(--accent-700);
+  }
+
+  .bg-accent\/5 {
+    background-color: color-mix(in srgb, var(--accent-500) 5%, transparent);
+  }
+
+  .bg-accent\/10 {
+    background-color: color-mix(in srgb, var(--accent-500) 10%, transparent);
+  }
+
+  .bg-accent\/20 {
+    background-color: color-mix(in srgb, var(--accent-500) 20%, transparent);
+  }
+
+  .bg-accent\/30 {
+    background-color: color-mix(in srgb, var(--accent-500) 30%, transparent);
+  }
+
+  .hover\:bg-accent-400:hover {
+    background-color: var(--accent-400);
+  }
+
+  .hover\:bg-accent-600:hover {
+    background-color: var(--accent-600);
+  }
+
+  .hover\:text-accent:hover {
+    color: var(--accent-500);
+  }
+
+  .hover\:border-accent:hover {
+    border-color: var(--accent-500);
+  }
+
+  .hover\:border-accent\/50:hover {
+    border-color: color-mix(in srgb, var(--accent-500) 50%, transparent);
+  }
 
   /* Card gradient backgrounds */
   .card-gradient {
     background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 50%, var(--bg-card) 100%);
   }
-  
+
   .card-gradient-accent {
     background: linear-gradient(135deg, var(--bg-card) 0%, color-mix(in srgb, var(--accent-500) 5%, var(--bg-card)) 50%, var(--bg-card) 100%);
+  }
+
+  /* Landing page cards — dark gradient in dark themes, light card in light theme */
+  .landing-card {
+    background: linear-gradient(to bottom right, rgba(9, 9, 11, 0.8), rgba(24, 24, 27, 0.4), rgba(0, 0, 0, 1));
+    border-color: rgb(39, 39, 42);
+  }
+
+  /* In light theme, override all dark gradient landing cards to white */
+  .theme-light .landing-card {
+    background: #FFFFFF !important;
+    border-color: #E4E4E7 !important;
   }
 
   /* Primary button using theme accent */
@@ -199,55 +554,75 @@
     color: var(--text-on-accent);
     font-weight: 700;
   }
+
   .btn-primary:hover {
     background-color: var(--accent-600);
   }
-  
+
   /* Additional hover utilities */
-  .hover\:bg-accent\/10:hover { background-color: color-mix(in srgb, var(--accent-500) 10%, transparent); }
-  .hover\:bg-accent\/20:hover { background-color: color-mix(in srgb, var(--accent-500) 20%, transparent); }
-  .hover\:shadow-accent-glow:hover { box-shadow: 0 0 25px var(--accent-glow); }
-  
-  .text-accent-light { color: var(--accent-400); }
-  .text-accent-dark { color: var(--accent-700); }
-  .bg-accent-light { background-color: var(--accent-400); }
-  .bg-accent-dark { background-color: var(--accent-700); }
+  .hover\:bg-accent\/10:hover {
+    background-color: color-mix(in srgb, var(--accent-500) 10%, transparent);
+  }
+
+  .hover\:bg-accent\/20:hover {
+    background-color: color-mix(in srgb, var(--accent-500) 20%, transparent);
+  }
+
+  .hover\:shadow-accent-glow:hover {
+    box-shadow: 0 0 25px var(--accent-glow);
+  }
+
+  .text-accent-light {
+    color: var(--accent-400);
+  }
+
+  .text-accent-dark {
+    color: var(--accent-700);
+  }
+
+  .bg-accent-light {
+    background-color: var(--accent-400);
+  }
+
+  .bg-accent-dark {
+    background-color: var(--accent-700);
+  }
 
   /* Custom Scrollbar Styles */
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
     border-radius: 10px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, var(--accent-500) 0%, var(--accent-600) 100%);
     border-color: var(--accent-400);
   }
-  
+
   .scrollbar-track-transparent::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .scrollbar-thumb-white\/10::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.1);
   }
-  
+
   .hover\:scrollbar-thumb-white\/20:hover::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
   }
@@ -257,15 +632,15 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
-  
+
   .scrollbar-hidden::-webkit-scrollbar {
     display: none;
   }
-  
+
   .scrollbar-hidden:hover {
     scrollbar-width: thin;
   }
-  
+
   .scrollbar-hidden:hover::-webkit-scrollbar {
     display: block;
   }

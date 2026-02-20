@@ -16,23 +16,23 @@ export function LandingNavbar() {
                     </Link>
 
                     <div className="hidden md:flex items-center gap-1">
-                        <button className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
+                        <a href="#hero" className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             Overview
                             <ChevronDown className="h-3 w-3" />
-                        </button>
-                        <button className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
+                        </a>
+                        <a href="#products" className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             Products
                             <ChevronDown className="h-3 w-3" />
-                        </button>
-                        <Link to="#features" className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
+                        </a>
+                        <a href="#features" className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             Features
-                        </Link>
-                        <Link to="#pricing" className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
+                        </a>
+                        <a href="#pricing" className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             Pricing
-                        </Link>
-                        <Link to="#" className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
+                        </a>
+                        <a href="#faq" className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             FAQ
-                        </Link>
+                        </a>
                     </div>
 
                     <div className="flex items-center gap-3">

@@ -1,11 +1,11 @@
-import { Bell, Search, User, Settings, LogOut, AlertCircle, ShieldAlert } from "lucide-react"
+import { Bell, Search, User, Settings, LogOut, AlertCircle, ShieldAlert, Menu } from "lucide-react"
 import { Button } from "../common/Button"
 import { useNavigate, Link } from "react-router-dom"
 import { useState, useRef, useEffect } from "react"
 import { useAuth } from "../../context/AuthContext"
 import { alertsApi, type Alert } from "../../api/endpoints/alerts"
 
-export function Navbar() {
+export function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -61,27 +61,33 @@ export function Navbar() {
     }, []);
 
     return (
-        <header className="flex h-[58px] items-center justify-between border-b border-white/5 bg-gradient-to-r from-[#0c0c0e] via-[#111113] to-[#0c0c0e] px-6 sticky top-0 z-40">
+        <header className="flex h-[58px] items-center justify-between border-b border-white/5 bg-gradient-to-r from-[#0c0c0e] via-[#111113] to-[#0c0c0e] px-4 md:px-6 sticky top-0 z-40">
             {/* Left: Page title */}
             <div className="flex items-center gap-4">
+                <button
+                    onClick={onMenuClick}
+                    className="lg:hidden h-9 w-9 rounded-lg flex items-center justify-center text-themed-muted hover:bg-white/5 hover:text-themed-primary transition-colors"
+                >
+                    <Menu className="h-5 w-5" />
+                </button>
             </div>
 
             {/* Right: Actions */}
             <div className="flex items-center gap-1">
                 {/* Search */}
-                <div className="relative mr-2" ref={searchRef}>
-                    <div className="flex items-center gap-2 h-9 w-64 rounded-full border border-white/10 bg-white/5 px-4 text-sm text-themed-muted transition-all duration-200 focus-within:border-white/20 focus-within:bg-white/[0.08]">
+                <div className="relative mr-1 md:mr-2" ref={searchRef}>
+                    <div className="group flex items-center gap-2 h-9 w-9 md:w-64 rounded-full border border-transparent md:border-white/10 hover:bg-white/5 md:bg-white/5 px-0 md:px-4 justify-center md:justify-start text-sm text-themed-muted transition-all duration-200 focus-within:!w-64 focus-within:!border-white/20 focus-within:!bg-white/[0.08] focus-within:!px-4 focus-within:!justify-start cursor-text">
                         <Search className="h-4 w-4 shrink-0" />
                         <input
                             type="text"
-                            placeholder="Search pages..."
+                            placeholder="Search..."
                             value={searchQuery}
                             onChange={(e) => {
                                 setSearchQuery(e.target.value);
                                 setShowSearch(true);
                             }}
                             onFocus={() => setShowSearch(true)}
-                            className="w-full bg-transparent border-none outline-none text-themed-primary placeholder:text-themed-muted"
+                            className="w-full bg-transparent border-none outline-none text-themed-primary placeholder:text-themed-muted hidden md:block group-focus-within:block"
                         />
                     </div>
                     {/* Search Dropdown */}

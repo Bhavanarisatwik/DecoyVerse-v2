@@ -121,12 +121,12 @@ export default function Honeytokens() {
     return (
         <div className="space-y-6">
             <Breadcrumb />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-themed-primary font-heading">Honeytokens</h1>
                     <p className="text-themed-muted">Create and manage trackable assets to detect data theft.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                     <Select
                         value={selectedNodeId}
                         onChange={(val) => setSelectedNodeId(val)}
@@ -134,11 +134,11 @@ export default function Honeytokens() {
                             { value: 'all', label: 'All Nodes' },
                             ...nodes.map(n => ({ value: n.id || n.node_id || '', label: n.name || n.id || n.node_id || '' }))
                         ]}
-                        className="w-48"
+                        className="w-full sm:w-48"
                     />
                     <Button
                         onClick={() => setShowCreateModal(true)}
-                        className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl whitespace-nowrap"
+                        className="w-full sm:w-auto bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl whitespace-nowrap"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         Create Honeytoken
@@ -194,82 +194,84 @@ export default function Honeytokens() {
                     ) : honeytokens.length === 0 ? (
                         <div className="text-center py-8 text-themed-muted">No honeytokens created yet.</div>
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Token Name</TableHead>
-                                    <TableHead>Deployed On</TableHead>
-                                    <TableHead>Location</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Triggers</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {honeytokens.map((token) => (
-                                    <TableRow key={token.id}>
-                                        <TableCell className="font-medium text-themed-primary">
-                                            <div className="flex items-center gap-2">
-                                                <Key className="h-4 w-4 text-status-warning" />
-                                                <div>
-                                                    <span>{token.name}</span>
-                                                    {token.auto_deployed && (
-                                                        <div className="flex items-center gap-1 text-xs text-accent mt-0.5">
-                                                            <Zap className="h-3 w-3" />
-                                                            <span>Auto-deployed</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-themed-secondary">
-                                            {nodeNameMap[token.node_id] || token.node_name || token.node_id}
-                                        </TableCell>
-                                        <TableCell>
-                                            {token.file_path || token.deploy_location ? (
-                                                <div className="flex items-center gap-2 group">
-                                                    <div className="flex items-center gap-1 text-xs text-themed-muted font-mono max-w-[200px]">
-                                                        <MapPin className="h-3 w-3 shrink-0 text-status-info" />
-                                                        <span className="truncate" title={token.file_path || token.deploy_location}>
-                                                            {token.file_path || token.deploy_location}
-                                                        </span>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => copyToClipboard(token.file_path || token.deploy_location || '')}
-                                                        className="text-themed-muted hover:text-accent transition-colors opacity-0 group-hover:opacity-100"
-                                                        title="Copy path"
-                                                    >
-                                                        {copiedPath === (token.file_path || token.deploy_location) ? (
-                                                            <Check className="h-3 w-3 text-status-success" />
-                                                        ) : (
-                                                            <Copy className="h-3 w-3" />
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <span className="text-xs text-themed-dimmed">—</span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={token.status === 'active' ? 'success' : 'secondary'}>
-                                                {token.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-themed-secondary">{token.triggers}</TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-1">
-                                                <Button variant="ghost" size="icon" title="Download" className="rounded-lg hover:bg-accent/10">
-                                                    <Download className="h-4 w-4 text-accent" />
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className="rounded-lg hover:bg-themed-elevated">
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
+                        <div className="overflow-x-auto pb-2">
+                            <Table className="min-w-[800px]">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Token Name</TableHead>
+                                        <TableHead>Deployed On</TableHead>
+                                        <TableHead>Location</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Triggers</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {honeytokens.map((token) => (
+                                        <TableRow key={token.id}>
+                                            <TableCell className="font-medium text-themed-primary">
+                                                <div className="flex items-center gap-2">
+                                                    <Key className="h-4 w-4 text-status-warning" />
+                                                    <div>
+                                                        <span>{token.name}</span>
+                                                        {token.auto_deployed && (
+                                                            <div className="flex items-center gap-1 text-xs text-accent mt-0.5">
+                                                                <Zap className="h-3 w-3" />
+                                                                <span>Auto-deployed</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-themed-secondary">
+                                                {nodeNameMap[token.node_id] || token.node_name || token.node_id}
+                                            </TableCell>
+                                            <TableCell>
+                                                {token.file_path || token.deploy_location ? (
+                                                    <div className="flex items-center gap-2 group">
+                                                        <div className="flex items-center gap-1 text-xs text-themed-muted font-mono max-w-[200px]">
+                                                            <MapPin className="h-3 w-3 shrink-0 text-status-info" />
+                                                            <span className="truncate" title={token.file_path || token.deploy_location}>
+                                                                {token.file_path || token.deploy_location}
+                                                            </span>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => copyToClipboard(token.file_path || token.deploy_location || '')}
+                                                            className="text-themed-muted hover:text-accent transition-colors opacity-0 group-hover:opacity-100"
+                                                            title="Copy path"
+                                                        >
+                                                            {copiedPath === (token.file_path || token.deploy_location) ? (
+                                                                <Check className="h-3 w-3 text-status-success" />
+                                                            ) : (
+                                                                <Copy className="h-3 w-3" />
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-themed-dimmed">—</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={token.status === 'active' ? 'success' : 'secondary'}>
+                                                    {token.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-themed-secondary">{token.triggers}</TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-1">
+                                                    <Button variant="ghost" size="icon" title="Download" className="rounded-lg hover:bg-accent/10">
+                                                        <Download className="h-4 w-4 text-accent" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="rounded-lg hover:bg-themed-elevated">
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     )}
                 </CardContent>
             </Card>

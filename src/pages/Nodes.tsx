@@ -163,12 +163,12 @@ export default function Nodes() {
     return (
         <div className="space-y-6">
             <Breadcrumb />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-themed-primary font-heading">Nodes</h1>
                     <p className="text-themed-muted">Manage your deployed agents and devices.</p>
                 </div>
-                <Button onClick={() => setShowCreateModal(true)} className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">
+                <Button onClick={() => setShowCreateModal(true)} className="w-full sm:w-auto bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">
                     <Plus className="mr-2 h-4 w-4" />
                     Add New Node
                 </Button>
@@ -237,69 +237,71 @@ export default function Nodes() {
                             No nodes yet. Create one to get started.
                         </div>
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Node Name</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>IP Address</TableHead>
-                                    <TableHead>OS</TableHead>
-                                    <TableHead>Last Seen</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {nodes.map((node) => (
-                                    <TableRow key={node.id}>
-                                        <TableCell className="font-medium text-themed-primary">
-                                            <div className="flex items-center gap-2">
-                                                <Server className="h-4 w-4 text-themed-muted" />
-                                                {node.name}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={node.status === 'online' ? 'success' : 'secondary'}>
-                                                {node.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-themed-secondary">{node.ip || 'N/A'}</TableCell>
-                                        <TableCell className="text-themed-secondary">{node.os || 'N/A'}</TableCell>
-                                        <TableCell className="text-themed-muted">{node.lastSeen || 'Never'}</TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    className="rounded-lg hover:bg-themed-elevated"
-                                                    onClick={() => handleDownloadAgent(node.id || '', node.name)}
-                                                    title="Download ZIP installer"
-                                                >
-                                                    <Download className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    className="rounded-lg hover:bg-themed-elevated"
-                                                    onClick={() => handleDownloadExe(node)}
-                                                    title="Download Windows installer"
-                                                >
-                                                    <Monitor className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    className="rounded-lg hover:bg-status-danger/10 hover:text-status-danger"
-                                                    onClick={() => handleDeleteNode(node.id || '', node.name)}
-                                                    title="Delete node"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
+                        <div className="overflow-x-auto pb-2">
+                            <Table className="min-w-[800px]">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Node Name</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>IP Address</TableHead>
+                                        <TableHead>OS</TableHead>
+                                        <TableHead>Last Seen</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {nodes.map((node) => (
+                                        <TableRow key={node.id}>
+                                            <TableCell className="font-medium text-themed-primary">
+                                                <div className="flex items-center gap-2">
+                                                    <Server className="h-4 w-4 text-themed-muted" />
+                                                    {node.name}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={node.status === 'online' ? 'success' : 'secondary'}>
+                                                    {node.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-themed-secondary">{node.ip || 'N/A'}</TableCell>
+                                            <TableCell className="text-themed-secondary">{node.os || 'N/A'}</TableCell>
+                                            <TableCell className="text-themed-muted">{node.lastSeen || 'Never'}</TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="rounded-lg hover:bg-themed-elevated"
+                                                        onClick={() => handleDownloadAgent(node.id || '', node.name)}
+                                                        title="Download ZIP installer"
+                                                    >
+                                                        <Download className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="rounded-lg hover:bg-themed-elevated"
+                                                        onClick={() => handleDownloadExe(node)}
+                                                        title="Download Windows installer"
+                                                    >
+                                                        <Monitor className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="rounded-lg hover:bg-status-danger/10 hover:text-status-danger"
+                                                        onClick={() => handleDeleteNode(node.id || '', node.name)}
+                                                        title="Delete node"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     )}
                 </CardContent>
             </Card>

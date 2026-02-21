@@ -121,12 +121,12 @@ export default function Decoys() {
     return (
         <div className="space-y-6">
             <Breadcrumb />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-themed-primary font-heading">Decoys</h1>
                     <p className="text-themed-muted">Deploy and manage deception assets across your network.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                     <Select
                         value={selectedNodeId}
                         onChange={(val) => setSelectedNodeId(val)}
@@ -134,11 +134,11 @@ export default function Decoys() {
                             { value: 'all', label: 'All Nodes' },
                             ...nodes.map(n => ({ value: n.id || n.node_id || '', label: n.name || n.id || n.node_id || '' }))
                         ]}
-                        className="w-48"
+                        className="w-full sm:w-48"
                     />
                     <Button
                         onClick={() => setShowCreateModal(true)}
-                        className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl whitespace-nowrap"
+                        className="w-full sm:w-auto bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl whitespace-nowrap"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         Create New Decoy
@@ -193,100 +193,102 @@ export default function Decoys() {
                     ) : decoys.length === 0 ? (
                         <div className="text-center py-8 text-themed-muted">No decoys deployed yet.</div>
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Decoy Name</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Deployed On</TableHead>
-                                    <TableHead>Location</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Triggers</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {decoys.map((decoy) => (
-                                    <TableRow key={decoy.id}>
-                                        <TableCell className="font-medium text-themed-primary">
-                                            <div className="flex items-center gap-2">
-                                                <Ghost className="h-4 w-4 text-themed-muted" />
-                                                <div>
-                                                    <span>{decoy.name}</span>
-                                                    {decoy.auto_deployed && (
-                                                        <div className="flex items-center gap-1 text-xs text-accent mt-0.5">
-                                                            <Zap className="h-3 w-3" />
-                                                            <span>Auto-deployed</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline" className="bg-themed-elevated/50">
-                                                {decoy.type}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-themed-secondary">
-                                            {nodeNameMap[decoy.node_id] || decoy.node_name || decoy.node_id}
-                                        </TableCell>
-                                        <TableCell>
-                                            {decoy.file_path || decoy.deploy_location ? (
-                                                <div className="flex items-center gap-2 group">
-                                                    <div className="flex items-center gap-1 text-xs text-themed-muted font-mono max-w-[200px]">
-                                                        <MapPin className="h-3 w-3 shrink-0 text-status-info" />
-                                                        <span className="truncate" title={decoy.file_path || decoy.deploy_location}>
-                                                            {decoy.file_path || decoy.deploy_location}
-                                                        </span>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => copyToClipboard(decoy.file_path || decoy.deploy_location || '')}
-                                                        className="text-themed-muted hover:text-accent transition-colors opacity-0 group-hover:opacity-100"
-                                                        title="Copy path"
-                                                    >
-                                                        {copiedPath === (decoy.file_path || decoy.deploy_location) ? (
-                                                            <Check className="h-3 w-3 text-status-success" />
-                                                        ) : (
-                                                            <Copy className="h-3 w-3" />
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <span className="text-xs text-themed-dimmed">—</span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={decoy.status === 'active' ? 'success' : 'secondary'}>
-                                                {decoy.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-themed-secondary">{decoy.triggers}</TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    title="Toggle status"
-                                                    onClick={() => handleToggleStatus(decoy.id, decoy.status)}
-                                                    className="rounded-lg hover:bg-themed-elevated"
-                                                >
-                                                    {decoy.status === 'active' ? <Play className="h-4 w-4" /> : <Square className="h-4 w-4" />}
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    title="Delete"
-                                                    onClick={() => handleDeleteDecoy(decoy.id)}
-                                                    className="rounded-lg hover:bg-status-danger/10"
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-status-danger" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
+                        <div className="overflow-x-auto pb-2">
+                            <Table className="min-w-[800px]">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Decoy Name</TableHead>
+                                        <TableHead>Type</TableHead>
+                                        <TableHead>Deployed On</TableHead>
+                                        <TableHead>Location</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Triggers</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {decoys.map((decoy) => (
+                                        <TableRow key={decoy.id}>
+                                            <TableCell className="font-medium text-themed-primary">
+                                                <div className="flex items-center gap-2">
+                                                    <Ghost className="h-4 w-4 text-themed-muted" />
+                                                    <div>
+                                                        <span>{decoy.name}</span>
+                                                        {decoy.auto_deployed && (
+                                                            <div className="flex items-center gap-1 text-xs text-accent mt-0.5">
+                                                                <Zap className="h-3 w-3" />
+                                                                <span>Auto-deployed</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className="bg-themed-elevated/50">
+                                                    {decoy.type}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-themed-secondary">
+                                                {nodeNameMap[decoy.node_id] || decoy.node_name || decoy.node_id}
+                                            </TableCell>
+                                            <TableCell>
+                                                {decoy.file_path || decoy.deploy_location ? (
+                                                    <div className="flex items-center gap-2 group">
+                                                        <div className="flex items-center gap-1 text-xs text-themed-muted font-mono max-w-[200px]">
+                                                            <MapPin className="h-3 w-3 shrink-0 text-status-info" />
+                                                            <span className="truncate" title={decoy.file_path || decoy.deploy_location}>
+                                                                {decoy.file_path || decoy.deploy_location}
+                                                            </span>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => copyToClipboard(decoy.file_path || decoy.deploy_location || '')}
+                                                            className="text-themed-muted hover:text-accent transition-colors opacity-0 group-hover:opacity-100"
+                                                            title="Copy path"
+                                                        >
+                                                            {copiedPath === (decoy.file_path || decoy.deploy_location) ? (
+                                                                <Check className="h-3 w-3 text-status-success" />
+                                                            ) : (
+                                                                <Copy className="h-3 w-3" />
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-themed-dimmed">—</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={decoy.status === 'active' ? 'success' : 'secondary'}>
+                                                    {decoy.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-themed-secondary">{decoy.triggers}</TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        title="Toggle status"
+                                                        onClick={() => handleToggleStatus(decoy.id, decoy.status)}
+                                                        className="rounded-lg hover:bg-themed-elevated"
+                                                    >
+                                                        {decoy.status === 'active' ? <Play className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        title="Delete"
+                                                        onClick={() => handleDeleteDecoy(decoy.id)}
+                                                        className="rounded-lg hover:bg-status-danger/10"
+                                                    >
+                                                        <Trash2 className="h-4 w-4 text-status-danger" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     )}
                 </CardContent>
             </Card>

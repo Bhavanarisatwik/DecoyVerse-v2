@@ -132,8 +132,7 @@
     transition: background-color 0.3s ease, color 0.3s ease;
     height: 100%;
     margin: 0;
-    overflow: hidden;
-    /* Stop the window itself from spawning scrollbars, let Layout components handle it */
+    overflow-x: hidden; /* Stop horizontal overflow, let vertical naturally handle LandingPage */
   }
 
   #root {

@@ -224,8 +224,8 @@ export default function Dashboard() {
             </div>
 
             {/* Charts */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4 rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black">
+            <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+                <Card className="lg:col-span-4 rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black">
                     <CardHeader>
                         <CardTitle className="text-themed-primary">Attack Volume</CardTitle>
                         <CardDescription>Daily attack attempts over the last 7 days</CardDescription>
@@ -258,7 +258,7 @@ export default function Dashboard() {
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="col-span-3 rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black">
+                <Card className="lg:col-span-3 rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-black">
                     <CardHeader>
                         <CardTitle className="text-themed-primary">Decoy Activity</CardTitle>
                         <CardDescription>Activity by hour</CardDescription>
@@ -293,55 +293,57 @@ export default function Dashboard() {
                     ) : alerts.length === 0 ? (
                         <div className="text-themed-muted text-sm">No alerts yet - system is secure</div>
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="border-white/10 hover:bg-transparent">
-                                    <TableHead className="text-themed-muted">Status</TableHead>
-                                    <TableHead className="text-themed-muted">Attack Type</TableHead>
-                                    <TableHead className="text-themed-muted">Severity</TableHead>
-                                    <TableHead className="text-themed-muted text-right">Time</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {alerts.map((alert) => (
-                                    <TableRow
-                                        key={alert.id}
-                                        className="cursor-pointer hover:bg-white/5 transition-colors border-white/10"
-                                        onClick={() => setSelectedAlert(alert)}
-                                    >
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className={
-                                                    alert.status === 'resolved' ? 'border-status-success text-status-success' :
-                                                        alert.status === 'acknowledged' ? 'border-status-warning text-status-warning' :
-                                                            'border-status-danger text-status-danger'
-                                                }
-                                            >
-                                                {alert.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="font-medium text-themed-primary capitalize">
-                                            {alert.alert_type.replace('_', ' ')}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                className={
-                                                    alert.severity === 'critical' ? 'bg-status-danger/20 text-status-danger hover:bg-status-danger/30' :
-                                                        (alert.severity === 'high' || alert.severity === 'medium') ? 'bg-status-warning/20 text-status-warning hover:bg-status-warning/30' :
-                                                            'bg-status-info/20 text-status-info hover:bg-status-info/30'
-                                                }
-                                            >
-                                                Severity: {alert.severity}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right text-themed-muted">
-                                            {new Date(alert.created_at).toLocaleTimeString()}
-                                        </TableCell>
+                        <div className="overflow-x-auto pb-2">
+                            <Table className="min-w-[600px]">
+                                <TableHeader>
+                                    <TableRow className="border-white/10 hover:bg-transparent">
+                                        <TableHead className="text-themed-muted">Status</TableHead>
+                                        <TableHead className="text-themed-muted">Attack Type</TableHead>
+                                        <TableHead className="text-themed-muted">Severity</TableHead>
+                                        <TableHead className="text-themed-muted text-right">Time</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {alerts.map((alert) => (
+                                        <TableRow
+                                            key={alert.id}
+                                            className="cursor-pointer hover:bg-white/5 transition-colors border-white/10"
+                                            onClick={() => setSelectedAlert(alert)}
+                                        >
+                                            <TableCell>
+                                                <Badge
+                                                    variant="outline"
+                                                    className={
+                                                        alert.status === 'resolved' ? 'border-status-success text-status-success' :
+                                                            alert.status === 'acknowledged' ? 'border-status-warning text-status-warning' :
+                                                                'border-status-danger text-status-danger'
+                                                    }
+                                                >
+                                                    {alert.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="font-medium text-themed-primary capitalize">
+                                                {alert.alert_type.replace('_', ' ')}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    className={
+                                                        alert.severity === 'critical' ? 'bg-status-danger/20 text-status-danger hover:bg-status-danger/30' :
+                                                            (alert.severity === 'high' || alert.severity === 'medium') ? 'bg-status-warning/20 text-status-warning hover:bg-status-warning/30' :
+                                                                'bg-status-info/20 text-status-info hover:bg-status-info/30'
+                                                    }
+                                                >
+                                                    Severity: {alert.severity}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right text-themed-muted whitespace-nowrap">
+                                                {new Date(alert.created_at).toLocaleTimeString()}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     )}
                 </CardContent>
             </Card>

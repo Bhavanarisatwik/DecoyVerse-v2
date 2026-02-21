@@ -32,7 +32,7 @@ const formatTime = (dateString: string) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'now';
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
@@ -119,14 +119,14 @@ export default function Alerts() {
     return (
         <div className="space-y-6">
             <Breadcrumb />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-themed-primary font-heading">Alerts</h1>
                     <p className="text-themed-muted">Manage and investigate security incidents.</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <select
-                        className="h-10 rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
+                        className="h-10 flex-1 sm:flex-none rounded-xl border border-white/10 bg-themed-elevated/50 px-3 text-sm text-themed-primary"
                         value={selectedNodeId}
                         onChange={(e) => setSelectedNodeId(e.target.value)}
                     >
@@ -137,11 +137,12 @@ export default function Alerts() {
                             </option>
                         ))}
                     </select>
-                    <Button variant="outline" className="border-themed rounded-xl hover:bg-themed-elevated">
+                    <Button variant="outline" className="flex-1 sm:flex-none border-themed rounded-xl hover:bg-themed-elevated">
                         <Filter className="mr-2 h-4 w-4" />
-                        Filter Alerts
+                        <span className="hidden sm:inline">Filter Alerts</span>
+                        <span className="sm:hidden">Filter</span>
                     </Button>
-                    <Button className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">
+                    <Button className="w-full sm:w-auto bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl">
                         <Bell className="mr-2 h-4 w-4" />
                         Configure Rules
                     </Button>

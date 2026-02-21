@@ -1,6 +1,12 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+export interface INotificationSettings {
+    slackWebhook?: string;
+    emailAlertTo?: string;
+    whatsappNumber?: string;
+}
+
 export interface IUser extends Document {
     _id: mongoose.Types.ObjectId;
     name: string;
@@ -10,6 +16,7 @@ export interface IUser extends Document {
     role: 'admin' | 'user' | 'viewer';
     isActive: boolean;
     isOnboarded: boolean;
+    notifications?: INotificationSettings;
     lastLogin?: Date;
     createdAt: Date;
     updatedAt: Date;
@@ -56,6 +63,11 @@ const userSchema = new Schema<IUser>(
             type: Boolean,
             default: false,
         },
+        notifications: {
+            slackWebhook: { type: String, default: '' },
+            emailAlertTo: { type: String, default: '' },
+            whatsappNumber: { type: String, default: '' },
+        },
         lastLogin: {
             type: Date,
         },
@@ -68,7 +80,7 @@ const userSchema = new Schema<IUser>(
 // Hash password before saving
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
-    
+
     try {
         const salt = await bcrypt.genSalt(12);
         this.password = await bcrypt.hash(this.password, salt);

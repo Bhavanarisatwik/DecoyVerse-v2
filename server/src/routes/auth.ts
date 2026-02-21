@@ -79,7 +79,7 @@ router.post('/signup', signupValidation, async (req: Request, res: Response): Pr
                     name: user.name,
                     email: user.email,
                     role: user.role,
-                                       isOnboarded: user.isOnboarded,
+                    isOnboarded: user.isOnboarded,
                     createdAt: user.createdAt,
                 },
                 token,
@@ -87,7 +87,7 @@ router.post('/signup', signupValidation, async (req: Request, res: Response): Pr
         });
     } catch (error: any) {
         console.error('Signup error:', error);
-        
+
         // Handle duplicate key error
         if (error.code === 11000) {
             res.status(400).json({
@@ -124,7 +124,7 @@ router.post('/login', loginValidation, async (req: Request, res: Response): Prom
 
         // Find user by email (include password for comparison)
         const user = await User.findOne({ email }).select('+password');
-        
+
         if (!user) {
             res.status(401).json({
                 success: false,
@@ -190,7 +190,7 @@ router.post('/login', loginValidation, async (req: Request, res: Response): Prom
 router.get('/me', protect, async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const user = await User.findById(req.user?._id);
-        
+
         if (!user) {
             res.status(404).json({
                 success: false,
@@ -260,7 +260,7 @@ router.put('/update-password', protect, [
 
         // Get user with password
         const user = await User.findById(req.user?._id).select('+password');
-        
+
         if (!user) {
             res.status(404).json({
                 success: false,
@@ -337,6 +337,91 @@ router.put('/complete-onboarding', protect, async (req: AuthRequest, res: Respon
         });
     } catch (error) {
         console.error('Complete onboarding error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+        });
+    }
+});
+
+// @route   PUT /api/auth/profile
+// @desc    Update user profile (name, email, avatar)
+// @access  Private
+router.put('/profile', protect, [
+    body('name')
+        .optional()
+        .trim()
+        .isLength({ min: 2, max: 50 }).withMessage('Name must be 2-50 characters'),
+    body('email')
+        .optional()
+        .trim()
+        .isEmail().withMessage('Please enter a valid email')
+        .normalizeEmail(),
+], async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(400).json({
+                success: false,
+                message: 'Validation failed',
+                errors: errors.array(),
+            });
+            return;
+        }
+
+        const user = await User.findById(req.user?._id);
+
+        if (!user) {
+            res.status(404).json({
+                success: false,
+                message: 'User not found',
+            });
+            return;
+        }
+
+        // Update fields if provided
+        const { name, email, avatar, notifications } = req.body;
+        if (name) user.name = name;
+        if (email) user.email = email;
+        if (avatar !== undefined) user.avatar = avatar;
+        if (notifications) {
+            user.notifications = {
+                ...(user.notifications || {}),
+                ...notifications,
+            };
+        }
+
+        await user.save();
+
+        res.json({
+            success: true,
+            message: 'Profile updated successfully',
+            data: {
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    avatar: user.avatar,
+                    isOnboarded: user.isOnboarded,
+                    notifications: user.notifications,
+                    createdAt: user.createdAt,
+                    lastLogin: user.lastLogin,
+                },
+            },
+        });
+    } catch (error: any) {
+        console.error('Update profile error:', error);
+
+        // Handle duplicate email
+        if (error.code === 11000) {
+            res.status(400).json({
+                success: false,
+                message: 'Email already in use',
+            });
+            return;
+        }
+
         res.status(500).json({
             success: false,
             message: 'Server error',

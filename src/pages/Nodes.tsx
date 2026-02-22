@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Server, Activity, Clock, Download, Trash2, Plus, Monitor } from "lucide-react"
+import { Server, Activity, Clock, Download, Trash2, Plus } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
@@ -104,20 +104,6 @@ export default function Nodes() {
         }
     }
 
-    const handleDownloadExe = async (node: Node) => {
-        try {
-            await installApi.downloadWindowsInstaller(
-                node.node_id || node.id || '',
-                node.name,
-                node.node_api_key || '',
-                node.deployment_config?.initial_decoys,
-                node.deployment_config?.initial_honeytokens
-            )
-        } catch (err) {
-            console.error('Error downloading Windows installer:', err)
-            setError('Failed to download Windows installer')
-        }
-    }
 
     const handleDeleteNode = (nodeId: string, nodeName: string) => {
         setDeleteConfirm({ nodeId, nodeName })
@@ -277,15 +263,7 @@ export default function Nodes() {
                                                     >
                                                         <Download className="h-4 w-4" />
                                                     </Button>
-                                                    <Button
-                                                        size="icon"
-                                                        variant="ghost"
-                                                        className="rounded-lg hover:bg-themed-elevated"
-                                                        onClick={() => handleDownloadExe(node)}
-                                                        title="Download Windows installer"
-                                                    >
-                                                        <Monitor className="h-4 w-4" />
-                                                    </Button>
+
                                                     <Button
                                                         size="icon"
                                                         variant="ghost"

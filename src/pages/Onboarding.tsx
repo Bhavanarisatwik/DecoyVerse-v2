@@ -137,24 +137,6 @@ export default function Onboarding() {
         }
     };
 
-    const handleDownloadExe = async () => {
-        if (!nodeData?.node_id) {
-            alert('Please create a node first')
-            return
-        }
-        try {
-            const nodeId = String(nodeData.node_id).trim();
-            const apiKey = nodeData.node_api_key || '';
-            const decoys = nodeData?.initialDecoys || nodeData?.deployment_config?.initial_decoys || 3;
-            const honeytokens = nodeData?.initialHoneytokens || nodeData?.deployment_config?.initial_honeytokens || 5;
-            await installApi.downloadWindowsInstaller(nodeId, nodeData?.name || nodeName || nodeId, apiKey, decoys, honeytokens)
-        } catch (err) {
-            console.error('Error downloading Windows installer:', err)
-            if (err instanceof Error) {
-                alert('Failed to download Windows installer: ' + err.message)
-            }
-        }
-    };
 
     if (loading) {
         return (
@@ -295,13 +277,7 @@ export default function Onboarding() {
                                     <Download className="mr-2 h-4 w-4" />
                                     Download Agent Installer (.zip)
                                 </Button>
-                                <Button
-                                    onClick={handleDownloadExe}
-                                    className="w-full bg-gray-800 hover:bg-gray-700 text-themed-primary font-bold rounded-xl"
-                                >
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Download Windows EXE Installer
-                                </Button>
+
                                 <div className="text-sm text-themed-muted space-y-2">
                                     <p>Selected OS: <span className="text-accent font-medium">{nodeOs}</span></p>
                                     <div className="p-3 bg-themed-elevated/50 rounded-lg border border-themed text-xs">

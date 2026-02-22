@@ -4,6 +4,14 @@ import { Button } from "../common/Button"
 import { ThemeSwitcher } from "../common/ThemeSwitcher"
 
 export function LandingNavbar() {
+    const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+        e.preventDefault();
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return (
         <nav className="fixed top-0 left-0 right-0 z-50">
             <div className="mx-auto max-w-7xl px-4 md:px-6 py-4">
@@ -16,21 +24,21 @@ export function LandingNavbar() {
                     </Link>
 
                     <div className="hidden md:flex items-center gap-1">
-                        <a href="#hero" className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
+                        <a href="#hero" onClick={(e) => handleScroll(e, 'hero')} className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             Overview
                             <ChevronDown className="h-3 w-3" />
                         </a>
-                        <a href="#products" className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
+                        <a href="#use-cases" onClick={(e) => handleScroll(e, 'use-cases')} className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             Products
                             <ChevronDown className="h-3 w-3" />
                         </a>
-                        <a href="#features" className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
+                        <a href="#features" onClick={(e) => handleScroll(e, 'features')} className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             Features
                         </a>
-                        <a href="#pricing" className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
+                        <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             Pricing
                         </a>
-                        <a href="#faq" className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
+                        <a href="#faq" onClick={(e) => handleScroll(e, 'faq')} className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
                             FAQ
                         </a>
                     </div>

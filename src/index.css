@@ -132,7 +132,8 @@
     transition: background-color 0.3s ease, color 0.3s ease;
     height: 100%;
     margin: 0;
-    overflow-x: hidden; /* Stop horizontal overflow, let vertical naturally handle LandingPage */
+    overflow-x: hidden;
+    /* Stop horizontal overflow, let vertical naturally handle LandingPage */
   }
 
   #root {
@@ -660,4 +661,128 @@
   .scrollbar-hidden:hover::-webkit-scrollbar {
     display: block;
   }
+}
+
+/* ===== LANDING PAGE LIGHT MODE REFINEMENTS ===== */
+.theme-light .lp-hero-node {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-primary) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+.theme-light .lp-hero-badge {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-secondary) !important;
+  box-shadow: none !important;
+}
+
+.theme-light .lp-hero-badge span {
+  color: var(--text-primary) !important;
+}
+
+.theme-light .lp-btn-primary {
+  background-color: var(--accent-500) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.3) !important;
+}
+
+.theme-light .lp-btn-secondary {
+  background-color: transparent !important;
+  border-color: var(--border-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-light .lp-btn-secondary:hover {
+  background-color: var(--bg-elevated) !important;
+}
+
+.theme-light .lp-feature-heading {
+  background-image: none !important;
+  background-color: transparent !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  color: var(--text-primary) !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+}
+
+.theme-light .lp-feature-icon-box {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-secondary) !important;
+}
+
+.theme-light .lp-feature-card {
+  background: var(--bg-card) !important;
+  border-color: var(--border-secondary) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+}
+
+.theme-light .lp-feature-card-inner {
+  background: var(--bg-elevated) !important;
+  border-color: var(--border-primary) !important;
+}
+
+.theme-light .lp-feature-text {
+  color: var(--text-primary) !important;
+}
+
+.theme-light .lp-feature-text-muted {
+  color: var(--text-muted) !important;
+}
+
+.theme-light .lp-tab-active {
+  background-color: var(--bg-card) !important;
+  border-color: var(--accent-500) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+}
+
+.theme-light .lp-tab-active h3 {
+  color: var(--accent-600) !important;
+}
+
+.theme-light .lp-tab-inactive {
+  background-color: transparent !important;
+  border-color: var(--border-primary) !important;
+}
+
+.theme-light .lp-tab-inactive:hover {
+  background-color: var(--bg-elevated) !important;
+}
+
+.theme-light .lp-sim-header {
+  background-color: var(--bg-elevated) !important;
+  border-bottom-color: var(--border-secondary) !important;
+}
+
+.theme-light .lp-sim-panel-danger {
+  background-color: var(--bg-card) !important;
+  border-color: rgba(var(--color-status-danger), 0.3) !important;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.1) !important;
+}
+
+.theme-light .lp-sim-panel-safe {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-primary) !important;
+}
+
+.theme-light .lp-sim-text-white {
+  color: var(--text-primary) !important;
+}
+
+.theme-light .lp-pricing-feature-no-bg {
+  background-color: var(--bg-elevated) !important;
+}
+
+.theme-light .lp-pricing-feature-no-text {
+  color: var(--text-muted) !important;
+}
+
+.theme-light .lp-pricing-btn-secondary {
+  background-color: transparent !important;
+  border-color: var(--border-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-light .lp-pricing-btn-secondary:hover {
+  background-color: var(--bg-elevated) !important;
 }

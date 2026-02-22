@@ -389,6 +389,7 @@ router.put('/profile', protect, [
                 ...(user.notifications || {}),
                 ...notifications,
             };
+            user.markModified('notifications');
         }
 
         await user.save();

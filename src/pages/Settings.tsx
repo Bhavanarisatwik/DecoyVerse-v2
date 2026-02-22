@@ -17,7 +17,7 @@ const themes: { id: ThemeMode; name: string; colors: string[]; description: stri
 
 export default function Settings() {
     const { theme, setTheme } = useTheme();
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
 
     // Form state with user data
     const [firstName, setFirstName] = useState(user?.name?.split(' ')[0] || '')
@@ -50,9 +50,9 @@ export default function Settings() {
                 }
             })
             if (response.success && response.data) {
-                // Update local auth context
-                // You may need to expose an `updateUser` method string in AuthContext
-                // assuming the backend returns the updated user object.
+                // Depending on the API format, response.data might be the user directly or nested
+                const updatedUser = (response.data as any).user || response.data;
+                updateUser(updatedUser);
                 alert('Profile and notifications updated successfully.')
             } else {
                 alert(`Failed to update profile: ${response.message}`)

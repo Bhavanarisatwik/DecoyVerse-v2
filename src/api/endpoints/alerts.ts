@@ -5,20 +5,37 @@ export interface Alert {
     node_id: string;
     alert_type: string;
     severity: 'low' | 'medium' | 'high' | 'critical';
+    risk_score?: number;
     message: string;
     created_at: string;
     status: 'open' | 'acknowledged' | 'investigating' | 'resolved';
 }
 
-const normalizeAlert = (alert: any): Alert => ({
-    id: alert.id || alert._id || alert.alert_id || '',
-    node_id: alert.node_id || '',
-    alert_type: alert.alert_type || alert.attack_type || alert.activity || 'Alert',
-    severity: (alert.severity || 'low').toLowerCase(),
-    message: alert.message || alert.payload || alert.activity || 'Alert triggered',
-    created_at: alert.created_at || alert.timestamp || '',
-    status: alert.status || 'open',
-});
+const severityFromRiskScore = (score: number): Alert['severity'] => {
+    if (score >= 8) return 'critical';
+    if (score >= 6) return 'high';
+    if (score >= 4) return 'medium';
+    return 'low';
+};
+
+const normalizeAlert = (alert: any): Alert => {
+    const riskScore: number | undefined = alert.risk_score ?? alert.riskScore;
+    const severity: Alert['severity'] = alert.severity
+        ? (alert.severity as string).toLowerCase() as Alert['severity']
+        : riskScore !== undefined
+            ? severityFromRiskScore(riskScore)
+            : 'low';
+    return {
+        id: alert.id || alert._id || alert.alert_id || '',
+        node_id: alert.node_id || '',
+        alert_type: alert.alert_type || alert.attack_type || alert.activity || 'Alert',
+        severity,
+        risk_score: riskScore,
+        message: alert.message || alert.payload || alert.activity || 'Alert triggered',
+        created_at: alert.created_at || alert.timestamp || '',
+        status: alert.status || 'open',
+    };
+};
 
 export const alertsApi = {
     /**

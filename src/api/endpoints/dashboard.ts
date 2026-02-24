@@ -5,6 +5,7 @@ export interface Alert {
     node_id: string;
     alert_type: string;
     severity: 'low' | 'medium' | 'high' | 'critical';
+    risk_score?: number;
     message: string;
     created_at: string;
     status: 'new' | 'acknowledged' | 'resolved';

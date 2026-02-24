@@ -9,6 +9,8 @@ export interface Alert {
     message: string;
     created_at: string;
     status: 'open' | 'acknowledged' | 'investigating' | 'resolved';
+    notified?: boolean;
+    notification_status?: 'sent' | 'failed' | 'no_channels' | null;
 }
 
 const severityFromRiskScore = (score: number): Alert['severity'] => {
@@ -34,6 +36,8 @@ const normalizeAlert = (alert: any): Alert => {
         message: alert.message || alert.payload || alert.activity || 'Alert triggered',
         created_at: alert.created_at || alert.timestamp || '',
         status: alert.status || 'open',
+        notified: alert.notified ?? false,
+        notification_status: alert.notification_status ?? null,
     };
 };
 

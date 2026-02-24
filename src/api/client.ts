@@ -108,6 +108,18 @@ apiClient.delete = (async function (this: any, url: string, config?: any) {
     }
     return originalDelete.apply(this, [url, config]);
 }) as any;
+
+const originalPatch = apiClient.patch;
+apiClient.patch = (async function (this: any, url: string, data?: any, config?: any) {
+    if (isDemoMode()) {
+        // Return a mock alert with the updated status for PATCH /api/alerts/:id
+        if (url.includes('/api/alerts/')) {
+            return Promise.resolve({ data: { success: true, new_status: data?.status }, status: 200, statusText: 'OK', headers: {} as any, config: config || {} as any });
+        }
+        return Promise.resolve({ data: { success: true }, status: 200, statusText: 'OK', headers: {} as any, config: config || {} as any });
+    }
+    return originalPatch.apply(this, [url, data, config]);
+}) as any;
 // ------------------------------
 
 export default apiClient;

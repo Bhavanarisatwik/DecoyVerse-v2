@@ -8,7 +8,9 @@ export interface Alert {
     risk_score?: number;
     message: string;
     created_at: string;
-    status: 'new' | 'acknowledged' | 'resolved';
+    status: 'open' | 'acknowledged' | 'investigating' | 'resolved';
+    notified?: boolean;
+    notification_status?: 'sent' | 'failed' | 'no_channels' | null;
 }
 
 export interface Attack {

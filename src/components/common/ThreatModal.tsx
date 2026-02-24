@@ -14,6 +14,8 @@ export interface Alert {
     payload: string
     status: string
     node_id: string
+    notified?: boolean
+    notification_status?: 'sent' | 'failed' | 'no_channels' | null
 }
 
 interface ThreatModalProps {
@@ -126,6 +128,20 @@ export function ThreatModal({ isOpen, onClose, alert }: ThreatModalProps) {
                                             <p className="text-xs text-gray-500 mb-1">Timestamp</p>
                                             <p className="text-sm text-white">{new Date(alert.timestamp).toLocaleString()}</p>
                                         </div>
+                                        {alert.notification_status && (
+                                            <div className="md:col-span-2">
+                                                <p className="text-xs text-gray-500 mb-1">Notification</p>
+                                                <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
+                                                    alert.notification_status === 'sent'
+                                                        ? 'bg-status-success/20 text-status-success'
+                                                        : alert.notification_status === 'failed'
+                                                        ? 'bg-status-danger/20 text-status-danger'
+                                                        : 'bg-gray-700 text-gray-400'
+                                                }`}>
+                                                    {alert.notification_status === 'sent' ? '✓ Notified' : alert.notification_status === 'failed' ? '✗ Failed' : 'No channels'}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

@@ -323,7 +323,7 @@ export default function Dashboard() {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="font-medium text-themed-primary capitalize">
-                                                {alert.alert_type.replace('_', ' ')}
+                                                {(alert.alert_type ?? 'Unknown').replace('_', ' ')}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge

@@ -73,4 +73,18 @@ export const alertsApi = {
             throw error;
         }
     },
+
+    /**
+     * Queue an IP address for firewall blocking on the specified node.
+     * The agent picks it up on the next heartbeat (~30s) and applies the Windows
+     * Firewall rule via the privilege-separated dv_firewall helper.
+     */
+    async blockIp(ip_address: string, node_id: string, alert_id?: string): Promise<{ success: boolean; status: string }> {
+        try {
+            const response = await apiClient.post('/api/block-ip', { ip_address, node_id, alert_id });
+            return { success: true, status: response.data.status ?? 'pending' };
+        } catch (error) {
+            throw error;
+        }
+    },
 };

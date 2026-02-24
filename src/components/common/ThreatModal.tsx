@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { X, ShieldAlert, Activity, Server, AlertTriangle, Fingerprint } from "lucide-react"
+import { useState } from "react"
+import { X, ShieldAlert, Activity, Server, AlertTriangle, Fingerprint, ShieldOff, CheckCircle2, Loader2 } from "lucide-react"
+import { alertsApi } from "../../api/endpoints/alerts"
 
 export interface Alert {
     _id: string
@@ -25,7 +27,20 @@ interface ThreatModalProps {
 }
 
 export function ThreatModal({ isOpen, onClose, alert }: ThreatModalProps) {
+    const [blockState, setBlockState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+
     if (!alert) return null
+
+    const handleBlockIp = async () => {
+        if (!alert.node_id || !alert.source_ip || blockState !== 'idle') return
+        setBlockState('loading')
+        try {
+            await alertsApi.blockIp(alert.source_ip, alert.node_id, alert.alert_id)
+            setBlockState('done')
+        } catch {
+            setBlockState('error')
+        }
+    }
 
     return (
         <AnimatePresence>
@@ -173,11 +188,30 @@ export function ThreatModal({ isOpen, onClose, alert }: ThreatModalProps) {
                                 >
                                     Dismiss
                                 </button>
-                                <button
-                                    className="px-4 py-2 rounded-lg text-sm font-medium bg-status-danger text-white hover:bg-red-600 transition-colors shadow-[0_0_15px_rgba(239,68,68,0.3)]"
-                                >
-                                    Block Source IP
-                                </button>
+                                {blockState === 'done' ? (
+                                    <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-status-success/20 text-status-success border border-status-success/30">
+                                        <CheckCircle2 className="h-4 w-4" />
+                                        Block Queued — agent will apply on next heartbeat
+                                    </span>
+                                ) : blockState === 'error' ? (
+                                    <button
+                                        onClick={handleBlockIp}
+                                        className="px-4 py-2 rounded-lg text-sm font-medium bg-status-danger/20 text-status-danger border border-status-danger/40 hover:bg-status-danger hover:text-white transition-colors"
+                                    >
+                                        Retry Block
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleBlockIp}
+                                        disabled={blockState === 'loading'}
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-status-danger text-white hover:bg-red-600 transition-colors shadow-[0_0_15px_rgba(239,68,68,0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
+                                    >
+                                        {blockState === 'loading'
+                                            ? <><Loader2 className="h-4 w-4 animate-spin" /> Queueing Block...</>
+                                            : <><ShieldOff className="h-4 w-4" /> Block Source IP</>
+                                        }
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </motion.div>

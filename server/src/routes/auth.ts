@@ -209,6 +209,7 @@ router.get('/me', protect, async (req: AuthRequest, res: Response): Promise<void
                     role: user.role,
                     avatar: user.avatar,
                     isOnboarded: user.isOnboarded,
+                    notifications: user.notifications,
                     createdAt: user.createdAt,
                     lastLogin: user.lastLogin,
                 },

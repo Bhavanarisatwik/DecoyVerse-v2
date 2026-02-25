@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User';
 import { generateToken, protect, AuthRequest } from '../middleware/auth';
-import { sendEmail, welcomeEmailHtml, testAlertEmailHtml } from '../utils/mailer';
+import { sendEmail, welcomeEmailHtml, testAlertEmailHtml, alertEmailHtml } from '../utils/mailer';
 
 const router = Router();
 
@@ -485,6 +485,36 @@ router.post('/test-alert-email', protect, async (req: AuthRequest, res: Response
             success: false,
             message: error?.message || 'Failed to send test alert. Check SMTP credentials.',
         });
+    }
+});
+
+// @route   POST /api/auth/internal/send-alert-email
+// @desc    Internal endpoint for Python FastAPI to relay alert emails through NodeMailer
+// @access  Internal — validated by x-internal-secret header (not public JWT)
+router.post('/internal/send-alert-email', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const secret = req.headers['x-internal-secret'];
+        if (!process.env.INTERNAL_SECRET || secret !== process.env.INTERNAL_SECRET) {
+            res.status(401).json({ success: false, message: 'Unauthorized' });
+            return;
+        }
+
+        const { to, alertData } = req.body;
+        if (!to || !alertData) {
+            res.status(400).json({ success: false, message: 'Missing to or alertData' });
+            return;
+        }
+
+        await sendEmail(
+            to,
+            '🚨 DecoyVerse Alert — Threat Detected',
+            alertEmailHtml(alertData)
+        );
+
+        res.json({ success: true, message: `Alert email sent to ${to}` });
+    } catch (error: any) {
+        console.error('Internal send-alert-email error:', error);
+        res.status(500).json({ success: false, message: error?.message || 'Failed to send alert email' });
     }
 });
 

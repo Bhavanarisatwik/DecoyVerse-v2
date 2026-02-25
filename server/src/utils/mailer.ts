@@ -1,24 +1,41 @@
 import nodemailer from 'nodemailer';
+import { lookup } from 'dns';
+import { promisify } from 'util';
+
+const dnsLookup = promisify(lookup);
+
+// ---------------------------------------------------------------------------
+// Resolve hostname to IPv4 before creating the transporter.
+// Render's outbound IPv6 routing to Gmail is broken (ENETUNREACH), so we must
+// ensure nodemailer connects to an IPv4 address.  dns.lookup with family:4
+// is the only reliable way — nodemailer's own `family` option is silently ignored.
+// ---------------------------------------------------------------------------
+async function resolveIPv4(hostname: string): Promise<string> {
+    try {
+        const { address } = await dnsLookup(hostname, { family: 4 });
+        return address;  // e.g. "142.250.x.x"
+    } catch {
+        return hostname; // safe fallback — let nodemailer try anyway
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Transporter — created lazily so missing SMTP config just silently no-ops
 // ---------------------------------------------------------------------------
-function createTransporter() {
+async function createTransporter() {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return null;
-    // Cast to any: `family` is a valid nodemailer/smtp-connection option but
-    // not reflected in @types/nodemailer, causing overload resolution to fail.
+    const host = await resolveIPv4(process.env.SMTP_HOST || 'smtp.gmail.com');
     return nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        host,
         port: Number(process.env.SMTP_PORT) || 587,
         secure: false, // STARTTLS
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
-        connectionTimeout: 10_000,  // fail in 10s if Gmail unreachable
-        greetingTimeout:   10_000,  // fail in 10s if no SMTP banner
-        socketTimeout:     15_000,  // fail in 15s if send stalls
-        family:            4,       // force IPv4 — Render's IPv6 → Gmail routing is broken
+        connectionTimeout: 10_000,
+        greetingTimeout:   10_000,
+        socketTimeout:     15_000,
     } as any);
 }
 
@@ -27,7 +44,7 @@ function createTransporter() {
  * Silently skips if SMTP is not configured — never throws.
  */
 export async function sendEmail(to: string, subject: string, html: string): Promise<void> {
-    const transporter = createTransporter();
+    const transporter = await createTransporter();
     if (!transporter) return;
     await transporter.sendMail({
         from: `"DecoyVerse Security" <${process.env.SMTP_USER}>`,

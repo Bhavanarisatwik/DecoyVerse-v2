@@ -15,7 +15,7 @@ import { Resend } from 'resend';
  * Send an email via Resend API.
  * Silently skips if RESEND_API_KEY is not set — never throws.
  */
-export async function sendEmail(to: string, subject: string, html: string): Promise<void> {
+export async function sendEmail(to: string, subject: string, html: string, replyTo?: string): Promise<void> {
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) return;
 
@@ -28,6 +28,7 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
         subject,
         html,
         text: html.replace(/<[^>]*>/g, ' ').replace(/\s{2,}/g, ' ').trim(),
+        ...(replyTo ? { replyTo } : {}),
     });
 }
 

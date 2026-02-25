@@ -472,7 +472,8 @@ router.post('/test-alert-email', protect, async (req: AuthRequest, res: Response
         await sendEmail(
             recipientEmail,
             '🚨 [TEST] DecoyVerse Alert — Critical Threat Detected',
-            testAlertEmailHtml(recipientEmail)
+            testAlertEmailHtml(recipientEmail),
+            user.email   // replyTo — replies go back to the account owner
         );
 
         res.json({
@@ -508,7 +509,8 @@ router.post('/internal/send-alert-email', async (req: Request, res: Response): P
         await sendEmail(
             to,
             '🚨 DecoyVerse Alert — Threat Detected',
-            alertEmailHtml(alertData)
+            alertEmailHtml(alertData),
+            to   // replyTo — replies stay with the alert recipient
         );
 
         res.json({ success: true, message: `Alert email sent to ${to}` });

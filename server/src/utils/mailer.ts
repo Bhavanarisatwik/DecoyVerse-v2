@@ -5,6 +5,8 @@ import nodemailer from 'nodemailer';
 // ---------------------------------------------------------------------------
 function createTransporter() {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return null;
+    // Cast to any: `family` is a valid nodemailer/smtp-connection option but
+    // not reflected in @types/nodemailer, causing overload resolution to fail.
     return nodemailer.createTransport({
         host: process.env.SMTP_HOST || 'smtp.gmail.com',
         port: Number(process.env.SMTP_PORT) || 587,
@@ -16,7 +18,8 @@ function createTransporter() {
         connectionTimeout: 10_000,  // fail in 10s if Gmail unreachable
         greetingTimeout:   10_000,  // fail in 10s if no SMTP banner
         socketTimeout:     15_000,  // fail in 15s if send stalls
-    });
+        family:            4,       // force IPv4 — Render's IPv6 → Gmail routing is broken
+    } as any);
 }
 
 /**

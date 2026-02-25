@@ -1,30 +1,26 @@
-import { Resend } from 'resend';
+import sgMail from '@sendgrid/mail';
 
 // ---------------------------------------------------------------------------
-// Email sender — uses Resend API (HTTPS, port 443) instead of SMTP.
-// Cloud providers (Render, Railway, etc.) block outbound SMTP ports (25/465/587),
-// so direct nodemailer-to-Gmail always times out.  Resend uses HTTPS and works
-// on every platform.
-//
-// Get a free API key at https://resend.com (3,000 emails/month free).
-// On free tier the from address must be "onboarding@resend.dev" unless you
-// verify a custom domain.
+// Email sender — uses SendGrid API (HTTPS, port 443).
+// Cloud providers block outbound SMTP ports, so this uses the HTTP API.
+// Free tier: 100 emails/day — no domain verification needed, just verify
+// a single sender email at sendgrid.com → Settings → Sender Authentication.
 // ---------------------------------------------------------------------------
 
 /**
- * Send an email via Resend API.
- * Silently skips if RESEND_API_KEY is not set — never throws.
+ * Send an email via SendGrid API.
+ * Silently skips if SENDGRID_API_KEY is not set — never throws.
  */
 export async function sendEmail(to: string, subject: string, html: string, replyTo?: string): Promise<void> {
-    const apiKey = process.env.RESEND_API_KEY;
+    const apiKey = process.env.SENDGRID_API_KEY;
     if (!apiKey) return;
 
-    const resend = new Resend(apiKey);
-    const from = process.env.RESEND_FROM || 'DecoyVerse Security <onboarding@resend.dev>';
+    sgMail.setApiKey(apiKey);
+    const from = process.env.SENDGRID_FROM || 'alerts@decoyverse.com';
 
-    await resend.emails.send({
-        from,
+    await sgMail.send({
         to,
+        from,
         subject,
         html,
         text: html.replace(/<[^>]*>/g, ' ').replace(/\s{2,}/g, ' ').trim(),

@@ -1,57 +1,32 @@
-import nodemailer from 'nodemailer';
-import { lookup } from 'dns';
-import { promisify } from 'util';
-
-const dnsLookup = promisify(lookup);
+import { Resend } from 'resend';
 
 // ---------------------------------------------------------------------------
-// Resolve hostname to IPv4 before creating the transporter.
-// Render's outbound IPv6 routing to Gmail is broken (ENETUNREACH), so we must
-// ensure nodemailer connects to an IPv4 address.  dns.lookup with family:4
-// is the only reliable way — nodemailer's own `family` option is silently ignored.
+// Email sender — uses Resend API (HTTPS, port 443) instead of SMTP.
+// Cloud providers (Render, Railway, etc.) block outbound SMTP ports (25/465/587),
+// so direct nodemailer-to-Gmail always times out.  Resend uses HTTPS and works
+// on every platform.
+//
+// Get a free API key at https://resend.com (3,000 emails/month free).
+// On free tier the from address must be "onboarding@resend.dev" unless you
+// verify a custom domain.
 // ---------------------------------------------------------------------------
-async function resolveIPv4(hostname: string): Promise<string> {
-    try {
-        const { address } = await dnsLookup(hostname, { family: 4 });
-        return address;  // e.g. "142.250.x.x"
-    } catch {
-        return hostname; // safe fallback — let nodemailer try anyway
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Transporter — created lazily so missing SMTP config just silently no-ops
-// ---------------------------------------------------------------------------
-async function createTransporter() {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return null;
-    const host = await resolveIPv4(process.env.SMTP_HOST || 'smtp.gmail.com');
-    return nodemailer.createTransport({
-        host,
-        port: Number(process.env.SMTP_PORT) || 587,
-        secure: false, // STARTTLS
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
-        connectionTimeout: 10_000,
-        greetingTimeout:   10_000,
-        socketTimeout:     15_000,
-    } as any);
-}
 
 /**
- * Send an email.
- * Silently skips if SMTP is not configured — never throws.
+ * Send an email via Resend API.
+ * Silently skips if RESEND_API_KEY is not set — never throws.
  */
 export async function sendEmail(to: string, subject: string, html: string): Promise<void> {
-    const transporter = await createTransporter();
-    if (!transporter) return;
-    await transporter.sendMail({
-        from: `"DecoyVerse Security" <${process.env.SMTP_USER}>`,
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) return;
+
+    const resend = new Resend(apiKey);
+    const from = process.env.RESEND_FROM || 'DecoyVerse Security <onboarding@resend.dev>';
+
+    await resend.emails.send({
+        from,
         to,
         subject,
         html,
-        // plain-text fallback (strip HTML tags)
         text: html.replace(/<[^>]*>/g, ' ').replace(/\s{2,}/g, ' ').trim(),
     });
 }

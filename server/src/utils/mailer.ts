@@ -13,6 +13,9 @@ function createTransporter() {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
+        connectionTimeout: 10_000,  // fail in 10s if Gmail unreachable
+        greetingTimeout:   10_000,  // fail in 10s if no SMTP banner
+        socketTimeout:     15_000,  // fail in 15s if send stalls
     });
 }
 

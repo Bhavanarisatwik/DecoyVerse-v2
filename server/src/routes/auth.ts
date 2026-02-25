@@ -479,11 +479,11 @@ router.post('/test-alert-email', protect, async (req: AuthRequest, res: Response
             success: true,
             message: `Test alert sent to ${recipientEmail}`,
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Test alert email error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to send test alert. Check SMTP credentials.',
+            message: error?.message || 'Failed to send test alert. Check SMTP credentials.',
         });
     }
 });

@@ -44,4 +44,10 @@ export const authApi = {
         const response = await authClient.put<ApiResponse<User>>('/auth/profile', data);
         return response.data;
     },
+
+    // Send a test alert email to the user's configured emailAlertTo address
+    sendTestAlertEmail: async (): Promise<{ success: boolean; message: string }> => {
+        const response = await authClient.post<{ success: boolean; message: string }>('/auth/test-alert-email');
+        return response.data;
+    },
 };

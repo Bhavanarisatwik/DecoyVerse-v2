@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Palette, Check, Bell } from "lucide-react"
+import { Palette, Check, Bell, Send, CheckCircle2, Loader2, XCircle } from "lucide-react"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "../components/common/Card"
 import { Input } from "../components/common/Input"
@@ -29,6 +29,30 @@ export default function Settings() {
     const [slackWebhook, setSlackWebhook] = useState(user?.notifications?.slackWebhook || '')
     const [emailAlertTo, setEmailAlertTo] = useState(user?.notifications?.emailAlertTo || '')
     const [whatsappNumber, setWhatsappNumber] = useState(user?.notifications?.whatsappNumber || '')
+
+    // Test alert email state
+    const [testEmailState, setTestEmailState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+    const [testEmailMsg, setTestEmailMsg] = useState('')
+
+    const handleTestAlertEmail = async () => {
+        setTestEmailState('sending')
+        setTestEmailMsg('')
+        try {
+            const res = await authApi.sendTestAlertEmail()
+            if (res.success) {
+                setTestEmailState('sent')
+                setTestEmailMsg(res.message || 'Test alert sent! Check your inbox.')
+            } else {
+                setTestEmailState('error')
+                setTestEmailMsg(res.message || 'Failed to send test alert.')
+            }
+        } catch (err: any) {
+            setTestEmailState('error')
+            setTestEmailMsg(err?.response?.data?.message || 'Failed to send test alert. Check SMTP settings.')
+        }
+        // Auto-reset after 6 seconds
+        setTimeout(() => { setTestEmailState('idle'); setTestEmailMsg('') }, 6000)
+    }
 
     // Get initials for avatar
     const initials = user?.name
@@ -165,10 +189,38 @@ export default function Settings() {
                                     label="Send Alerts To"
                                     placeholder="security-team@yourcompany.com"
                                     value={emailAlertTo}
-                                    onChange={(e) => setEmailAlertTo(e.target.value)}
+                                    onChange={(e) => { setEmailAlertTo(e.target.value); setTestEmailState('idle'); setTestEmailMsg('') }}
                                     className="rounded-xl"
                                     helpText="The email address that should receive the alerts."
                                 />
+                                <div className="flex items-center gap-3 flex-wrap">
+                                    <button
+                                        onClick={handleTestAlertEmail}
+                                        disabled={!emailAlertTo.trim() || testEmailState === 'sending'}
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-accent/40 text-accent hover:bg-accent/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                    >
+                                        {testEmailState === 'sending'
+                                            ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending…</>
+                                            : <><Send className="h-4 w-4" /> Send Test Alert</>
+                                        }
+                                    </button>
+
+                                    {testEmailState === 'sent' && (
+                                        <span className="inline-flex items-center gap-1.5 text-sm text-status-success">
+                                            <CheckCircle2 className="h-4 w-4" />
+                                            {testEmailMsg}
+                                        </span>
+                                    )}
+                                    {testEmailState === 'error' && (
+                                        <span className="inline-flex items-center gap-1.5 text-sm text-status-danger">
+                                            <XCircle className="h-4 w-4" />
+                                            {testEmailMsg}
+                                        </span>
+                                    )}
+                                </div>
+                                {!emailAlertTo.trim() && (
+                                    <p className="text-xs text-themed-muted">Save an email address above to enable the test button.</p>
+                                )}
                             </div>
 
                             <div className="space-y-4">

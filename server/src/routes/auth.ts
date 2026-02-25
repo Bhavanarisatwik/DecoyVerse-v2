@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User';
 import { generateToken, protect, AuthRequest } from '../middleware/auth';
+import { sendEmail, welcomeEmailHtml, testAlertEmailHtml } from '../utils/mailer';
 
 const router = Router();
 
@@ -69,6 +70,13 @@ router.post('/signup', signupValidation, async (req: Request, res: Response): Pr
 
         // Generate token
         const token = generateToken(user);
+
+        // Fire-and-forget welcome email (never blocks signup)
+        sendEmail(
+            email,
+            'Welcome to DecoyVerse — your security platform is ready',
+            welcomeEmailHtml(name, email)
+        ).catch(() => {});
 
         res.status(201).json({
             success: true,
@@ -427,6 +435,55 @@ router.put('/profile', protect, [
         res.status(500).json({
             success: false,
             message: 'Server error',
+        });
+    }
+});
+
+// @route   POST /api/auth/test-alert-email
+// @desc    Send a dummy alert email so the user can preview the template
+// @access  Private
+router.post('/test-alert-email', protect, async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const user = await User.findById(req.user?._id);
+
+        if (!user) {
+            res.status(404).json({ success: false, message: 'User not found' });
+            return;
+        }
+
+        const recipientEmail = user.notifications?.emailAlertTo;
+
+        if (!recipientEmail) {
+            res.status(400).json({
+                success: false,
+                message: 'No alert email address configured. Save an email in Alert Channels first.',
+            });
+            return;
+        }
+
+        if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+            res.status(503).json({
+                success: false,
+                message: 'Email service is not configured on the server (SMTP_USER / SMTP_PASS missing).',
+            });
+            return;
+        }
+
+        await sendEmail(
+            recipientEmail,
+            '🚨 [TEST] DecoyVerse Alert — Critical Threat Detected',
+            testAlertEmailHtml(recipientEmail)
+        );
+
+        res.json({
+            success: true,
+            message: `Test alert sent to ${recipientEmail}`,
+        });
+    } catch (error) {
+        console.error('Test alert email error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to send test alert. Check SMTP credentials.',
         });
     }
 });

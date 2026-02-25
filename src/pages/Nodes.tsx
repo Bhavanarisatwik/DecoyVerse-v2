@@ -370,10 +370,77 @@ export default function Nodes() {
                     <div className="p-4 bg-status-danger/10 border border-status-danger/20 rounded-lg">
                         <p className="text-sm text-status-danger font-medium">Node: {deleteConfirm?.nodeName}</p>
                         <p className="text-sm text-gray-400 mt-2">
-                            This will request the agent to uninstall itself and remove it from the system.
-                            The node will disappear once the agent completes the uninstall process.
+                            This will signal the agent to uninstall itself and delete all deployed
+                            decoys and honeytokens from the machine. The node record is removed once
+                            the agent confirms completion.
                         </p>
                     </div>
+
+                    {/* Manual uninstall accordion — for offline/crashed agents */}
+                    <details className="group rounded-lg border border-gray-700 bg-gray-900/60 overflow-hidden">
+                        <summary className="flex items-center gap-2 cursor-pointer select-none px-4 py-3 text-sm text-gray-400 hover:text-gray-200 transition-colors list-none">
+                            <span className="text-gray-600 group-open:rotate-90 transition-transform duration-200 inline-block">▶</span>
+                            Agent offline or unreachable? Show manual uninstall commands
+                        </summary>
+                        <div className="px-4 pb-4 space-y-4 border-t border-gray-700 pt-3">
+                            <p className="text-xs text-gray-500">
+                                Run these commands on the target machine, then click "Delete Node" to remove the record from the dashboard.
+                            </p>
+
+                            {/* Windows */}
+                            <div>
+                                <p className="text-xs font-medium text-gray-400 mb-2">Windows — PowerShell (Run as Administrator)</p>
+                                <div className="relative group/code">
+                                    <pre className="bg-black/70 border border-gray-800 rounded-lg p-3 text-xs text-green-400 overflow-x-auto whitespace-pre leading-5 font-mono">
+{`# 1. Stop and remove the scheduled task
+schtasks /Delete /TN DecoyVerseAgent /F
+schtasks /Delete /TN DecoyVerseFirewall /F
+
+# 2. Remove all deployed honeytokens (reads the manifest)
+$manifest = "$env:USERPROFILE\\AppData\\Local\\.cache\\.honeytoken_manifest.json"
+if (Test-Path $manifest) {
+    $data = Get-Content $manifest | ConvertFrom-Json
+    ($data.decoys + $data.honeytokens) | ForEach-Object {
+        if (Test-Path $_.path) { Remove-Item -LiteralPath $_.path -Force }
+    }
+    Remove-Item $manifest -Force
+}
+
+# 3. Remove the agent installation folder
+$agentDir = "$env:USERPROFILE\\AppData\\Local\\DecoyVerse"
+if (Test-Path $agentDir) { Remove-Item $agentDir -Recurse -Force }`}
+                                    </pre>
+                                </div>
+                            </div>
+
+                            {/* Linux / macOS */}
+                            <div>
+                                <p className="text-xs font-medium text-gray-400 mb-2">Linux / macOS — Terminal</p>
+                                <pre className="bg-black/70 border border-gray-800 rounded-lg p-3 text-xs text-green-400 overflow-x-auto whitespace-pre leading-5 font-mono">
+{`# 1. Stop the agent service (if installed as systemd)
+sudo systemctl stop decoyverse-agent 2>/dev/null
+sudo systemctl disable decoyverse-agent 2>/dev/null
+
+# 2. Remove deployed honeytokens (reads the manifest)
+MANIFEST="$HOME/.cache/.honeytoken_manifest.json"
+if [ -f "$MANIFEST" ]; then
+  python3 -c "
+import json, os
+with open('$MANIFEST') as f: m = json.load(f)
+for item in m.get('decoys', []) + m.get('honeytokens', []):
+    p = item.get('path','')
+    if p and os.path.exists(p): os.remove(p)
+"
+  rm -f "$MANIFEST"
+fi
+
+# 3. Remove the agent installation folder
+rm -rf ~/.decoyverse`}
+                                </pre>
+                            </div>
+                        </div>
+                    </details>
+
                     <div className="flex gap-3 justify-end">
                         <Button
                             variant="outline"

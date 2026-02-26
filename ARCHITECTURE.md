@@ -416,7 +416,7 @@ This split avoids the agent needing admin rights for day-to-day monitoring.
 
 ```
 ┌───────────────┐   ┌──────────────────┐   ┌─────────────────────────┐
-│   Vercel      │   │   Railway        │   │   Render                │
+│   Vercel      │   │   Render         │   │   Render                │
 │               │   │                  │   │                         │
 │ React Frontend│   │ Express Backend  │   │ FastAPI Backend         │
 │ (SPA + rewrites)  │ Node.js + TS     │   │ Python 3.11 + uvicorn   │

@@ -17,6 +17,7 @@ import { useAuth } from "../context/AuthContext"
 import type { SecurityReport, ChatMessage } from "../api/types"
 import { cn } from "../utils/cn"
 import ReactMarkdown from 'react-markdown'
+import { toast } from "sonner"
 
 // ─── LLM Provider config ──────────────────────────────────────────────────────
 
@@ -157,7 +158,9 @@ export default function AIInsights() {
             setReportError(null);
             const newReport = await securityReportApi.generateReport();
             setReport(newReport);
+            toast.success('Security report generated')
         } catch {
+            toast.error('Failed to generate report — ensure analytics backend is running')
             setReportError('Failed to generate report. Make sure the analytics backend is running.');
         } finally {
             setGenerating(false);
@@ -185,7 +188,12 @@ export default function AIInsights() {
                 id: user.id,
                 aiSettings: { provider: aiProvider, model: aiModel, apiKey: aiApiKey },
             });
-            if (res.data) updateUser(res.data);
+            if (res.data) {
+                updateUser(res.data);
+                toast.success('AI settings saved as default')
+            }
+        } catch {
+            toast.error('Failed to save AI settings')
         } finally {
             setSavingDefaults(false);
         }

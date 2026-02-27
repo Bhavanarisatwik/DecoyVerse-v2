@@ -17,6 +17,7 @@ import {
     createVaultVerifier, verifyVaultKey, generateSecurePassword,
 } from "../utils/crypto"
 import { cn } from "../utils/cn"
+import { toast } from "sonner"
 
 // ─── Password Strength Bar ────────────────────────────────────────────────────
 
@@ -163,8 +164,10 @@ export default function Vault() {
             setCryptoKey(key);
             setMasterPw('');
             setConfirmPw('');
+            toast.success('Vault created — you are now unlocked')
             await loadItems(key);
         } catch {
+            toast.error('Failed to create vault')
             setSetupError('Failed to create vault. Please try again.');
         } finally {
             setUnlocking(false);
@@ -187,8 +190,10 @@ export default function Vault() {
 
             setCryptoKey(key);
             setMasterPw('');
+            toast.success('Vault unlocked')
             await loadItems(key);
         } catch {
+            toast.error('Failed to unlock vault')
             setUnlockError('Failed to unlock. Please try again.');
         } finally {
             setUnlocking(false);
@@ -211,6 +216,7 @@ export default function Vault() {
         try {
             await navigator.clipboard.writeText(pwd);
             setCopiedId(id);
+            toast.info('Password copied — clipboard clears in 30s')
             setTimeout(() => setCopiedId(prev => prev === id ? null : prev), 2000);
             // Auto-clear clipboard after 30s
             setTimeout(async () => {
@@ -239,6 +245,9 @@ export default function Vault() {
             await vaultApi.deleteItem(id);
             setItems(prev => prev.filter(i => i._id !== id));
             setDecryptedPasswords(prev => { const m = new Map(prev); m.delete(id); return m; });
+            toast.success('Entry deleted')
+        } catch {
+            toast.error('Failed to delete entry')
         } finally {
             setDeletingId(null);
         }
@@ -285,13 +294,16 @@ export default function Vault() {
                 const res = await vaultApi.updateItem(editingItem._id, data);
                 setItems(prev => prev.map(i => i._id === editingItem._id ? res.data : i));
                 setDecryptedPasswords(prev => new Map(prev).set(editingItem._id, formPassword));
+                toast.success('Entry updated')
             } else {
                 const res = await vaultApi.createItem(data);
                 setItems(prev => [res.data, ...prev]);
                 setDecryptedPasswords(prev => new Map(prev).set(res.data._id, formPassword));
+                toast.success(`"${formTitle.trim()}" saved to vault`)
             }
             closeModal();
         } catch {
+            toast.error('Failed to save entry')
             setSaveError('Failed to save. Please try again.');
         } finally {
             setSavingItem(false);

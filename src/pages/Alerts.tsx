@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { AlertTriangle, ShieldAlert, CheckCircle2, Filter, Bell, AlertCircle } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/common/Card"
 import { Badge } from "../components/common/Badge"
@@ -95,8 +96,10 @@ export default function Alerts() {
         try {
             await alertsApi.updateAlertStatus(alertId, newStatus)
             setAlerts(alerts.map(a => a.id === alertId ? { ...a, status: newStatus as any } : a))
+            toast.success(`Alert marked as ${newStatus}`)
         } catch (err) {
             console.error('Error updating alert:', err)
+            toast.error('Failed to update alert status')
         }
     }
 

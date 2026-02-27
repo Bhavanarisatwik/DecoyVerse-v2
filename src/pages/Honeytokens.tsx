@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { FileKey, Download, Plus, MoreVertical, FileText, Key, AlertCircle, MapPin, Zap, Copy, Check } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
@@ -70,6 +71,7 @@ export default function Honeytokens() {
             setCreating(true);
             await decoysApi.deployHoneytokens(createNodeId, createCount);
             setShowCreateModal(false);
+            toast.success(`${createCount} honeytoken${createCount > 1 ? 's' : ''} deployed`)
             // Refresh data
             const response = selectedNodeId === 'all'
                 ? await decoysApi.getDecoys()
@@ -79,6 +81,7 @@ export default function Honeytokens() {
             setCreateCount(1);
         } catch (err) {
             console.error('Error creating honeytokens:', err);
+            toast.error('Failed to deploy honeytokens')
             setError('Failed to deploy honeytokens');
         } finally {
             setCreating(false);

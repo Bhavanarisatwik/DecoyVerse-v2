@@ -5,6 +5,7 @@ import { Input } from "../components/common/Input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/common/Card"
 import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
+import { toast } from "sonner"
 
 export default function Login() {
     const navigate = useNavigate();
@@ -38,6 +39,7 @@ export default function Login() {
 
         if (result.success) {
             const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            toast.info(`Welcome back${storedUser.name ? `, ${storedUser.name}` : ''}!`)
             if (storedUser.isOnboarded !== true) {
                 navigate('/onboarding/subscription');
             } else {

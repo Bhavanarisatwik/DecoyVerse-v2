@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import { Toaster } from "sonner"
 import { ThemeProvider } from "./context/ThemeContext"
 import { AuthProvider } from "./context/AuthContext"
 import { ProtectedRoute, PublicRoute } from "./components/auth/ProtectedRoute"
@@ -86,6 +87,7 @@ function App() {
             <Router>
                 <AuthProvider>
                     <AppRoutes />
+                    <Toaster position="top-right" theme="dark" richColors closeButton duration={4000} />
                 </AuthProvider>
             </Router>
         </ThemeProvider>

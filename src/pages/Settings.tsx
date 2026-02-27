@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Palette, Check, Bell, Send, CheckCircle2, Loader2, XCircle, Brain, Eye, EyeOff } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "../components/common/Card"
 import { Input } from "../components/common/Input"
@@ -88,13 +89,13 @@ export default function Settings() {
             if (response.success && response.data) {
                 const updatedUser = (response.data as any).user || response.data;
                 updateUser(updatedUser);
-                alert('Profile and notifications updated successfully.')
+                toast.success('Profile and notifications updated')
             } else {
-                alert(`Failed to update profile: ${response.message}`)
+                toast.error(`Failed to update profile: ${response.message}`)
             }
         } catch (error) {
             console.error('Failed to update profile:', error)
-            alert('An error occurred while saving profile settings.')
+            toast.error('An error occurred while saving profile settings')
         } finally {
             setSaving(false)
         }
@@ -111,12 +112,12 @@ export default function Settings() {
             if (response.success && response.data) {
                 const updatedUser = (response.data as any).user || response.data;
                 updateUser(updatedUser);
-                alert('AI settings saved successfully.')
+                toast.success('AI settings saved')
             } else {
-                alert('Failed to save AI settings.')
+                toast.error('Failed to save AI settings')
             }
         } catch {
-            alert('An error occurred while saving AI settings.')
+            toast.error('An error occurred while saving AI settings')
         } finally {
             setSavingAI(false)
         }

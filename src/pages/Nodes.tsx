@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
-import { Server, Activity, Clock, Download, Trash2, Plus, Loader2, CheckCircle2, AlertTriangle, Copy, Check, ShieldOff, ArrowRight } from "lucide-react"
+import { Server, Activity, Clock, Download, Trash2, Plus, Loader2, CheckCircle2, AlertTriangle, Copy, Check, ShieldOff, ArrowRight, Terminal } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
@@ -111,6 +112,162 @@ function CodeBlock({ code, id, copiedId, onCopy }: { code: string; id: string; c
     )
 }
 
+// ─── Manual Uninstall Modal ───────────────────────────────────────────────────
+
+const WIN_S1 = `sc.exe stop DecoyVerseAgent`
+
+const WIN_S2 = `# Run as Administrator in PowerShell
+schtasks /Delete /TN DecoyVerseAgent /F 2>$null
+schtasks /Delete /TN DecoyVerseFirewall /F 2>$null
+sc.exe delete DecoyVerseAgent 2>$null`
+
+const WIN_S3 = `# Run as Administrator in PowerShell
+$manifest = "$env:USERPROFILE\\AppData\\Local\\.cache\\.honeytoken_manifest.json"
+if (Test-Path $manifest) {
+    $data = Get-Content $manifest | ConvertFrom-Json
+    ($data.decoys + $data.honeytokens) | ForEach-Object {
+        if ($_.path -and (Test-Path $_.path)) { Remove-Item -LiteralPath $_.path -Force }
+    }
+    Remove-Item $manifest -Force
+}
+Remove-Item "C:\\DecoyVerse" -Recurse -Force 2>$null`
+
+const LIN_S1 = `pkill -f agent.py
+sudo systemctl stop decoyverse-agent 2>/dev/null`
+
+const LIN_S2 = `sudo systemctl disable decoyverse-agent 2>/dev/null
+sudo rm -f /etc/systemd/system/decoyverse-agent.service
+crontab -l | grep -v decoyverse | crontab -`
+
+const LIN_S3 = `MANIFEST="$HOME/.cache/.honeytoken_manifest.json"
+if [ -f "$MANIFEST" ]; then
+    python3 -c "
+import json,os
+with open('$MANIFEST') as f: m=json.load(f)
+for i in m.get('decoys',[])+m.get('honeytokens',[]):
+    p=i.get('path','')
+    if p and os.path.exists(p): os.remove(p)"
+    rm -f "$MANIFEST"
+fi
+rm -rf ~/.decoyverse`
+
+function ManualUninstallModal({
+    node, onClose, onDeleteNode, onForceDelete, copiedId, onCopy,
+}: {
+    node: Node | null;
+    onClose: () => void;
+    onDeleteNode: (id: string, name: string) => void;
+    onForceDelete: (id: string) => void;
+    copiedId: string | null;
+    onCopy: (id: string, code: string) => void;
+}) {
+    const defaultTab = node?.os?.toLowerCase().includes('win') ? 'windows' : 'linux'
+    const [tab, setTab] = useState<'windows' | 'linux'>(defaultTab as 'windows' | 'linux')
+
+    useEffect(() => {
+        if (node) setTab(node.os?.toLowerCase().includes('win') ? 'windows' : 'linux')
+    }, [node?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    const steps = tab === 'windows'
+        ? [
+            { label: 'Stop the service', sub: 'Stops the running NSSM-managed service.', code: WIN_S1 },
+            { label: 'Remove auto-start entries', sub: 'Run as Administrator. Prevents restart on reboot.', code: WIN_S2 },
+            { label: 'Delete files & honeytokens', sub: 'Reads the manifest and removes all deployed files.', code: WIN_S3 },
+        ]
+        : [
+            { label: 'Stop the agent process', sub: 'Kills the running agent and systemd service.', code: LIN_S1 },
+            { label: 'Remove auto-start entries', sub: 'Disables systemd service and removes cron entry.', code: LIN_S2 },
+            { label: 'Delete files & honeytokens', sub: 'Reads the manifest and removes all deployed files.', code: LIN_S3 },
+        ]
+
+    return (
+        <Modal
+            isOpen={!!node}
+            onClose={onClose}
+            title={`Manual Uninstall — ${node?.name ?? ''}`}
+            description="Run these commands on the machine, then remove the record from the dashboard."
+        >
+            {node && (
+                <div className="space-y-5">
+                    {/* OS tab switcher */}
+                    <div className="flex gap-1 bg-gray-800/60 rounded-lg p-1">
+                        <button type="button" onClick={() => setTab('windows')}
+                            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${tab === 'windows' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'}`}>
+                            🪟 Windows
+                        </button>
+                        <button type="button" onClick={() => setTab('linux')}
+                            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${tab === 'linux' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'}`}>
+                            🐧 Linux / macOS
+                        </button>
+                    </div>
+
+                    {/* Auto-restart warning */}
+                    <div className="flex gap-2.5 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                        <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+                        <p className="text-xs text-amber-300 leading-relaxed">
+                            <span className="font-semibold">Auto-restart is enabled.</span>{' '}
+                            {tab === 'windows'
+                                ? 'The agent runs as a Windows service (NSSM) with restart on failure. Complete Step 2 before rebooting.'
+                                : 'The agent may be configured as a systemd service or cron job. Complete Step 2 before rebooting.'}
+                        </p>
+                    </div>
+
+                    {/* Steps */}
+                    {steps.map((step, i) => (
+                        <div key={i} className="space-y-2">
+                            <p className="text-xs font-semibold text-gray-300 flex items-center gap-2">
+                                <span className="w-5 h-5 rounded-full bg-accent/20 text-accent flex items-center justify-center text-[10px] font-bold shrink-0">{i + 1}</span>
+                                {step.label}
+                            </p>
+                            <p className="text-xs text-gray-500 pl-7">{step.sub}</p>
+                            <div className="pl-7">
+                                <CodeBlock
+                                    code={step.code}
+                                    id={`manual-s${i + 1}-${tab}`}
+                                    copiedId={copiedId}
+                                    onCopy={onCopy}
+                                />
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* Step 4 — Remove from dashboard */}
+                    <div className="border-t border-gray-800 pt-4 space-y-3">
+                        <p className="text-xs font-semibold text-gray-300 flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full bg-accent/20 text-accent flex items-center justify-center text-[10px] font-bold shrink-0">4</span>
+                            Remove from dashboard
+                        </p>
+                        <p className="text-xs text-gray-500 pl-7">
+                            Once the machine is clean, delete the node record. This removes all associated alerts, decoys, and logs.
+                        </p>
+                        <div className="flex gap-3 pl-7">
+                            <Button
+                                variant="danger"
+                                size="sm"
+                                className="gap-1.5"
+                                onClick={() => { onDeleteNode(node.id || '', node.name); onClose(); }}
+                            >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                Delete Node Record
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs text-status-danger/70 hover:text-status-danger hover:bg-status-danger/10 gap-1.5"
+                                onClick={() => { onForceDelete(node.id || ''); onClose(); }}
+                                title="Immediately deletes from DB — skips uninstall signal"
+                            >
+                                <ShieldOff className="h-3.5 w-3.5" />
+                                Force Delete (agent unreachable)
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </Modal>
+    )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function Nodes() {
@@ -133,6 +290,9 @@ export default function Nodes() {
     const [deleteConfirm, setDeleteConfirm] = useState<{ nodeId: string; nodeName: string } | null>(null)
     const [manualGuideTab, setManualGuideTab] = useState<'windows' | 'linux'>('windows')
     const [copiedBlock, setCopiedBlock] = useState<string | null>(null)
+
+    // Manual uninstall guide modal
+    const [uninstallGuideNode, setUninstallGuideNode] = useState<Node | null>(null)
 
     // ── Fetch / poll ──────────────────────────────────────────────────────────
 
@@ -169,8 +329,10 @@ export default function Nodes() {
                 initialHoneytokens,
             })
             setCreatedNode({ id: res.data.node_id, name: newNodeName })
+            toast.success(`Node "${newNodeName}" created successfully`)
             await fetchData()
         } catch {
+            toast.error('Failed to create node')
             setError('Failed to create node')
         } finally {
             setCreatingNode(false)
@@ -182,7 +344,9 @@ export default function Nodes() {
         try {
             setDownloadingAgent(true)
             await installApi.downloadInstaller(createdNode.id, createdNode.name)
+            toast.success('Agent ZIP downloaded')
         } catch {
+            toast.error('Failed to download agent ZIP')
             setError('Failed to download agent ZIP')
         } finally {
             setDownloadingAgent(false)
@@ -203,7 +367,9 @@ export default function Nodes() {
     const handleDownloadAgent = async (nodeId: string, nodeName: string) => {
         try {
             await installApi.downloadInstaller(nodeId, nodeName)
+            toast.success('Agent installer downloaded')
         } catch {
+            toast.error('Failed to download agent installer')
             setError('Failed to download agent installer')
         }
     }
@@ -226,7 +392,9 @@ export default function Nodes() {
         ))
         try {
             await nodesApi.deleteNode(nodeId)
+            toast.info('Uninstall requested — waiting for agent to confirm…')
         } catch {
+            toast.error('Failed to send uninstall signal')
             setError('Failed to send uninstall signal')
             await fetchData() // revert
         }
@@ -238,7 +406,9 @@ export default function Nodes() {
             await nodesApi.deleteNode(nodeId, true)
             setNodes(prev => prev.filter(n => n.id !== nodeId && n.node_id !== nodeId))
             setStats(s => ({ ...s, total: Math.max(0, s.total - 1) }))
+            toast.success('Node force-deleted — all data removed')
         } catch {
+            toast.error('Force delete failed')
             setError('Force delete failed')
         }
     }
@@ -399,6 +569,15 @@ export default function Nodes() {
                                                             <Button
                                                                 size="icon"
                                                                 variant="ghost"
+                                                                className="rounded-lg hover:bg-amber-500/10 hover:text-amber-400"
+                                                                onClick={() => setUninstallGuideNode(node)}
+                                                                title="Manual uninstall guide"
+                                                            >
+                                                                <Terminal className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
                                                                 className="rounded-lg hover:bg-status-danger/10 hover:text-status-danger"
                                                                 onClick={() => handleDeleteNode(node.id || '', node.name)}
                                                                 title="Uninstall node"
@@ -544,6 +723,16 @@ export default function Nodes() {
                     </div>
                 )}
             </Modal>
+
+            {/* ── Manual Uninstall Guide Modal ──────────────────────────────── */}
+            <ManualUninstallModal
+                node={uninstallGuideNode}
+                onClose={() => setUninstallGuideNode(null)}
+                onDeleteNode={handleDeleteNode}
+                onForceDelete={handleForceDelete}
+                copiedId={copiedBlock}
+                onCopy={copyCode}
+            />
 
             {/* ── Delete Confirmation Modal ─────────────────────────────────── */}
             <Modal

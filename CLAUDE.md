@@ -811,3 +811,250 @@ The key is stored in `users.aiSettings.apiKey` in MongoDB. Chat calls go directl
 
 **Q: What happens if the backend is down?**
 The ML service has a fallback: honeytoken access events are auto-scored at risk_score=9 regardless of ML availability. Alerts still fire. Notifications still send. The ML score is the only thing affected by backend downtime.
+
+---
+
+## ═══════════════════════════════════════════════════════════
+## COMPLETE API REFERENCE — ALL THREE SERVICES
+## ═══════════════════════════════════════════════════════════
+
+All API endpoints across every service. Authentication is noted for each endpoint.
+
+---
+
+### Service 1 — Express Auth Backend (`:5000`)
+
+Base URL in production: `https://decoyverse-v2.onrender.com`
+All endpoints under `/api/auth/` unless noted. JWT auth via `Authorization: Bearer <token>`.
+
+---
+
+#### Authentication & User Account
+
+| Method | Endpoint | Auth | What It Does |
+|--------|----------|------|-------------|
+| POST | `/api/auth/signup` | Public | Register a new user. Body: `{ name, email, password }`. Validates email uniqueness, hashes password with bcrypt (12 rounds), generates JWT, sends welcome email via SendGrid. Returns `{ user, token }`. |
+| POST | `/api/auth/login` | Public | Authenticate user. Body: `{ email, password }`. Compares bcrypt hash, updates `lastLogin`, issues new JWT. Returns `{ user, token }`. |
+| GET | `/api/auth/me` | JWT | Get current logged-in user's profile. Reads from MongoDB using user ID from JWT. Returns full user object including `notifications`, `aiSettings`, `vaultVerifier`. |
+| POST | `/api/auth/logout` | JWT | Log out (stateless — JWT is client-side). Server acknowledges the request. Client must delete token from localStorage. |
+| PUT | `/api/auth/update-password` | JWT | Change password. Body: `{ currentPassword, newPassword }`. Verifies current password with bcrypt, sets new hash, issues a new JWT. |
+| PUT | `/api/auth/complete-onboarding` | JWT | Mark user as fully onboarded after finishing the agent setup wizard. Sets `isOnboarded: true` in MongoDB. Used by the onboarding flow to enable redirect to dashboard. |
+| PUT | `/api/auth/profile` | JWT | Update user profile. Body (all optional): `{ name, email, avatar, notifications, aiSettings, vaultVerifier }`. Merges `notifications` and `aiSettings` (patch, not replace). Returns updated user. |
+
+#### Email Endpoints
+
+| Method | Endpoint | Auth | What It Does |
+|--------|----------|------|-------------|
+| POST | `/api/auth/test-alert-email` | JWT | Send a dummy alert email to the user's configured `emailAlertTo` address. Reads the address from their profile. Uses the full HTML alert template with fake data so the user can preview the email format. |
+| POST | `/api/auth/internal/send-alert-email` | `x-internal-secret` header | Internal-only endpoint. Called by the Python FastAPI backend to relay real alert emails through Express/SendGrid. Body: `{ to, alertData }`. Authenticated by a shared secret (`INTERNAL_SECRET` env var) — no JWT. Never called from the browser. |
+
+---
+
+#### Vault Endpoints (`/api/vault`)
+
+All vault routes are JWT-protected. Every query is scoped to `req.user._id` — users can never access another user's vault items. Passwords are stored as AES-256-GCM encrypted blobs — the server stores ciphertext only.
+
+| Method | Endpoint | Auth | What It Does |
+|--------|----------|------|-------------|
+| GET | `/api/vault` | JWT | List all vault items for the authenticated user. Sorted by `createdAt` descending. Returns: `{ success, data: [{ _id, title, username, encryptedPassword, url, notes, createdAt, updatedAt }] }`. |
+| POST | `/api/vault` | JWT | Create a new vault entry. Body: `{ title (required), encryptedPassword (required), username?, url?, notes? }`. The `encryptedPassword` is a JSON string `{ iv, ciphertext }` (both base64) — already encrypted in the browser before this call. Returns the created item with `201`. |
+| PUT | `/api/vault/:id` | JWT | Update a vault item. Verifies `userId === req.user._id` (ownership check). Body: any subset of `{ title, username, encryptedPassword, url, notes }`. Only provided fields are updated. |
+| DELETE | `/api/vault/:id` | JWT | Delete a vault item. Verifies ownership by scoping `deleteOne` query to both `_id` and `userId`. Returns 404 if not found or doesn't belong to user. |
+
+---
+
+### Service 2 — FastAPI Data + ML Backend (`:8001`)
+
+Base URL in production: `https://ml-modle-v0-1.onrender.com`
+JWT auth via `Authorization: Bearer <token>` header (same JWT secret as Express).
+Agent routes use `X-Node-Id` + `X-Node-Key` (or `X-Node-API-Key`) instead of JWT.
+
+---
+
+#### Node Management (`/api/nodes`)
+
+| Method | Endpoint | Auth | What It Does |
+|--------|----------|------|-------------|
+| POST | `/api/nodes` | JWT | Create a new node. Body: `{ name, os_type, deployment_config? }`. Generates a UUID4 `node_id` and a random `node_api_key` (stored hashed in MongoDB). Returns both in the response — the plaintext key is shown only once for the agent config. |
+| GET | `/api/nodes` | JWT | List all nodes belonging to the authenticated user. Returns: `node_id, name, status, os_type, ip_address, last_seen, created_at`. Filtered to `user_id` from JWT. |
+| PATCH | `/api/nodes/:node_id` | JWT | Update a node's status. Body: `{ status }`. Validates that the node belongs to the requesting user. Used to toggle between `active` and `inactive`. |
+| DELETE | `/api/nodes/:node_id` | JWT | Delete a node. By default sets `uninstall_requested: true` — the agent picks this up on next heartbeat and runs self-uninstall. Use query param `?force=true` to bypass agent uninstall and delete all node data (alerts, decoys, logs) immediately. |
+| GET | `/api/nodes/:node_id/decoys` | JWT | Get all deployed decoy files for a specific node. Returns list of honeytoken/file records with `file_name, file_path, type, status, triggers_count, last_accessed`. |
+| GET | `/api/nodes/:node_id/agent-download` | JWT | Download the pre-configured agent installer as a ZIP file. The ZIP contains: `agent.py` (stub), `config.json` (with `node_id`, `node_api_key`, backend URLs), `setup.sh`, `README.md`. |
+| GET | `/api/nodes/stats` | JWT | Get aggregated node statistics for the user: `{ total, online, offline }`. Used by the dashboard stat cards. |
+
+---
+
+#### Alerts, Stats & Blocking (`/api`)
+
+| Method | Endpoint | Auth | What It Does |
+|--------|----------|------|-------------|
+| GET | `/api/stats` | JWT | Get dashboard-level statistics: total nodes, online nodes, total decoys, total alerts, open alerts, critical alerts. All scoped to the authenticated user. |
+| GET | `/api/recent-attacks` | JWT | Get the most recent high-risk alerts (default limit=10). Returns full alert objects sorted by timestamp descending. Used by the Dashboard recent alerts list. |
+| GET | `/api/alerts` | JWT | Get all alerts for the user with optional filters. Query params: `?limit=50&severity=critical&status=open`. Returns full alert objects including `extra.geo`, `extra.abuse` enrichment data. |
+| PATCH | `/api/alerts/:alert_id` | JWT | Update alert investigation status. Body: `{ "status": "open" \| "acknowledged" \| "investigating" \| "resolved" }`. Used by the status dropdown on the Alerts page. |
+| GET | `/api/attacker-profile/:source_ip` | JWT | Get compiled threat intelligence for a specific IP address from the `attacker_profiles` collection. Returns: `total_attacks, most_common_attack, attack_types, services_targeted, first_seen, last_seen`. |
+| POST | `/api/block-ip` | JWT | Queue an IP address for firewall blocking. Body: `{ ip_address, node_id, alert_id? }`. Creates a `blocked_ips` record with `status: "pending"`. The agent picks it up on next heartbeat and applies the Windows Firewall rule. |
+| GET | `/api/blocked-ips` | JWT | Return all blocked IP records for the user's nodes. Returns `status` (pending / active / failed) so the dashboard can show which blocks have been confirmed by the agent. |
+| GET | `/api/health` | Public | Health check for the FastAPI backend. Returns database connection status, app version, and `auth_enabled` flag. Used for monitoring and uptime checks. |
+
+---
+
+#### Decoys (`/api/decoys`)
+
+| Method | Endpoint | Auth | What It Does |
+|--------|----------|------|-------------|
+| GET | `/api/decoys` | JWT | Get all decoy assets for all of the user's nodes. Returns decoys with `node_name` joined in (not stored — resolved at query time). Supports `?limit=50`. |
+| GET | `/api/decoys/node/:node_id` | JWT | Get all decoys for a specific node. Verifies the node belongs to the requesting user before returning data. |
+| PATCH | `/api/decoys/:decoy_id` | JWT | Toggle a decoy's monitoring status. Query param: `?status=active` or `?status=inactive`. Inactive decoys are no longer watched by the agent — useful for temporarily disabling a decoy without deleting it. |
+| DELETE | `/api/decoys/:decoy_id` | JWT | Delete a decoy record from the database. Does not delete the actual file from the machine — the agent manages files independently. |
+| POST | `/api/decoys/deploy` | JWT | Request additional honeytokens be deployed to a node. Body: `{ node_id, count }`. Increments `deployment_config.initial_honeytokens` in the node document. The agent picks up the new count on next heartbeat and deploys additional files. |
+
+---
+
+#### Honeytokens (`/api/honeytokels`)
+
+Honeytokens are a filtered view of decoys where `type === "honeytoken"` (credential/secret files). Same operations as decoys but surfaced separately in the UI.
+
+| Method | Endpoint | Auth | What It Does |
+|--------|----------|------|-------------|
+| GET | `/api/honeytokels` | JWT | Get all credential-type honeytokens for all user nodes. Returns: `file_name, file_path, type, status, trigger_count, download_count, last_triggered`. |
+| GET | `/api/honeytokels/node/:node_id` | JWT | Get honeytokens for a specific node. Verifies node ownership. |
+| PATCH | `/api/honeytokels/:honeytoken_id` | JWT | Toggle honeytoken active/inactive status. |
+| DELETE | `/api/honeytokels/:honeytoken_id` | JWT | Delete a honeytoken record. |
+
+---
+
+#### Agent Inbound Routes (`/api`) — Called by the Agent, Not the Browser
+
+These routes are authenticated with `X-Node-Id` + `X-Node-Key` headers (not JWT). They are called by the Python agent process running on the monitored machine.
+
+| Method | Endpoint | Auth | What It Does |
+|--------|----------|------|-------------|
+| POST | `/api/honeypot-log` | Node key | Receive a log event from a service-level honeypot (fake SSH, FTP, web service). Validates node, calls ML service, creates alert if `risk_score ≥ 7`, fires notifications, updates attacker profile. Body: `{ service, source_ip, activity, payload, timestamp }`. |
+| POST | `/api/agent-alert` | Node key | Receive a honeytoken file access event from the file monitor. Validates node, captures process forensics (`process_name, pid, cmdline, username`), enriches source IP with geolocation + AbuseIPDB, calls ML, creates alert if high-risk, fires Slack/email/WhatsApp notifications. This is the primary alert path for deception events. |
+| POST | `/api/agent/register` | Node key | First-time agent startup registration. Query params: `node_id, hostname, os`. Updates node status to `online` and records `hostname` and `os`. |
+| POST | `/api/agent/heartbeat` | Node key | Keep-alive ping every 30 seconds. Updates `last_seen` and `ip_address` on the node. Returns: `{ uninstall: bool, pending_blocks: [...], deployment_config }`. The agent uses these return values to: self-uninstall if requested, apply queued firewall blocks, deploy new honeytokens if the count increased. |
+| POST | `/api/agent/uninstall-complete` | Node key | Agent reports it has finished the uninstall process (removed honeytokens, stopped services). FastAPI then permanently deletes the node and all its decoys from MongoDB. |
+| GET | `/api/agent/download/:node_id` | JWT | Download the agent installer ZIP for a specific node. Used by the dashboard download button. Returns a ZIP with `agent.py`, `config.json` (with node credentials), `setup.sh`. |
+| POST | `/api/agent/register-decoys` | Node key | Agent registers all the honeytoken files it deployed during setup. Body: list of `{ file_name, file_path, type }`. FastAPI saves each as a `decoys` document so they appear in the dashboard. |
+| POST | `/api/network-event` | Node key | Receive a suspicious outbound network connection event from the agent's network monitor (psutil). Body includes: `source_ip, dest_ip, dest_port, protocol, process_name, rule_score, rule_triggers, ml_attack_type, ml_risk_score`. Creates an alert if score ≥ threshold. |
+| POST | `/api/agent/block-confirmed` | Node key | Agent confirms it successfully applied a Windows Firewall rule. Query params: `node_id, ip_address`. Updates `blocked_ips` status from `pending` to `active` in MongoDB. The dashboard then shows the block as confirmed. |
+
+---
+
+#### AI & Security Reports (`/api/ai`)
+
+| Method | Endpoint | Auth | What It Does |
+|--------|----------|------|-------------|
+| GET | `/api/ai/insights` | JWT | Get AI-powered threat summary for the user. Aggregates top attacker profiles, detects scanner bots, maps attack types to MITRE ATT&CK techniques, computes average confidence score. Returns: `{ attacker_profiles, scanner_bots_detected, confidence_score, mitre_tags }`. |
+| GET | `/api/ai/attacker-profile/:source_ip` | JWT | Detailed threat intelligence for a specific attacker IP. Returns: attack history, MITRE technique tags (T1110, T1046, T1190, etc.), auto-generated description, activity count, last seen timestamp. |
+| POST | `/api/ai/report` | JWT | **Generate a new security health report.** Aggregates from MongoDB: node status, alert counts by severity, attack type distribution, top attacker IPs, recent 24h event count. Computes health score (0–10). Generates text recommendations. Upserts one report per user in `security_reports` collection. Returns the full report JSON. |
+| GET | `/api/ai/report` | JWT | Retrieve the last saved security report for the user. Returns `{ exists: false }` if no report has been generated. Used on page load to pre-populate the AI Insights report tab. |
+
+---
+
+#### Event Logs (`/api/logs`)
+
+| Method | Endpoint | Auth | What It Does |
+|--------|----------|------|-------------|
+| GET | `/api/logs` | JWT | Get all security event logs for the user's nodes. Combines `honeypot_logs` and `agent_events` collections. Query params: `?limit=100&node_id=...&severity=critical&search=keyword`. The `search` param filters across `source_ip`, `event_type`, and `related_decoy`. |
+| GET | `/api/logs/node/:node_id` | JWT | Get event logs for a specific node only. Supports the same `?severity` and `?search` filters. Verifies node ownership before returning data. |
+
+---
+
+#### Install Scripts (`/api/install`)
+
+| Method | Endpoint | Auth | What It Does |
+|--------|----------|------|-------------|
+| GET | `/api/install/windows` | Public | Return the Windows PowerShell agent installation script as a download. Includes NSSM service setup and scheduled task configuration. |
+| GET | `/api/install/linux` | Public | Return the Linux bash agent installation script. Includes systemd service or crontab setup. |
+| GET | `/api/install/macos` | Public | Return the macOS bash agent installation script. |
+| POST | `/api/install/generate-installer/:node_id` | JWT | Generate and return a node-specific installer ZIP. Embeds `node_id` and `node_api_key` in the config. Used by the Nodes page "Download Agent" button. This is the primary download path (alias of `GET /api/nodes/:id/agent-download`). |
+
+---
+
+### Service 3 — ML Prediction Service (separate microservice)
+
+Hosted separately from the FastAPI data backend. Deployed at: `https://ml-modle-v0-2.onrender.com`
+Not user-facing. Called internally by the FastAPI data backend only. No JWT required.
+
+---
+
+| Method | Endpoint | Auth | What It Does |
+|--------|----------|------|-------------|
+| GET | `/` | Public | API info. Returns service name, version, model status, available endpoints list. |
+| GET | `/health` | Public | Health check. Returns: `{ status: "healthy"\|"unhealthy", model_loaded: bool, version }`. Called by FastAPI's ML service client on startup to verify the model is ready. |
+| POST | `/predict` | Public (internal) | **Main prediction endpoint.** Body: `{ failed_logins, request_rate, commands_count, sql_payload (0\|1), honeytoken_access (0\|1), session_time }`. Runs the event through the Random Forest classifier and Isolation Forest anomaly detector. Returns: `{ attack_type, risk_score (1–10), confidence (0–1), anomaly_score, is_anomaly }`. Called synchronously from the FastAPI backend for every incoming agent event. |
+| POST | `/predict-batch` | Public (internal) | Batch prediction. Body: list of event objects with the same 6 features. Returns a list of predictions in the same order. Used for bulk scoring of historical logs. |
+| POST | `/predict/network` | Public (internal) | Predict from network flow features (CIC-IDS format). Uses the separately trained network traffic model. Input features are different from the honeytoken model — includes packet counts, byte counts, inter-arrival times. Returns the same `{ attack_type, risk_score, confidence }` format. |
+| GET | `/features` | Public | Returns the list of feature names the model expects, with descriptions and expected ranges. Used for documentation and debugging feature mapping issues. |
+
+---
+
+### API Authentication Summary
+
+| Caller | Authenticates With | Validated By |
+|--------|-------------------|-------------|
+| Browser → Express | `Authorization: Bearer <JWT>` | Express `protect` middleware (JWT_SECRET) |
+| Browser → FastAPI | `Authorization: Bearer <JWT>` | FastAPI `get_user_id_from_header()` (same JWT_SECRET) |
+| Agent → FastAPI | `X-Node-Id` + `X-Node-Key` headers | `validate_node_access()` — bcrypt compares key against stored hash |
+| FastAPI → Express (email relay) | `x-internal-secret` header | Direct string comparison against `INTERNAL_SECRET` env var |
+| FastAPI → ML Service | None (internal network) | No auth — ML service is not publicly exposed |
+| Browser → LLM (AI chat) | Provider API key in request | Direct to OpenAI/OpenRouter/Gemini — never touches DecoyVerse servers |
+
+---
+
+### Key Request/Response Patterns
+
+**Standard Express success response:**
+```json
+{ "success": true, "message": "...", "data": { ... } }
+```
+
+**Standard Express error response:**
+```json
+{ "success": false, "message": "Error description", "errors": [...] }
+```
+
+**Standard FastAPI response (data endpoints):**
+```json
+{ "status": "success", ... }
+```
+or direct model list for collection endpoints.
+
+**Alert object (full):**
+```json
+{
+  "alert_id": "AGENT-20250601120000-hostname",
+  "timestamp": "2025-06-01T12:00:00",
+  "source_ip": "192.168.1.100",
+  "service": "endpoint_agent",
+  "attack_type": "DataExfil",
+  "risk_score": 10,
+  "confidence": 0.93,
+  "activity": "ACCESSED",
+  "payload": "passwords_backup.txt",
+  "node_id": "uuid4-string",
+  "user_id": "mongo-objectid",
+  "status": "open",
+  "extra": {
+    "process_name": "explorer.exe",
+    "pid": 4521,
+    "cmdline": "C:\\Windows\\explorer.exe",
+    "geo": { "country": "India", "city": "Mumbai", "org": "AS9829 BSNL" },
+    "abuse": { "confidence_score": 0, "total_reports": 0, "is_tor": false }
+  }
+}
+```
+
+**ML prediction response:**
+```json
+{
+  "attack_type": "DataExfil",
+  "risk_score": 9.2,
+  "confidence": 0.93,
+  "anomaly_score": -0.45,
+  "is_anomaly": true
+}
+```

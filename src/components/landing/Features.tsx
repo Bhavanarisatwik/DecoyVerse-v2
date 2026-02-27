@@ -1,4 +1,4 @@
-import { Activity, Eye, Server, AlertTriangle, Layers, Lock, Cpu, Zap } from "lucide-react"
+import { Activity, Eye, Server, AlertTriangle, Layers, Lock, Cpu, Zap, BrainCircuit, Bot, KeyRound, ShieldCheck } from "lucide-react"
 import { motion } from "framer-motion"
 
 const featureSections = [
@@ -80,39 +80,131 @@ const featureSections = [
     },
     {
         id: "analyze",
-        title: "Analyze Threat Intelligence",
-        description: "Automatically gather IOCs, TTPs, and payload signatures. Feed actionable intelligence directly into your SIEM, SOAR, or firewall to shut down attacks instantly.",
-        icon: Activity,
+        title: "AI-Powered Security Intelligence",
+        description: "Get a real-time security health score synthesized from your nodes, alerts, and attacker profiles. Ask our AI Advisor anything — it reads your live data and responds with context-aware threat recommendations.",
+        icon: BrainCircuit,
         color: "text-accent",
         visual: (
-            <div className="relative w-full h-full bg-gradient-to-b from-[#0a0a0a] to-black rounded-2xl border border-gray-800 p-6 flex flex-col justify-end overflow-hidden text-left lp-feature-card">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-accent/20 blur-[80px] rounded-full"></div>
+            <div className="relative w-full h-full bg-gradient-to-b from-[#0a0a0a] to-black rounded-2xl border border-gray-800 p-5 flex flex-col gap-3 overflow-hidden lp-feature-card">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-accent/15 blur-[80px] rounded-full"></div>
 
-                <div className="relative z-10 w-full h-4/5 pt-10">
-                    <div className="flex h-full items-end justify-between gap-2 border-b border-gray-800 pb-2">
-                        {[30, 45, 25, 60, 85, 40, 95, 55, 75, 100].map((height, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ height: 0 }}
-                                whileInView={{ height: `${height}%` }}
-                                transition={{ duration: 0.8, delay: i * 0.05, type: "spring" }}
-                                className="w-full bg-gradient-to-t from-accent/30 via-accent/80 to-accent rounded-t-sm border-t border-accent"
-                                style={{
-                                    opacity: 0.6 + (height / 200)
-                                }}
-                            >
-                                {height > 80 && (
-                                    <div className="w-full h-full flex justify-center -mt-6">
-                                        <div className="w-2 h-2 rounded-full border border-black bg-white shadow-[0_0_10px_white] animate-pulse"></div>
-                                    </div>
-                                )}
-                            </motion.div>
-                        ))}
+                {/* Health score row */}
+                <div className="relative z-10 flex items-center gap-4 p-3 bg-gray-900/60 border border-gray-800 rounded-xl lp-feature-card-inner">
+                    <div className="relative h-14 w-14 shrink-0">
+                        <svg viewBox="0 0 56 56" className="-rotate-90 h-full w-full">
+                            <circle cx="28" cy="28" r="22" fill="none" stroke="#374151" strokeWidth="5" />
+                            <motion.circle
+                                cx="28" cy="28" r="22" fill="none" stroke="#22c55e" strokeWidth="5"
+                                strokeLinecap="round"
+                                strokeDasharray="138"
+                                initial={{ strokeDashoffset: 138 }}
+                                whileInView={{ strokeDashoffset: 22 }}
+                                transition={{ duration: 1.2, ease: "easeOut" }}
+                            />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-[11px] font-bold text-status-success">8.4</span>
+                        </div>
                     </div>
-                    <div className="flex justify-between mt-3 text-xs text-gray-500 font-mono">
-                        <div className="flex items-center gap-2"><div className="w-2 h-2 bg-accent/80 rounded-sm"></div> IOCs Captured</div>
-                        <div className="flex items-center gap-2"><div className="w-2 h-2 bg-white rounded-sm"></div> High Confidence</div>
+                    <div className="flex-1">
+                        <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">Security Health</div>
+                        <div className="text-sm font-semibold text-status-success">Healthy</div>
                     </div>
+                    <div className="flex gap-2">
+                        <div className="bg-gray-900 border border-gray-800 rounded-lg p-2 text-center">
+                            <div className="text-[9px] text-gray-500 uppercase">Nodes</div>
+                            <div className="text-sm font-bold text-white">4</div>
+                        </div>
+                        <div className="bg-gray-900 border border-status-danger/30 rounded-lg p-2 text-center">
+                            <div className="text-[9px] text-gray-500 uppercase">Critical</div>
+                            <div className="text-sm font-bold text-status-danger">2</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* AI chat */}
+                <div className="relative z-10 flex-1 bg-gray-900/60 border border-gray-800 rounded-xl p-3 flex flex-col gap-2 overflow-hidden">
+                    <div className="flex items-center gap-1.5 border-b border-gray-800 pb-2 mb-1">
+                        <BrainCircuit className="h-3 w-3 text-accent" />
+                        <span className="text-[10px] text-accent font-mono tracking-wider">AI ADVISOR</span>
+                    </div>
+                    <motion.div initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="flex gap-2 items-start">
+                        <div className="h-5 w-5 rounded-full bg-gray-700 flex items-center justify-center shrink-0 mt-0.5">
+                            <Bot className="h-2.5 w-2.5 text-gray-400" />
+                        </div>
+                        <div className="bg-gray-800 rounded-xl rounded-tl-sm px-3 py-2 text-[10px] text-gray-300 leading-relaxed max-w-[85%]">
+                            2 critical alerts from <span className="text-status-warning">192.168.1.45</span>. Brute force on SSH decoy. Recommend isolating that subnet.
+                        </div>
+                    </motion.div>
+                    <motion.div initial={{ opacity: 0, x: 8 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 }} className="flex gap-2 items-start justify-end">
+                        <div className="bg-accent/80 rounded-xl rounded-tr-sm px-3 py-2 text-[10px] text-white leading-relaxed max-w-[75%]">
+                            What's the top attack vector this week?
+                        </div>
+                    </motion.div>
+                    <motion.div initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: 1.1 }} className="flex gap-2 items-start">
+                        <div className="h-5 w-5 rounded-full bg-gray-700 flex items-center justify-center shrink-0 mt-0.5">
+                            <Bot className="h-2.5 w-2.5 text-gray-400" />
+                        </div>
+                        <div className="bg-gray-800 rounded-xl rounded-tl-sm px-3 py-2 text-[10px] text-gray-300 leading-relaxed max-w-[85%]">
+                            SSH brute force (42%), followed by port scanning (28%).
+                        </div>
+                    </motion.div>
+                </div>
+            </div>
+        )
+    },
+    {
+        id: "vault",
+        title: "Zero-Knowledge Password Vault",
+        description: "Store sensitive credentials — API keys, database passwords, SSH tokens — encrypted with AES-256-GCM in your browser. Your master password never leaves your device. Not even we can access your data.",
+        icon: KeyRound,
+        color: "text-accent-400",
+        visual: (
+            <div className="relative w-full h-full bg-gradient-to-b from-[#0a0a0a] to-black rounded-2xl border border-gray-800 p-5 flex flex-col overflow-hidden lp-feature-card">
+                <div className="absolute top-0 left-0 w-48 h-48 bg-accent/10 blur-[60px] rounded-full"></div>
+
+                {/* Header */}
+                <div className="relative z-10 flex items-center gap-2 mb-4 pb-3 border-b border-gray-800">
+                    <KeyRound className="h-4 w-4 text-accent" />
+                    <span className="text-xs font-semibold text-gray-300 font-mono">VAULT — UNLOCKED</span>
+                    <span className="ml-auto text-[10px] bg-status-success/10 text-status-success border border-status-success/20 px-2 py-0.5 rounded-full">3 entries</span>
+                </div>
+
+                {/* Vault entries */}
+                <div className="relative z-10 flex flex-col gap-2 flex-1">
+                    {[
+                        { title: "GitHub Deploy Token", user: "admin@corp.com", strength: "Strong", color: "text-status-success", bg: "bg-status-success/10 border-status-success/20" },
+                        { title: "AWS Root Access Key", user: "ops@corp.com", strength: "Strong", color: "text-status-success", bg: "bg-status-success/10 border-status-success/20" },
+                        { title: "Confluence API Key", user: "dev@corp.com", strength: "Fair", color: "text-status-warning", bg: "bg-status-warning/10 border-status-warning/20" },
+                    ].map((entry, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, x: -10 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.15 }}
+                            className="flex items-center justify-between p-3 bg-gray-900/60 border border-gray-800 rounded-xl lp-feature-card-inner"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
+                                    <KeyRound className="h-3.5 w-3.5 text-accent" />
+                                </div>
+                                <div>
+                                    <p className="text-xs font-medium text-white lp-feature-text">{entry.title}</p>
+                                    <p className="text-[10px] text-gray-500 lp-feature-text-muted">{entry.user}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-mono text-gray-600">••••••••</span>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full border ${entry.bg} ${entry.color}`}>{entry.strength}</span>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+
+                {/* Zero-knowledge badge */}
+                <div className="relative z-10 mt-3 flex items-center gap-2 p-2.5 bg-gray-900/40 border border-gray-800/80 rounded-lg">
+                    <ShieldCheck className="h-3.5 w-3.5 text-accent shrink-0" />
+                    <span className="text-[10px] text-gray-500">AES-256-GCM · Zero-knowledge · Master password never leaves device</span>
                 </div>
             </div>
         )

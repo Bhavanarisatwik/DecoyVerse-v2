@@ -16,6 +16,7 @@ import { authApi } from "../api/endpoints/auth"
 import { useAuth } from "../context/AuthContext"
 import type { SecurityReport, ChatMessage } from "../api/types"
 import { cn } from "../utils/cn"
+import ReactMarkdown from 'react-markdown'
 
 // ─── LLM Provider config ──────────────────────────────────────────────────────
 
@@ -108,7 +109,11 @@ export default function AIInsights() {
     const [reportError, setReportError] = useState<string | null>(null);
 
     // AI Advisor state
-    const [messages, setMessages]       = useState<ChatMessage[]>([]);
+    const WELCOME_MESSAGE: ChatMessage = {
+        role: 'assistant',
+        content: `Hello! I'm **DecoyVerse AI Advisor** — your on-call security analyst.\n\nI can help you:\n- **Analyze** your current security posture and health score\n- **Triage** open alerts and prioritize responses\n- **Recommend** decoy placements and hardening steps\n- **Explain** attack patterns detected in your environment\n\n> Tip: Generate a **Security Report** first for context-aware answers tailored to your live data.`,
+    };
+    const [messages, setMessages]       = useState<ChatMessage[]>([WELCOME_MESSAGE]);
     const [input, setInput]             = useState('');
     const [chatLoading, setChatLoading] = useState(false);
 
@@ -180,7 +185,7 @@ export default function AIInsights() {
                 id: user.id,
                 aiSettings: { provider: aiProvider, model: aiModel, apiKey: aiApiKey },
             });
-            if (res.data?.user) updateUser(res.data.user);
+            if (res.data) updateUser(res.data);
         } finally {
             setSavingDefaults(false);
         }
@@ -642,26 +647,6 @@ Respond concisely and actionably. Prioritise threats visible in the context abov
                         <CardContent className="pt-4 pb-0">
                             <div className="h-[420px] overflow-y-auto space-y-4 pr-1 pb-4">
 
-                                {/* Empty state */}
-                                {messages.length === 0 && (
-                                    <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
-                                        <div className="h-14 w-14 rounded-full bg-accent/10 flex items-center justify-center">
-                                            <Brain className="h-7 w-7 text-accent" />
-                                        </div>
-                                        <div>
-                                            <p className="text-themed-primary font-semibold">DecoyVerse AI Advisor</p>
-                                            <p className="text-themed-muted text-sm mt-1 max-w-sm">
-                                                Ask about your threats, get triage recommendations, or request an in-depth analysis of your current security posture.
-                                            </p>
-                                        </div>
-                                        {!report && (
-                                            <p className="text-xs text-status-warning bg-status-warning/10 border border-status-warning/20 rounded-lg px-3 py-2">
-                                                Tip: Generate a Security Report first for context-aware answers.
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
-
                                 {/* Messages */}
                                 {messages.map((msg, i) => (
                                     <div
@@ -677,12 +662,17 @@ Respond concisely and actionably. Prioritise threats visible in the context abov
                                             </div>
                                         )}
                                         <div className={cn(
-                                            'max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap',
+                                            'max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed',
                                             msg.role === 'user'
-                                                ? 'bg-accent text-on-accent rounded-tr-sm'
+                                                ? 'bg-accent text-on-accent rounded-tr-sm whitespace-pre-wrap'
                                                 : 'bg-gray-700 text-themed-primary rounded-tl-sm'
                                         )}>
-                                            {msg.content}
+                                            {msg.role === 'assistant'
+                                                ? <div className="prose prose-invert prose-sm max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:mb-2 [&>ul]:pl-4 [&>ul>li]:list-disc [&>ol]:mb-2 [&>ol]:pl-4 [&>ol>li]:list-decimal [&>blockquote]:border-l-2 [&>blockquote]:border-accent/60 [&>blockquote]:pl-3 [&>blockquote]:text-themed-muted [&_code]:bg-black/30 [&_code]:px-1 [&_code]:rounded [&_strong]:text-white">
+                                                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                                  </div>
+                                                : msg.content
+                                            }
                                         </div>
                                         {msg.role === 'user' && (
                                             <div className="h-7 w-7 rounded-full bg-accent/20 shrink-0 flex items-center justify-center mt-0.5">

@@ -156,11 +156,9 @@ export default function Vault() {
             const key = await deriveKey(masterPw, user.id);
             const verifier = await createVaultVerifier(key);
 
-            const res = await authApi.updateProfile({ id: user.id, vaultVerifier: verifier });
-            if (res.success && res.data) {
-                const updatedUser = (res.data as any).user || res.data;
-                updateUser(updatedUser);
-            }
+            await authApi.updateProfile({ id: user.id, vaultVerifier: verifier });
+            // Spread verifier directly — don't depend on response parsing
+            updateUser({ ...user, vaultVerifier: verifier });
 
             setCryptoKey(key);
             setMasterPw('');

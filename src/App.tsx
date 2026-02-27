@@ -18,6 +18,7 @@ import AIInsights from "./pages/AIInsights"
 import Grafana from "./pages/Grafana"
 import Settings from "./pages/Settings"
 import Configuration from "./pages/Configuration"
+import Vault from "./pages/Vault"
 
 function AppRoutes() {
     return (
@@ -70,6 +71,7 @@ function AppRoutes() {
                 <Route path="/grafana" element={<Grafana />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/configuration" element={<Configuration />} />
+                <Route path="/vault" element={<Vault />} />
             </Route>
 
             {/* Catch all - redirect to home */}

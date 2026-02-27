@@ -218,6 +218,8 @@ router.get('/me', protect, async (req: AuthRequest, res: Response): Promise<void
                     avatar: user.avatar,
                     isOnboarded: user.isOnboarded,
                     notifications: user.notifications,
+                    aiSettings: user.aiSettings,
+                    vaultVerifier: user.vaultVerifier,
                     createdAt: user.createdAt,
                     lastLogin: user.lastLogin,
                 },
@@ -389,7 +391,7 @@ router.put('/profile', protect, [
         }
 
         // Update fields if provided
-        const { name, email, avatar, notifications } = req.body;
+        const { name, email, avatar, notifications, aiSettings, vaultVerifier } = req.body;
         if (name) user.name = name;
         if (email) user.email = email;
         if (avatar !== undefined) user.avatar = avatar;
@@ -399,6 +401,16 @@ router.put('/profile', protect, [
                 ...notifications,
             };
             user.markModified('notifications');
+        }
+        if (aiSettings) {
+            user.aiSettings = {
+                ...(user.aiSettings || {}),
+                ...aiSettings,
+            };
+            user.markModified('aiSettings');
+        }
+        if (vaultVerifier !== undefined) {
+            user.vaultVerifier = vaultVerifier;
         }
 
         await user.save();
@@ -415,6 +427,8 @@ router.put('/profile', protect, [
                     avatar: user.avatar,
                     isOnboarded: user.isOnboarded,
                     notifications: user.notifications,
+                    aiSettings: user.aiSettings,
+                    vaultVerifier: user.vaultVerifier,
                     createdAt: user.createdAt,
                     lastLogin: user.lastLogin,
                 },

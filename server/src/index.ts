@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/database';
 import authRoutes from './routes/auth';
+import vaultRoutes from './routes/vault';
 
 // Load environment variables
 dotenv.config();
@@ -39,6 +40,7 @@ connectDB();
 
 // Routes - Auth only (data routes are served by FastAPI backend)
 app.use('/api/auth', authRoutes);
+app.use('/api/vault', vaultRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

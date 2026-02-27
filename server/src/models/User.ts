@@ -7,6 +7,12 @@ export interface INotificationSettings {
     whatsappNumber?: string;
 }
 
+export interface IAISettings {
+    provider?: string;   // 'openai' | 'openrouter' | 'gemini'
+    model?: string;
+    apiKey?: string;
+}
+
 export interface IUser extends Document {
     _id: mongoose.Types.ObjectId;
     name: string;
@@ -17,6 +23,8 @@ export interface IUser extends Document {
     isActive: boolean;
     isOnboarded: boolean;
     notifications?: INotificationSettings;
+    aiSettings?: IAISettings;
+    vaultVerifier?: string;   // base64 AES-GCM blob of "decoyverse-vault-v1"
     lastLogin?: Date;
     createdAt: Date;
     updatedAt: Date;
@@ -68,6 +76,12 @@ const userSchema = new Schema<IUser>(
             emailAlertTo: { type: String, default: '' },
             whatsappNumber: { type: String, default: '' },
         },
+        aiSettings: {
+            provider: { type: String, default: '' },
+            model:    { type: String, default: '' },
+            apiKey:   { type: String, default: '' },
+        },
+        vaultVerifier: { type: String, default: '' },
         lastLogin: {
             type: Date,
         },

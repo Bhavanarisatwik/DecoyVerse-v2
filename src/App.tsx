@@ -20,6 +20,7 @@ import Grafana from "./pages/Grafana"
 import Settings from "./pages/Settings"
 import Configuration from "./pages/Configuration"
 import Vault from "./pages/Vault"
+import Docs from "./pages/Docs"
 
 function AppRoutes() {
     return (
@@ -73,6 +74,7 @@ function AppRoutes() {
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/configuration" element={<Configuration />} />
                 <Route path="/vault" element={<Vault />} />
+                <Route path="/docs" element={<Docs />} />
             </Route>
 
             {/* Catch all - redirect to home */}

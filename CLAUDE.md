@@ -45,6 +45,13 @@ Both auto-inject `Authorization: Bearer <token>`. 401 → clear storage + redire
 - `POST /api/auth/internal/send-alert-email` — `x-internal-secret` only, Python→Express relay
 
 **New page:** `src/pages/MyPage.tsx` → route in [App.tsx](src/App.tsx) → nav in [Sidebar.tsx](src/components/layout/Sidebar.tsx)
+
+## Skills
+
+| Skill | Trigger | Description |
+|-------|---------|-------------|
+| `new-page` | `/new-page` | Scaffold a new page (component + route + sidebar nav) |
+| `ui-audit` | `/ui-audit [path]` or "audit UI consistency" | Scan for font/color/inline-style violations across React, Angular, Vue files. Config: `.claude/skills/ui-audit/ui-conventions.md` |
 **New endpoint:** `server/src/routes/` → mount in [server/src/index.ts](server/src/index.ts) → add to `src/api/endpoints/`
 
 ## Conventions

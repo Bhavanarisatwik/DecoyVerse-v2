@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-**Recommendations:** See [`../docs/recommendation.md`](../docs/recommendation.md) for known issues and improvement areas (security, reliability, code quality, testing, DX).
+**Recommendations:** See `../docs/recommendation.md` (from this sub-project) or `docs/recommendation.md` (from repo root) for known issues and improvement areas (security, reliability, code quality, testing, DX).
 
 **Working directory note:** The root may shift between `Major-project/` and this sub-project directory during a session. Always maintain full context of all system components (React frontend, Express backend, FastAPI backend, ML service, endpoint agent). See `Major-project/CLAUDE.md` for the monorepo overview.
 
@@ -33,7 +33,7 @@ INTERNAL_SECRET=change_this
 
 **Two API clients** in [src/api/client.ts](src/api/client.ts):
 - `authClient` → Express (`:5000`) — auth + email
-- `apiClient` → FastAPI (`:8000`) — all data (nodes, decoys, alerts, logs)
+- `apiClient` → FastAPI (`:8001`) — all data (nodes, decoys, alerts, logs)
 
 Both auto-inject `Authorization: Bearer <token>`. 401 → clear storage + redirect `/auth/login`.
 
@@ -84,7 +84,8 @@ Both auto-inject `Authorization: Bearer <token>`. 401 → clear storage + redire
 - **CORS:** Add to `allowedOrigins` in [server/src/index.ts](server/src/index.ts)
 - **401:** Check `JWT_SECRET` matches between Express and FastAPI
 - **MongoDB:** Verify `MONGO_URI` + Atlas IP whitelist (`0.0.0.0/0`)
-- **FastAPI not loading:** Must run separately on `:8000`
+- **FastAPI not loading:** Backend API runs on `:8001`; ML API on `:8000` (internal only)
+- **`/api/honeytokels` typo:** Production endpoint is misspelled ("honeytokels" not "honeytokens") — do not rename it in code, just be aware when referencing it
 - **Email not sending:** `SENDGRID_API_KEY` set + `SENDGRID_FROM` exactly matches verified sender
 - **Internal 401:** `INTERNAL_SECRET` must match between Express and FastAPI
 

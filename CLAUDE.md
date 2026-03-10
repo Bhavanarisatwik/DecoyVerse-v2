@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+**Recommendations:** See [`../docs/recommendation.md`](../docs/recommendation.md) for known issues and improvement areas (security, reliability, code quality, testing, DX).
+
+**Working directory note:** The root may shift between `Major-project/` and this sub-project directory during a session. Always maintain full context of all system components (React frontend, Express backend, FastAPI backend, ML service, endpoint agent). See `Major-project/CLAUDE.md` for the monorepo overview.
+
 DecoyVerse: cybersecurity deception platform (honeytokens, threat visualization). Monorepo:
 - `/` — Frontend: React 19 + TypeScript + Vite + Tailwind CSS v4
 - `/server` — Backend: Express + MongoDB + TypeScript
@@ -45,6 +49,18 @@ Both auto-inject `Authorization: Bearer <token>`. 401 → clear storage + redire
 - `POST /api/auth/internal/send-alert-email` — `x-internal-secret` only, Python→Express relay
 
 **New page:** `src/pages/MyPage.tsx` → route in [App.tsx](src/App.tsx) → nav in [Sidebar.tsx](src/components/layout/Sidebar.tsx)
+
+## Efficient Editing
+
+**New page:** `src/pages/X.tsx` → route in `App.tsx` → nav entry in `src/components/layout/Sidebar.tsx`
+
+**New Express endpoint:** `server/src/routes/x.ts` → mount in `server/src/index.ts` → `src/api/endpoints/x.ts` → re-export from `src/api/index.ts`
+
+**New FastAPI endpoint:** add in `ML-modle v0/backend/routes/` → register in `ML-modle v0/backend/main.py` → `src/api/endpoints/x.ts` → re-export from `src/api/index.ts`
+
+**When changing API response shape:** update `src/api/types.ts` AND `src/api/mockData.ts` together — demo mode breaks silently if mockData is out of sync.
+
+**Styling:** always use `cn()` from `src/utils/cn.ts`. Never string-concatenate classNames.
 
 ## Skills
 

@@ -16,6 +16,7 @@ import { authApi } from "../api/endpoints/auth"
 import { useAuth } from "../context/AuthContext"
 import type { SecurityReport, ChatMessage } from "../api/types"
 import { cn } from "../utils/cn"
+import { useTheme } from "../context/ThemeContext"
 import ReactMarkdown from 'react-markdown'
 import { toast } from "sonner"
 
@@ -101,6 +102,8 @@ function TypingDots() {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function AIInsights() {
+    const { theme } = useTheme();
+    const isLight = theme === 'light';
     const { user, updateUser } = useAuth();
 
     // Report state
@@ -451,22 +454,23 @@ Respond concisely and actionably. Prioritise threats visible in the context abov
                                                     data={report.top_attack_types}
                                                     margin={{ left: -10, right: 10, top: 4, bottom: 4 }}
                                                 >
-                                                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                                    <CartesianGrid strokeDasharray="3 3" stroke={isLight ? '#E4E4E7' : '#374151'} />
                                                     <XAxis
                                                         dataKey="type"
-                                                        tick={{ fill: '#9ca3af', fontSize: 11 }}
+                                                        tick={{ fill: isLight ? '#71717A' : '#9ca3af', fontSize: 11 }}
                                                         tickFormatter={v => String(v).replace(/_/g, ' ')}
                                                     />
-                                                    <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} />
+                                                    <YAxis tick={{ fill: isLight ? '#71717A' : '#9ca3af', fontSize: 11 }} />
                                                     <Tooltip
                                                         contentStyle={{
-                                                            background: '#1f2937',
-                                                            border: '1px solid #374151',
+                                                            background: isLight ? '#FFFFFF' : '#1f2937',
+                                                            border: `1px solid ${isLight ? '#E4E4E7' : '#374151'}`,
                                                             borderRadius: 8,
                                                         }}
-                                                        labelStyle={{ color: '#e5e7eb' }}
+                                                        labelStyle={{ color: isLight ? '#09090B' : '#e5e7eb' }}
                                                         itemStyle={{ color: '#f59e0b' }}
                                                         labelFormatter={v => String(v).replace(/_/g, ' ')}
+                                                        cursor={{ fill: isLight ? '#F4F4F5' : '#27272A' }}
                                                     />
                                                     <Bar dataKey="count" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                                                 </BarChart>
@@ -676,7 +680,7 @@ Respond concisely and actionably. Prioritise threats visible in the context abov
                                                 : 'bg-gray-700 text-themed-primary rounded-tl-sm'
                                         )}>
                                             {msg.role === 'assistant'
-                                                ? <div className="prose prose-invert prose-sm max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:mb-2 [&>ul]:pl-4 [&>ul>li]:list-disc [&>ol]:mb-2 [&>ol]:pl-4 [&>ol>li]:list-decimal [&>blockquote]:border-l-2 [&>blockquote]:border-accent/60 [&>blockquote]:pl-3 [&>blockquote]:text-themed-muted [&_code]:bg-black/30 [&_code]:px-1 [&_code]:rounded [&_strong]:text-white">
+                                                ? <div className="prose prose-invert prose-sm max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:mb-2 [&>ul]:pl-4 [&>ul>li]:list-disc [&>ol]:mb-2 [&>ol]:pl-4 [&>ol>li]:list-decimal [&>blockquote]:border-l-2 [&>blockquote]:border-accent/60 [&>blockquote]:pl-3 [&>blockquote]:text-themed-muted [&_code]:bg-black/30 [&_code]:px-1 [&_code]:rounded [&_strong]:text-themed-primary">
                                                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                                                   </div>
                                                 : msg.content

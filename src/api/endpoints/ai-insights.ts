@@ -1,4 +1,5 @@
 import { apiClient } from '../client';
+import type { SecurityReport } from '../types';
 
 export interface AttackerProfile {
     ip: string;
@@ -24,5 +25,23 @@ export const aiInsightsApi = {
         } catch (error) {
             throw error;
         }
+    },
+};
+
+export const securityReportApi = {
+    /**
+     * POST /api/ai/report — generate & save a new security report (replaces old)
+     */
+    async generateReport(): Promise<SecurityReport> {
+        const response = await apiClient.post<SecurityReport>('/api/ai/report');
+        return response.data;
+    },
+
+    /**
+     * GET /api/ai/report — retrieve the last saved security report
+     */
+    async getReport(): Promise<{ exists: boolean; report: SecurityReport | null }> {
+        const response = await apiClient.get<{ exists: boolean; report: SecurityReport | null }>('/api/ai/report');
+        return response.data;
     },
 };

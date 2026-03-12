@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import { Toaster } from "sonner"
 import { ThemeProvider } from "./context/ThemeContext"
 import { AuthProvider } from "./context/AuthContext"
 import { ProtectedRoute, PublicRoute } from "./components/auth/ProtectedRoute"
@@ -18,6 +19,8 @@ import AIInsights from "./pages/AIInsights"
 import Grafana from "./pages/Grafana"
 import Settings from "./pages/Settings"
 import Configuration from "./pages/Configuration"
+import Vault from "./pages/Vault"
+import Docs from "./pages/Docs"
 
 function AppRoutes() {
     return (
@@ -70,6 +73,8 @@ function AppRoutes() {
                 <Route path="/grafana" element={<Grafana />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/configuration" element={<Configuration />} />
+                <Route path="/vault" element={<Vault />} />
+                <Route path="/docs" element={<Docs />} />
             </Route>
 
             {/* Catch all - redirect to home */}
@@ -84,6 +89,7 @@ function App() {
             <Router>
                 <AuthProvider>
                     <AppRoutes />
+                    <Toaster position="top-right" theme="dark" richColors closeButton duration={4000} />
                 </AuthProvider>
             </Router>
         </ThemeProvider>

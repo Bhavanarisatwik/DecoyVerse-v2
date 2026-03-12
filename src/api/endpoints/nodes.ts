@@ -4,7 +4,7 @@ export interface Node {
     id: string;
     node_id?: string;
     name: string;
-    status: 'online' | 'offline' | 'active' | 'inactive';
+    status: 'online' | 'offline' | 'active' | 'inactive' | 'uninstall_requested';
     ip?: string;
     os?: string;
     version?: string;
@@ -141,14 +141,14 @@ export const nodesApi = {
     },
 
     /**
-     * Delete a node
+     * Delete a node.
+     * force=true → immediate cascade delete (node + all data); no agent signal
+     * force=false (default) → signals agent to self-uninstall first
      */
-    async deleteNode(nodeId: string): Promise<{ success: boolean }> {
+    async deleteNode(nodeId: string, force = false): Promise<{ success: boolean }> {
         try {
-            await apiClient.delete(`/nodes/${nodeId}`);
-            return {
-                success: true,
-            };
+            await apiClient.delete(`/nodes/${nodeId}`, { params: force ? { force: true } : undefined });
+            return { success: true };
         } catch (error) {
             throw error;
         }

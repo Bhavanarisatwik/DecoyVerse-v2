@@ -323,7 +323,7 @@ export default function Dashboard() {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="font-medium text-themed-primary capitalize">
-                                                {alert.alert_type.replace('_', ' ')}
+                                                {(alert.alert_type ?? 'Unknown').replace('_', ' ')}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge
@@ -396,7 +396,7 @@ export default function Dashboard() {
                     source_ip: "Unknown",
                     service: "Unknown",
                     attack_type: selectedAlert.alert_type,
-                    risk_score: selectedAlert.severity === 'critical' ? 9 : selectedAlert.severity === 'high' ? 7 : selectedAlert.severity === 'medium' ? 5 : 2,
+                    risk_score: selectedAlert.risk_score ?? (selectedAlert.severity === 'critical' ? 9 : selectedAlert.severity === 'high' ? 7 : selectedAlert.severity === 'medium' ? 5 : 2),
                     confidence: 0.9,
                     activity: selectedAlert.message,
                     payload: "",

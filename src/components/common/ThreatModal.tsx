@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { X, ShieldAlert, Activity, Server, AlertTriangle, Fingerprint } from "lucide-react"
+import { useState } from "react"
+import { X, ShieldAlert, Activity, Server, AlertTriangle, Fingerprint, ShieldOff, CheckCircle2, Loader2 } from "lucide-react"
+import { alertsApi } from "../../api/endpoints/alerts"
 
 export interface Alert {
     _id: string
@@ -14,6 +16,8 @@ export interface Alert {
     payload: string
     status: string
     node_id: string
+    notified?: boolean
+    notification_status?: 'sent' | 'failed' | 'no_channels' | null
 }
 
 interface ThreatModalProps {
@@ -23,7 +27,20 @@ interface ThreatModalProps {
 }
 
 export function ThreatModal({ isOpen, onClose, alert }: ThreatModalProps) {
+    const [blockState, setBlockState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+
     if (!alert) return null
+
+    const handleBlockIp = async () => {
+        if (!alert.node_id || !alert.source_ip || blockState !== 'idle') return
+        setBlockState('loading')
+        try {
+            await alertsApi.blockIp(alert.source_ip, alert.node_id, alert.alert_id)
+            setBlockState('done')
+        } catch {
+            setBlockState('error')
+        }
+    }
 
     return (
         <AnimatePresence>
@@ -126,6 +143,20 @@ export function ThreatModal({ isOpen, onClose, alert }: ThreatModalProps) {
                                             <p className="text-xs text-gray-500 mb-1">Timestamp</p>
                                             <p className="text-sm text-white">{new Date(alert.timestamp).toLocaleString()}</p>
                                         </div>
+                                        {alert.notification_status && (
+                                            <div className="md:col-span-2">
+                                                <p className="text-xs text-gray-500 mb-1">Notification</p>
+                                                <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
+                                                    alert.notification_status === 'sent'
+                                                        ? 'bg-status-success/20 text-status-success'
+                                                        : alert.notification_status === 'failed'
+                                                        ? 'bg-status-danger/20 text-status-danger'
+                                                        : 'bg-gray-700 text-gray-400'
+                                                }`}>
+                                                    {alert.notification_status === 'sent' ? '✓ Notified' : alert.notification_status === 'failed' ? '✗ Failed' : 'No channels'}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -157,11 +188,30 @@ export function ThreatModal({ isOpen, onClose, alert }: ThreatModalProps) {
                                 >
                                     Dismiss
                                 </button>
-                                <button
-                                    className="px-4 py-2 rounded-lg text-sm font-medium bg-status-danger text-white hover:bg-red-600 transition-colors shadow-[0_0_15px_rgba(239,68,68,0.3)]"
-                                >
-                                    Block Source IP
-                                </button>
+                                {blockState === 'done' ? (
+                                    <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-status-success/20 text-status-success border border-status-success/30">
+                                        <CheckCircle2 className="h-4 w-4" />
+                                        Block Queued — agent will apply on next heartbeat
+                                    </span>
+                                ) : blockState === 'error' ? (
+                                    <button
+                                        onClick={handleBlockIp}
+                                        className="px-4 py-2 rounded-lg text-sm font-medium bg-status-danger/20 text-status-danger border border-status-danger/40 hover:bg-status-danger hover:text-white transition-colors"
+                                    >
+                                        Retry Block
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleBlockIp}
+                                        disabled={blockState === 'loading'}
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-status-danger text-white hover:bg-red-600 transition-colors shadow-[0_0_15px_rgba(239,68,68,0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
+                                    >
+                                        {blockState === 'loading'
+                                            ? <><Loader2 className="h-4 w-4 animate-spin" /> Queueing Block...</>
+                                            : <><ShieldOff className="h-4 w-4" /> Block Source IP</>
+                                        }
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </motion.div>

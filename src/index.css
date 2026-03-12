@@ -392,6 +392,57 @@
 }
 
 
+/* ── 11. GRAY INNER COMPONENT BACKGROUNDS ── */
+/* Catches bg-gray-800/60, bg-gray-700, bg-gray-900 used in AIInsights, Vault,
+   and other inner pages. Dark themes untouched — rules only fire in .theme-light. */
+
+.theme-light .bg-gray-900 {
+  background-color: var(--bg-card) !important;
+}
+
+.theme-light .bg-gray-800\/60 {
+  background-color: var(--bg-elevated) !important;
+}
+
+.theme-light .bg-gray-800\/80 {
+  background-color: color-mix(in srgb, var(--bg-card) 90%, var(--bg-elevated)) !important;
+}
+
+.theme-light .bg-gray-800 {
+  background-color: var(--bg-card) !important;
+}
+
+.theme-light .bg-gray-700 {
+  background-color: var(--bg-elevated) !important;
+}
+
+.theme-light .bg-gray-600 {
+  background-color: var(--border-secondary) !important;
+}
+
+/* ── 12. HOVER STATES ── */
+.theme-light .hover\:bg-gray-700:hover {
+  background-color: var(--bg-elevated) !important;
+}
+
+.theme-light .hover\:bg-gray-600:hover {
+  background-color: var(--border-primary) !important;
+}
+
+.theme-light .hover\:bg-gray-700\/30:hover {
+  background-color: color-mix(in srgb, var(--bg-elevated) 30%, transparent) !important;
+}
+
+/* ── 13. TABLE DIVIDERS & BORDERS ── */
+.theme-light .divide-gray-700\/50 > :not([hidden]) ~ :not([hidden]) {
+  border-color: color-mix(in srgb, var(--border-primary) 50%, transparent) !important;
+}
+
+.theme-light .border-gray-600 {
+  border-color: var(--border-primary) !important;
+}
+
+
 /* Utility classes for theming */
 @layer utilities {
 

@@ -124,9 +124,15 @@ export function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
                         className="relative h-9 w-9 rounded-full hover:bg-white/5"
                     >
                         <Bell className="h-[18px] w-[18px] text-themed-muted" />
-                        {alerts.filter(a => a.status === 'open').length > 0 && (
-                            <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-accent" />
-                        )}
+                        {(() => {
+                            const count = alerts.filter(a => a.status === 'open' || a.severity === 'critical').length;
+                            if (count === 0) return null;
+                            return (
+                                <span className="absolute -right-1 -top-1 h-4 min-w-[1rem] px-0.5 rounded-full bg-status-danger flex items-center justify-center text-[10px] font-bold text-white leading-none">
+                                    {count > 9 ? '9+' : count}
+                                </span>
+                            );
+                        })()}
                     </Button>
 
                     {/* Notifications Dropdown */}

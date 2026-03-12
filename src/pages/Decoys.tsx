@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { Ghost, Plus, Play, Square, Trash2, AlertCircle, MapPin, Zap, Copy, Check } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "../components/common/Button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
@@ -63,8 +64,10 @@ export default function Decoys() {
         try {
             await decoysApi.updateDecoyStatus(decoyId, newStatus)
             setDecoys(decoys.map(d => d.id === decoyId ? { ...d, status: newStatus as any } : d))
+            toast.success(`Decoy ${newStatus === 'active' ? 'activated' : 'deactivated'}`)
         } catch (err) {
             console.error('Error updating decoy:', err)
+            toast.error('Failed to update decoy')
             setError('Failed to update decoy')
         }
     }
@@ -74,10 +77,12 @@ export default function Decoys() {
             return
         }
         try {
-            await decoysApi.deleteDecoy?.(decoyId) || Promise.resolve(); // Assuming this or similar endpoint later
+            await decoysApi.deleteDecoy?.(decoyId) || Promise.resolve();
             setDecoys(decoys.filter(d => d.id !== decoyId))
+            toast.success('Decoy deleted')
         } catch (err) {
             console.error('Error deleting decoy:', err)
+            toast.error('Failed to delete decoy')
             setError('Failed to delete decoy')
         }
     }

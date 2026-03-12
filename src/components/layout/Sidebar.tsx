@@ -15,7 +15,9 @@ import {
     ChevronRight,
     HelpCircle,
     ChevronDown,
-    Cog
+    Cog,
+    KeyRound,
+    BookOpen,
 } from "lucide-react"
 import { cn } from "../../utils/cn"
 import { useState } from "react"
@@ -36,8 +38,10 @@ const monitorMenu = [
 ]
 
 const toolsMenu = [
+    { icon: KeyRound, label: "Vault", href: "/vault" },
     { icon: Settings, label: "Settings", href: "/settings" },
     { icon: Cog, label: "Configuration", href: "/configuration" },
+    { icon: BookOpen, label: "Docs", href: "/docs" },
     { icon: HelpCircle, label: "Help center", href: "#" },
 ]
 

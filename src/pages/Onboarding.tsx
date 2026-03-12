@@ -28,6 +28,11 @@ export default function Onboarding() {
     const [initialDecoys, setInitialDecoys] = useState(3)
     const [initialHoneytokens, setInitialHoneytokens] = useState(2)
 
+    // Notification setup
+    const [whatsappNumber, setWhatsappNumber] = useState('')
+    const [notifSaving, setNotifSaving] = useState(false)
+    const [notifSaved, setNotifSaved] = useState(false)
+
     // Navigate to dashboard when onboarding is complete
     useEffect(() => {
         if (completing && user?.isOnboarded === true) {
@@ -117,6 +122,22 @@ export default function Onboarding() {
             navigator.clipboard.writeText(nodeData.node_api_key);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    const handleSaveNotifications = async () => {
+        if (!whatsappNumber.trim()) return;
+        setNotifSaving(true);
+        try {
+            await authApi.updateProfile({
+                id: user?.id || '',
+                notifications: { whatsappNumber: whatsappNumber.trim() }
+            });
+            setNotifSaved(true);
+        } catch (err) {
+            console.error('Error saving notification settings:', err);
+        } finally {
+            setNotifSaving(false);
         }
     };
 
@@ -244,11 +265,57 @@ export default function Onboarding() {
                     </CardContent>
                 </Card>
 
+                {/* Step 2: Notification Setup */}
+                <Card className="card-gradient border-themed">
+                    <CardHeader>
+                        <CardTitle className="text-themed-primary">2. Notification Setup</CardTitle>
+                        <CardDescription>Get WhatsApp alerts when threats are detected on your nodes. (Optional)</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {notifSaved ? (
+                            <div className="flex items-center gap-3 p-4 bg-status-success/10 border border-status-success/20 rounded-xl">
+                                <CheckCircle2 className="h-5 w-5 text-status-success" />
+                                <p className="font-medium text-themed-primary">
+                                    {whatsappNumber ? `WhatsApp alerts enabled for ${whatsappNumber}` : 'Notification setup skipped'}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <Input
+                                    placeholder="+1234567890 (international format)"
+                                    value={whatsappNumber}
+                                    onChange={(e) => setWhatsappNumber(e.target.value)}
+                                    className="font-mono text-themed-secondary bg-themed-elevated rounded-xl"
+                                />
+                                <p className="text-xs text-themed-muted">
+                                    Powered by Twilio. Requires Twilio to be configured on the backend.
+                                </p>
+                                <div className="flex gap-3">
+                                    <Button
+                                        variant="outline"
+                                        className="border-themed hover:bg-themed-elevated rounded-xl"
+                                        onClick={() => setNotifSaved(true)}
+                                    >
+                                        Skip
+                                    </Button>
+                                    <Button
+                                        onClick={handleSaveNotifications}
+                                        disabled={!whatsappNumber.trim() || notifSaving}
+                                        className="bg-accent hover:bg-accent-600 text-on-accent font-bold rounded-xl"
+                                    >
+                                        {notifSaving ? 'Saving...' : 'Save & Continue'}
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
                 {nodeCreated && nodeData && (
                     <>
                         <Card className="card-gradient border-themed">
                             <CardHeader>
-                                <CardTitle className="text-themed-primary">2. Get your API Token</CardTitle>
+                                <CardTitle className="text-themed-primary">3. Get your API Token</CardTitle>
                                 <CardDescription>This token authenticates your agent with DecoyVerse.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -266,7 +333,7 @@ export default function Onboarding() {
 
                         <Card className="card-gradient border-themed">
                             <CardHeader>
-                                <CardTitle className="text-themed-primary">3. Download & Run Installer</CardTitle>
+                                <CardTitle className="text-themed-primary">4. Download & Run Installer</CardTitle>
                                 <CardDescription>Download the installer ZIP and run the one-click launcher as Administrator.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -293,7 +360,7 @@ export default function Onboarding() {
 
                         <Card className="card-gradient border-themed">
                             <CardHeader>
-                                <CardTitle className="text-themed-primary">4. Verify Connection</CardTitle>
+                                <CardTitle className="text-themed-primary">5. Verify Connection</CardTitle>
                                 <CardDescription>Once installed, the agent will automatically connect to the dashboard.</CardDescription>
                             </CardHeader>
                             <CardContent>

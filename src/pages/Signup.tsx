@@ -5,6 +5,7 @@ import { Input } from "../components/common/Input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/common/Card"
 import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
+import { toast } from "sonner"
 
 export default function Signup() {
     const navigate = useNavigate();
@@ -64,6 +65,7 @@ export default function Signup() {
         setIsLoading(false);
 
         if (result.success) {
+            toast.success('Account created — welcome to DecoyVerse!')
             navigate('/onboarding/subscription');
         } else {
             setError(result.message);

@@ -19,7 +19,7 @@ export const generateMockAlerts = (): Alert[] => [
         severity: 'critical',
         message: 'Multiple failed SSH login attempts detected on port 22.',
         created_at: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-        status: 'new',
+        status: 'open',
     },
     {
         id: 'alert-2',
@@ -28,7 +28,7 @@ export const generateMockAlerts = (): Alert[] => [
         severity: 'high',
         message: 'Suspicious payload detected in Honeytoken credentials payload.',
         created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-        status: 'new',
+        status: 'open',
     },
     {
         id: 'alert-3',
@@ -46,7 +46,7 @@ export const generateMockAlerts = (): Alert[] => [
         severity: 'critical',
         message: 'Decoy file "kubeconfig.yaml" was accessed.',
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-        status: 'new',
+        status: 'open',
     }
 ];
 

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User';
 import { generateToken, protect, AuthRequest } from '../middleware/auth';
+import { sendEmail, welcomeEmailHtml, testAlertEmailHtml, alertEmailHtml } from '../utils/mailer';
 
 const router = Router();
 
@@ -69,6 +70,13 @@ router.post('/signup', signupValidation, async (req: Request, res: Response): Pr
 
         // Generate token
         const token = generateToken(user);
+
+        // Fire-and-forget welcome email (never blocks signup)
+        sendEmail(
+            email,
+            'Welcome to DecoyVerse — your security platform is ready',
+            welcomeEmailHtml(name, email)
+        ).catch(() => {});
 
         res.status(201).json({
             success: true,
@@ -209,6 +217,9 @@ router.get('/me', protect, async (req: AuthRequest, res: Response): Promise<void
                     role: user.role,
                     avatar: user.avatar,
                     isOnboarded: user.isOnboarded,
+                    notifications: user.notifications,
+                    aiSettings: user.aiSettings,
+                    vaultVerifier: user.vaultVerifier,
                     createdAt: user.createdAt,
                     lastLogin: user.lastLogin,
                 },
@@ -380,7 +391,7 @@ router.put('/profile', protect, [
         }
 
         // Update fields if provided
-        const { name, email, avatar, notifications } = req.body;
+        const { name, email, avatar, notifications, aiSettings, vaultVerifier } = req.body;
         if (name) user.name = name;
         if (email) user.email = email;
         if (avatar !== undefined) user.avatar = avatar;
@@ -390,6 +401,16 @@ router.put('/profile', protect, [
                 ...notifications,
             };
             user.markModified('notifications');
+        }
+        if (aiSettings) {
+            user.aiSettings = {
+                ...(user.aiSettings || {}),
+                ...aiSettings,
+            };
+            user.markModified('aiSettings');
+        }
+        if (vaultVerifier !== undefined) {
+            user.vaultVerifier = vaultVerifier;
         }
 
         await user.save();
@@ -406,6 +427,8 @@ router.put('/profile', protect, [
                     avatar: user.avatar,
                     isOnboarded: user.isOnboarded,
                     notifications: user.notifications,
+                    aiSettings: user.aiSettings,
+                    vaultVerifier: user.vaultVerifier,
                     createdAt: user.createdAt,
                     lastLogin: user.lastLogin,
                 },
@@ -427,6 +450,87 @@ router.put('/profile', protect, [
             success: false,
             message: 'Server error',
         });
+    }
+});
+
+// @route   POST /api/auth/test-alert-email
+// @desc    Send a dummy alert email so the user can preview the template
+// @access  Private
+router.post('/test-alert-email', protect, async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const user = await User.findById(req.user?._id);
+
+        if (!user) {
+            res.status(404).json({ success: false, message: 'User not found' });
+            return;
+        }
+
+        const recipientEmail = user.notifications?.emailAlertTo;
+
+        if (!recipientEmail) {
+            res.status(400).json({
+                success: false,
+                message: 'No alert email address configured. Save an email in Alert Channels first.',
+            });
+            return;
+        }
+
+        if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+            res.status(503).json({
+                success: false,
+                message: 'Email service is not configured on the server (SMTP_USER / SMTP_PASS missing).',
+            });
+            return;
+        }
+
+        await sendEmail(
+            recipientEmail,
+            '🚨 [TEST] DecoyVerse Alert — Critical Threat Detected',
+            testAlertEmailHtml(recipientEmail),
+            user.email   // replyTo — replies go back to the account owner
+        );
+
+        res.json({
+            success: true,
+            message: `Test alert sent to ${recipientEmail}`,
+        });
+    } catch (error: any) {
+        console.error('Test alert email error:', error);
+        res.status(500).json({
+            success: false,
+            message: error?.message || 'Failed to send test alert. Check SMTP credentials.',
+        });
+    }
+});
+
+// @route   POST /api/auth/internal/send-alert-email
+// @desc    Internal endpoint for Python FastAPI to relay alert emails through NodeMailer
+// @access  Internal — validated by x-internal-secret header (not public JWT)
+router.post('/internal/send-alert-email', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const secret = req.headers['x-internal-secret'];
+        if (!process.env.INTERNAL_SECRET || secret !== process.env.INTERNAL_SECRET) {
+            res.status(401).json({ success: false, message: 'Unauthorized' });
+            return;
+        }
+
+        const { to, alertData } = req.body;
+        if (!to || !alertData) {
+            res.status(400).json({ success: false, message: 'Missing to or alertData' });
+            return;
+        }
+
+        await sendEmail(
+            to,
+            '🚨 DecoyVerse Alert — Threat Detected',
+            alertEmailHtml(alertData),
+            to   // replyTo — replies stay with the alert recipient
+        );
+
+        res.json({ success: true, message: `Alert email sent to ${to}` });
+    } catch (error: any) {
+        console.error('Internal send-alert-email error:', error);
+        res.status(500).json({ success: false, message: error?.message || 'Failed to send alert email' });
     }
 });
 

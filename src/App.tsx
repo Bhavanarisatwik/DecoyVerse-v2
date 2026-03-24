@@ -21,6 +21,7 @@ import Settings from "./pages/Settings"
 import Configuration from "./pages/Configuration"
 import Vault from "./pages/Vault"
 import Docs from "./pages/Docs"
+import HelpCenter from "./pages/HelpCenter"
 
 function AppRoutes() {
     return (
@@ -75,6 +76,7 @@ function AppRoutes() {
                 <Route path="/configuration" element={<Configuration />} />
                 <Route path="/vault" element={<Vault />} />
                 <Route path="/docs" element={<Docs />} />
+                <Route path="/help-center" element={<HelpCenter />} />
             </Route>
 
             {/* Catch all - redirect to home */}

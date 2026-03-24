@@ -25,6 +25,11 @@ export async function sendEmail(to: string, subject: string, html: string, reply
         html,
         text: html.replace(/<[^>]*>/g, ' ').replace(/\s{2,}/g, ' ').trim(),
         ...(replyTo ? { replyTo } : {}),
+        headers: {
+            'List-Unsubscribe': `<mailto:${typeof from === 'string' ? from : (from as any).email}?subject=unsubscribe>`,
+            'X-Mailer': 'DecoyVerse Security Platform',
+            'Precedence': 'bulk',
+        },
     });
 }
 
@@ -296,7 +301,7 @@ export function testAlertEmailHtml(recipientEmail: string): string {
         service:     'File System',
         activity:    'Honeytoken file accessed: aws_credentials.txt',
         timestamp:   new Date().toISOString(),
-        payload:     'aws_access_key_id = AKIAIOSFODNN7EXAMPLE\naws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+        payload:     '/home/admin/.ssh/id_rsa (read)\n/etc/passwd (read)\n/var/www/html/config.php (opened)',
     }).replace(
         'You are receiving this because a threat was detected on your monitored node.',
         `This is a <strong style="color:#f59e0b">TEST ALERT</strong> sent to <strong>${recipientEmail}</strong>. Real alerts will look exactly like this.`

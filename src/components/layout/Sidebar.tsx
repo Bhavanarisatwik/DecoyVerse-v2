@@ -42,7 +42,7 @@ const toolsMenu = [
     { icon: Settings, label: "Settings", href: "/settings" },
     { icon: Cog, label: "Configuration", href: "/configuration" },
     { icon: BookOpen, label: "Docs", href: "/docs" },
-    { icon: HelpCircle, label: "Help center", href: "#" },
+    { icon: HelpCircle, label: "Help center", href: "/help-center" },
 ]
 
 export function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: { isMobileMenuOpen: boolean; setIsMobileMenuOpen: (val: boolean) => void }) {

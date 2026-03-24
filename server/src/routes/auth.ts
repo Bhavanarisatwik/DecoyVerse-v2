@@ -475,17 +475,17 @@ router.post('/test-alert-email', protect, async (req: AuthRequest, res: Response
             return;
         }
 
-        if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        if (!process.env.SENDGRID_API_KEY) {
             res.status(503).json({
                 success: false,
-                message: 'Email service is not configured on the server (SMTP_USER / SMTP_PASS missing).',
+                message: 'Email service is not configured on the server (SENDGRID_API_KEY missing).',
             });
             return;
         }
 
         await sendEmail(
             recipientEmail,
-            '🚨 [TEST] DecoyVerse Alert — Critical Threat Detected',
+            '[DecoyVerse] Security event detected on your monitored node',
             testAlertEmailHtml(recipientEmail),
             user.email   // replyTo — replies go back to the account owner
         );
@@ -522,7 +522,7 @@ router.post('/internal/send-alert-email', async (req: Request, res: Response): P
 
         await sendEmail(
             to,
-            '🚨 DecoyVerse Alert — Threat Detected',
+            '[DecoyVerse] Security event detected on your monitored node',
             alertEmailHtml(alertData),
             to   // replyTo — replies stay with the alert recipient
         );

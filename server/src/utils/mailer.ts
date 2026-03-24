@@ -16,7 +16,7 @@ export async function sendEmail(to: string, subject: string, html: string, reply
     if (!apiKey) return;
 
     sgMail.setApiKey(apiKey);
-    const from = process.env.SENDGRID_FROM || 'alerts@decoyverse.com';
+    const from = process.env.SENDGRID_FROM || 'alerts@satwikbhavanari.me';
 
     await sgMail.send({
         to,

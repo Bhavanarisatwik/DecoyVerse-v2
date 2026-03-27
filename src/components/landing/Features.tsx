@@ -1,4 +1,4 @@
-import { Activity, Eye, Server, AlertTriangle, Layers, Lock, Cpu, Zap, BrainCircuit, Bot, KeyRound, ShieldCheck } from "lucide-react"
+import { Eye, Server, AlertTriangle, Layers, Lock, Cpu, Zap, BrainCircuit, Bot, KeyRound, ShieldCheck } from "lucide-react"
 import { motion } from "framer-motion"
 
 const featureSections = [

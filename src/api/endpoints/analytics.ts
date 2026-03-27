@@ -255,7 +255,6 @@ function ago(ms: number) { return new Date(Date.now() - ms).toISOString(); }
 
 function buildDemoData(): AnalyticsData {
     const attackTypes = ['Brute Force', 'SQL Injection', 'Data Exfiltration', 'Reconnaissance', 'Credential Access'];
-    const severities = ['low', 'medium', 'high', 'critical'] as const;
     const statuses = ['open', 'acknowledged', 'investigating', 'resolved'] as const;
 
     const attacks: Attack[] = Array.from({ length: 48 }, (_, i) => ({

@@ -62,7 +62,7 @@ export async function decryptString(encryptedJson: string, key: CryptoKey): Prom
     const decrypted = await window.crypto.subtle.decrypt(
         { name: 'AES-GCM', iv: _b64ToBuf(iv) },
         key,
-        _b64ToBuf(ciphertext)
+        _b64ToBuf(ciphertext) as BufferSource
     );
     return new TextDecoder().decode(decrypted);
 }
@@ -107,7 +107,11 @@ function _bufToB64(buffer: Uint8Array): string {
     return btoa(String.fromCharCode(...buffer));
 }
 
-function _b64ToBuf(base64: string): Uint8Array {
+function _b64ToBuf(base64: string): Uint8Array<ArrayBuffer> {
     const binary = atob(base64);
-    return new Uint8Array(Array.from(binary, (c) => c.charCodeAt(0)));
+    const arr = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        arr[i] = binary.charCodeAt(i);
+    }
+    return arr as Uint8Array<ArrayBuffer>;
 }

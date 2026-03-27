@@ -9,7 +9,7 @@ import {
 
 // Backend URLs
 const EXPRESS_API_URL = import.meta.env.VITE_EXPRESS_API_URL || 'http://localhost:5000/api';
-const FASTAPI_API_URL = import.meta.env.VITE_FASTAPI_API_URL || 'http://localhost:8000';
+const FASTAPI_API_URL = import.meta.env.VITE_FASTAPI_API_URL || 'http://localhost:8001';
 
 // Express backend (auth only)
 export const authClient: AxiosInstance = axios.create({

@@ -329,7 +329,7 @@ export default function Grafana() {
                                             innerRadius={50}
                                             paddingAngle={3}
                                             label={({ name, percent }) =>
-                                                `${name.length > 14 ? name.slice(0, 14) + '…' : name} ${(percent * 100).toFixed(0)}%`
+                                                `${(name || '').length > 14 ? (name || '').slice(0, 14) + '…' : (name || '')} ${((percent || 0) * 100).toFixed(0)}%`
                                             }
                                             labelLine={false}
                                             fontSize={11}

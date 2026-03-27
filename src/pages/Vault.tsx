@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import zxcvbn from 'zxcvbn'
 import {
     KeyRound, Lock, Unlock, Eye, EyeOff, Copy, Plus, Pencil,
@@ -6,7 +6,7 @@ import {
     AlertCircle, ShieldCheck, Shield,
 } from "lucide-react"
 import { Button } from "../components/common/Button"
-import { Card, CardContent, CardHeader, CardTitle } from "../components/common/Card"
+import { Card, CardContent } from "../components/common/Card"
 import { Breadcrumb } from "../components/common/Breadcrumb"
 import { vaultApi } from "../api/endpoints/vault"
 import { authApi } from "../api/endpoints/auth"

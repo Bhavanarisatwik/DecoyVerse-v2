@@ -1,6 +1,22 @@
 {
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(cp webfetch-1777867990478-tjw6lq.bin design.gz)",
+      "Bash(gunzip -f design.gz)",
+      "Read(//c/tmp/**)",
+      "Bash(mkdir hero_design)",
+      "Bash(tar -xf \"C:\\\\Users\\\\SISAShivaSatwik\\\\.claude\\\\projects\\\\c--Users-SISAShivaSatwik-Downloads-DecoyVerse-v2\\\\dfc13c63-9bb8-4701-b69f-bc82f61c5ad4\\\\tool-results\\\\design\" -C /tmp/hero_design)",
+      "Read(//tmp/**)",
+      "Read(//c/Users/SISAShivaSatwik/AppData/Local/Temp/hero_design/**)",
+      "Read(//c/Users/SISAShivaSatwik/AppData/Local/Temp/hero_design2/hero-redesign/**)",
+      "Read(//c/Users/SISAShivaSatwik/AppData/Local/Temp/hero_design2/hero-redesign/project/variants/**)",
+      "Read(//c/Users/SISAShivaSatwik/AppData/Local/Temp/hero_design2/hero-redesign/project/**)",
+      "Bash(npm run *)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "claude-flow"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

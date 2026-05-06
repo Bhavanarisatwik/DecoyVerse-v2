@@ -1,61 +1,162 @@
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Ghost, ChevronDown } from "lucide-react"
-import { Button } from "../common/Button"
+import { Ghost } from "lucide-react"
 import { ThemeSwitcher } from "../common/ThemeSwitcher"
+import { useTheme } from "../../context/ThemeContext"
+
+const NAV_LINKS = [
+    { label: 'Platform', id: 'use-cases' },
+    { label: 'Decoys',   id: 'features'  },
+    { label: 'Pricing',  id: 'pricing'   },
+    { label: 'Docs',     id: 'faq'       },
+]
 
 export function LandingNavbar() {
+    const { theme } = useTheme()
+    const isLight = theme === 'light'
+
+    const [scrolled, setScrolled] = useState(false)
+
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 24)
+        window.addEventListener('scroll', onScroll, { passive: true })
+        return () => window.removeEventListener('scroll', onScroll)
+    }, [])
+
     const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-        e.preventDefault();
-        const element = document.getElementById(id);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
+        e.preventDefault()
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    }
+
+    // Theme-responsive nav surface: frosty white in light mode, subtle dark tint in dark mode
+    const navBg    = isLight ? 'rgba(255, 255, 255, 0.75)' : 'rgba(0,0,0,0.35)'
+    // Adjust text colors to ensure contrast with the lighter subtle tint
+    const linkColor = isLight ? '#52525B' : '#A1A1AA'
+    const linkHover = isLight ? '#09090B' : '#FAFAFA'
+    const brandColor = isLight ? '#09090B' : '#FAFAFA'
+
+    const monoLink: React.CSSProperties = {
+        fontFamily: 'var(--font-mono)',
+        fontSize: '11px',
+        letterSpacing: '0.14em',
+        textTransform: 'uppercase',
+        textDecoration: 'none',
+        transition: 'color .15s ease',
+        cursor: 'none',
+    }
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50">
-            <div className="mx-auto max-w-7xl px-4 md:px-6 py-4">
-                <div className="flex items-center justify-between rounded-full border border-themed bg-themed-primary/60 backdrop-blur-xl px-6 py-3">
-                    <Link to="/" className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center">
-                            <Ghost className="h-4 w-4 text-themed-primary" />
-                        </div>
-                        <span className="text-lg font-bold text-themed-primary tracking-tight">DecoyVerse</span>
+        <nav
+            style={{
+                position: 'fixed', 
+                top: scrolled ? '16px' : '24px', 
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 50,
+                height: '56px',
+                width: 'calc(100% - 48px)',
+                maxWidth: '1100px',
+                borderRadius: '50px',
+                // Frosty Glassmorphism: dark tinted bg + extreme blur and saturation
+                background: navBg,
+                backdropFilter: 'blur(40px) saturate(200%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+                // Subtle bright rim for dark glass, dark rim for light glass
+                border: isLight
+                    ? '1px solid rgba(0,0,0,0.08)'
+                    : '1px solid rgba(255,255,255,0.08)',
+                // Specular highlight and deep drop shadow
+                boxShadow: scrolled
+                    ? (isLight ? '0 12px 40px rgba(0,0,0,0.06)' : `inset 0 1px 1px rgba(255,255,255,0.1), inset 0 0 20px rgba(255,255,255,0.03), 0 12px 40px rgba(0,0,0,0.4)`)
+                    : (isLight ? '0 4px 16px rgba(0,0,0,0.03)' : 'inset 0 1px 1px rgba(255,255,255,0.05), inset 0 0 20px rgba(255,255,255,0.01), 0 4px 16px rgba(0,0,0,0.2)'),
+                transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+        >
+            <div style={{
+                width: '100%', height: '100%',
+                padding: '0 24px',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+
+                {/* ── Brand: Ghost icon (no bg box) + gradient text ── */}
+                <Link
+                    to="/"
+                    style={{
+                        display: 'flex', alignItems: 'center', gap: '10px',
+                        textDecoration: 'none', cursor: 'none',
+                        fontFamily: 'var(--font-heading)',
+                        fontWeight: 700, fontSize: '16px',
+                        letterSpacing: '0.04em', textTransform: 'uppercase',
+                        color: brandColor,
+                    }}
+                >
+                    <span style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        filter: 'drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.55))',
+                    }}>
+                        <Ghost size={26} strokeWidth={1.8} style={{ color: 'var(--accent-400)' }} />
+                    </span>
+                    <span className="bg-clip-text text-transparent" style={{
+                        backgroundImage: 'linear-gradient(90deg, var(--accent-400) 0%, var(--accent-500) 55%, var(--accent-600) 100%)',
+                    }}>
+                        DecoyVerse
+                    </span>
+                </Link>
+
+                {/* ── Mono nav links ── */}
+                <div className="hidden md:flex items-center" style={{ gap: '32px' }}>
+                    {NAV_LINKS.map(({ label, id }) => (
+                        <a
+                            key={id}
+                            href={`#${id}`}
+                            onClick={(e) => handleScroll(e, id)}
+                            style={{ ...monoLink, color: linkColor }}
+                            onMouseEnter={e => { e.currentTarget.style.color = linkHover }}
+                            onMouseLeave={e => { e.currentTarget.style.color = linkColor }}
+                        >
+                            {label}
+                        </a>
+                    ))}
+                </div>
+
+                {/* ── Right side ── */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <ThemeSwitcher />
+
+                    <Link
+                        to="/auth/login"
+                        className="hidden sm:block"
+                        style={{ ...monoLink, color: linkColor }}
+                        onMouseEnter={e => { e.currentTarget.style.color = linkHover }}
+                        onMouseLeave={e => { e.currentTarget.style.color = linkColor }}
+                    >
+                        Login
                     </Link>
 
-                    <div className="hidden md:flex items-center gap-1">
-                        <a href="#hero" onClick={(e) => handleScroll(e, 'hero')} className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
-                            Overview
-                            <ChevronDown className="h-3 w-3" />
-                        </a>
-                        <a href="#use-cases" onClick={(e) => handleScroll(e, 'use-cases')} className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
-                            Products
-                            <ChevronDown className="h-3 w-3" />
-                        </a>
-                        <a href="#features" onClick={(e) => handleScroll(e, 'features')} className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
-                            Features
-                        </a>
-                        <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
-                            Pricing
-                        </a>
-                        <a href="#faq" onClick={(e) => handleScroll(e, 'faq')} className="px-4 py-2 text-sm font-medium text-themed-muted hover:text-themed-primary transition-colors rounded-full hover:bg-themed-elevated/50">
-                            FAQ
-                        </a>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        <ThemeSwitcher />
-                        <Link to="/auth/login">
-                            <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-themed-muted hover:text-themed-primary">
-                                Login
-                            </Button>
-                        </Link>
-                        <Link to="/auth/signup">
-                            <Button size="sm" className="bg-gradient-to-r from-accent-400 via-accent to-accent-600 hover:from-accent-400 hover:via-accent-400 hover:to-accent text-on-accent font-semibold rounded-full px-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-accent-sm">
-                                Get Started
-                            </Button>
-                        </Link>
-                    </div>
+                    <Link
+                        to="/auth/signup"
+                        style={{
+                            ...monoLink,
+                            color: 'var(--accent-500)',
+                            border: '1px solid rgba(var(--accent-rgb), 0.40)',
+                            padding: '6px 14px',
+                            borderRadius: '4px',
+                            background: 'transparent',
+                            transition: 'background .15s ease, color .15s ease, border-color .15s ease',
+                        }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.background = 'rgba(var(--accent-rgb), 0.10)'
+                            e.currentTarget.style.color = 'var(--accent-400)'
+                            e.currentTarget.style.borderColor = 'rgba(var(--accent-rgb), 0.65)'
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.background = 'transparent'
+                            e.currentTarget.style.color = 'var(--accent-500)'
+                            e.currentTarget.style.borderColor = 'rgba(var(--accent-rgb), 0.40)'
+                        }}
+                    >
+                        Deploy
+                    </Link>
                 </div>
             </div>
         </nav>

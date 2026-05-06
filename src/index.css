@@ -400,6 +400,14 @@
   background-color: var(--bg-card) !important;
 }
 
+.theme-light .bg-gray-900 .text-white {
+  color: var(--text-primary) !important;
+}
+
+.theme-light .bg-gray-900\/60 {
+  background-color: var(--bg-elevated) !important;
+}
+
 .theme-light .bg-gray-800\/60 {
   background-color: var(--bg-elevated) !important;
 }
@@ -568,6 +576,10 @@
 
   .bg-accent\/30 {
     background-color: color-mix(in srgb, var(--accent-500) 30%, transparent);
+  }
+
+  .bg-accent\/80 {
+    background-color: color-mix(in srgb, var(--accent-500) 80%, transparent);
   }
 
   .hover\:bg-accent-400:hover {
@@ -836,4 +848,21 @@
 
 .theme-light .lp-pricing-btn-secondary:hover {
   background-color: var(--bg-elevated) !important;
+}
+
+/* ── 14. TEXT COLOR OVERRIDES ── */
+.theme-light .text-gray-300 {
+  color: var(--text-primary) !important;
+}
+
+.theme-light .text-gray-400 {
+  color: var(--text-secondary) !important;
+}
+
+.theme-light .text-gray-500 {
+  color: var(--text-muted) !important;
+}
+
+.theme-light .lp-pricing-feature-yes {
+  color: var(--text-primary) !important;
 }

@@ -75,7 +75,7 @@ export default function Login() {
                             Catch attackers<br />
                             <span className="text-accent">before they strike.</span>
                         </h2>
-                        <p className="text-gray-400 text-lg leading-relaxed">
+                        <p className="text-white/65 text-lg leading-relaxed">
                             Deploy intelligent decoys across your infrastructure and detect threats in real time.
                         </p>
                     </div>
@@ -92,7 +92,7 @@ export default function Login() {
                                 </div>
                                 <div>
                                     <p className="font-semibold text-white text-sm">{label}</p>
-                                    <p className="text-gray-500 text-xs mt-0.5">{desc}</p>
+                                    <p className="text-white/50 text-xs mt-0.5">{desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -100,7 +100,7 @@ export default function Login() {
                 </div>
 
                 <div className="relative z-10">
-                    <p className="text-gray-600 text-sm">© 2025 DecoyVerse Inc. All rights reserved.</p>
+                    <p className="text-white/40 text-sm">© 2026 DecoyVerse Inc. All rights reserved.</p>
                 </div>
             </div>
 

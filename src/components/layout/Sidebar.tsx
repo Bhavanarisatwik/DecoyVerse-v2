@@ -106,7 +106,7 @@ export function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: { isMobileMen
 
     return (
         <div className={cn(
-            "flex h-screen flex-col bg-gradient-to-b from-[#0c0c0e] via-[#0e0e10] to-[#0a0a0c] border-r border-white/5 transition-all duration-300 z-50",
+            "sidebar-root flex h-screen flex-col bg-gradient-to-b from-[#0c0c0e] via-[#0e0e10] to-[#0a0a0c] border-r border-white/5 transition-all duration-300 z-50",
             isMobileMenuOpen ? "fixed inset-y-0 left-0 translate-x-0" : "fixed inset-y-0 left-0 -translate-x-full lg:relative lg:translate-x-0",
             collapsed ? "w-[68px]" : "w-64 lg:w-56"
         )}>
@@ -116,7 +116,7 @@ export function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: { isMobileMen
                 collapsed ? "justify-center px-2" : "justify-between px-4"
             )}>
                 <div className="flex items-center gap-2.5">
-                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-accent to-accent-600 flex items-center justify-center flex-shrink-0">
+                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center flex-shrink-0">
                         <Ghost className="h-4 w-4 text-on-accent" />
                     </div>
                     {!collapsed && (

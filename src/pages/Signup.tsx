@@ -104,7 +104,7 @@ export default function Signup() {
                             Start your free<br />
                             <span className="text-accent">security journey.</span>
                         </h2>
-                        <p className="text-gray-400 text-lg leading-relaxed">
+                        <p className="text-white/65 text-lg leading-relaxed">
                             Join thousands of security teams using DecoyVerse to outsmart attackers with intelligent deception.
                         </p>
                     </div>
@@ -121,7 +121,7 @@ export default function Signup() {
                                 </div>
                                 <div>
                                     <p className="font-semibold text-white text-sm">{label}</p>
-                                    <p className="text-gray-500 text-xs mt-0.5">{desc}</p>
+                                    <p className="text-white/50 text-xs mt-0.5">{desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -131,15 +131,15 @@ export default function Signup() {
                         className="rounded-2xl p-4"
                         style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
                     >
-                        <p className="text-gray-300 text-sm italic leading-relaxed">
+                        <p className="text-white/80 text-sm italic leading-relaxed">
                             "DecoyVerse caught our first attacker within 48 hours of deployment. The setup was seamless and alerts were instant."
                         </p>
-                        <p className="text-gray-400 text-xs mt-2">— Security Lead, SaaS Company</p>
+                        <p className="text-white/55 text-xs mt-2">— Security Lead, SaaS Company</p>
                     </div>
                 </div>
 
                 <div className="relative z-10">
-                    <p className="text-gray-600 text-sm">© 2025 DecoyVerse Inc. All rights reserved.</p>
+                    <p className="text-white/40 text-sm">© 2026 DecoyVerse Inc. All rights reserved.</p>
                 </div>
             </div>
 

@@ -8,8 +8,20 @@ import { Badge } from "../components/common/Badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/common/Table"
 import { dashboardApi, type Alert, type DashboardStats, type Attack } from "../api/endpoints/dashboard"
 import { ThreatModal } from "../components/common/ThreatModal"
+import { useTheme } from "../context/ThemeContext"
 
 export default function Dashboard() {
+    const { theme } = useTheme()
+    const isLight = theme === 'light'
+    const chart = {
+        grid:    isLight ? '#E4E4E7' : '#27272A',
+        axis:    isLight ? '#A1A1AA' : '#71717A',
+        tipBg:   isLight ? '#FFFFFF' : '#18181B',
+        tipBorder: isLight ? '#E4E4E7' : '#27272A',
+        tipText: isLight ? '#09090B' : '#FAFAFA',
+        cursor:  isLight ? '#F4F4F5' : '#27272A',
+    }
+
     const [stats, setStats] = useState<DashboardStats | null>(null)
     const [alerts, setAlerts] = useState<Alert[]>([])
     const [attacks, setAttacks] = useState<Attack[]>([])
@@ -244,12 +256,12 @@ export default function Dashboard() {
                                             <stop offset="95%" stopColor="#06B6D4" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#27272A" vertical={false} />
-                                    <XAxis dataKey="name" stroke="#71717A" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#71717A" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} vertical={false} />
+                                    <XAxis dataKey="name" stroke={chart.axis} fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis stroke={chart.axis} fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
                                     <Tooltip
-                                        contentStyle={{ backgroundColor: '#18181B', borderColor: '#27272A', borderRadius: '12px', color: '#FAFAFA' }}
-                                        itemStyle={{ color: '#FAFAFA' }}
+                                        contentStyle={{ backgroundColor: chart.tipBg, borderColor: chart.tipBorder, borderRadius: '12px', color: chart.tipText }}
+                                        itemStyle={{ color: chart.tipText }}
                                     />
                                     <Area type="monotone" dataKey="attacks" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#colorAttacks)" />
                                     <Area type="monotone" dataKey="blocked" stroke="#06B6D4" strokeWidth={2} fillOpacity={1} fill="url(#colorBlocked)" />
@@ -267,11 +279,11 @@ export default function Dashboard() {
                         <div className="h-[300px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={activityData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#27272A" vertical={false} />
-                                    <XAxis dataKey="time" stroke="#71717A" fontSize={12} tickLine={false} axisLine={false} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} vertical={false} />
+                                    <XAxis dataKey="time" stroke={chart.axis} fontSize={12} tickLine={false} axisLine={false} />
                                     <Tooltip
-                                        cursor={{ fill: '#27272A' }}
-                                        contentStyle={{ backgroundColor: '#18181B', borderColor: '#27272A', borderRadius: '12px', color: '#FAFAFA' }}
+                                        cursor={{ fill: chart.cursor }}
+                                        contentStyle={{ backgroundColor: chart.tipBg, borderColor: chart.tipBorder, borderRadius: '12px', color: chart.tipText }}
                                     />
                                     <Bar dataKey="value" fill="#06B6D4" radius={[6, 6, 0, 0]} />
                                 </BarChart>
@@ -355,7 +367,7 @@ export default function Dashboard() {
                         initial={{ opacity: 0, y: 50, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                        className="fixed bottom-6 right-6 z-50 w-full max-w-sm rounded-xl border border-status-danger bg-gradient-to-r from-gray-900 to-black p-4 shadow-2xl shadow-status-danger/20 cursor-pointer"
+                        className="fixed bottom-6 right-6 z-50 w-full max-w-sm rounded-xl border border-status-danger bg-themed-card p-4 shadow-2xl shadow-status-danger/20 cursor-pointer"
                         onClick={() => {
                             setSelectedAlert(newAlertToast)
                             setNewAlertToast(null)
@@ -366,8 +378,8 @@ export default function Dashboard() {
                                 <AlertTriangle className="h-6 w-6" />
                             </div>
                             <div className="flex-1">
-                                <h4 className="text-base font-bold text-white mb-1">Critical Threat Detected</h4>
-                                <p className="text-sm text-gray-400 leading-tight">
+                                <h4 className="text-base font-bold text-themed-primary mb-1">Critical Threat Detected</h4>
+                                <p className="text-sm text-themed-muted leading-tight">
                                     {newAlertToast.alert_type.replace('_', ' ')} - {newAlertToast.message}
                                 </p>
                             </div>
@@ -376,7 +388,7 @@ export default function Dashboard() {
                                     e.stopPropagation()
                                     setNewAlertToast(null)
                                 }}
-                                className="text-gray-500 hover:text-white"
+                                className="text-themed-muted hover:text-themed-primary"
                             >
                                 <X className="h-5 w-5" />
                             </button>

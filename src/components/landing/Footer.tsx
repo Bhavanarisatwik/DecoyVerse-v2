@@ -75,7 +75,7 @@ export function Footer() {
                     >
                         {/* Background glow */}
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-accent/10 blur-[100px]"></div>
-                        
+
                         <div className="relative z-10">
                             <h2 className="text-3xl md:text-4xl font-bold text-themed-primary mb-4 font-heading">
                                 Enterprise-grade security.<br />
@@ -138,7 +138,7 @@ export function Footer() {
 
                     <div className="mt-8 pt-8 border-t border-themed text-center">
                         <p className="text-sm text-themed-dimmed">
-                            © 2025 DecoyVerse Inc. All rights reserved.
+                            © 2026 DecoyVerse Inc. All rights reserved.
                         </p>
                     </div>
                 </div>

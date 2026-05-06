@@ -173,7 +173,7 @@ export function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
                 <div className="relative ml-2" ref={menuRef}>
                     <button
                         onClick={() => setShowUserMenu(!showUserMenu)}
-                        className="h-9 w-9 rounded-full bg-gradient-to-br from-accent to-accent-600 flex items-center justify-center cursor-pointer ring-2 ring-white/10 hover:ring-white/20 transition-all"
+                        className="h-9 w-9 rounded-full bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center cursor-pointer ring-2 ring-white/10 hover:ring-white/20 transition-all"
                     >
                         {user ? (
                             <span className="text-xs font-semibold text-on-accent">

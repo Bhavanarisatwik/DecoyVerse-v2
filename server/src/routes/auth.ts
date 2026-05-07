@@ -496,9 +496,14 @@ router.post('/test-alert-email', protect, async (req: AuthRequest, res: Response
         });
     } catch (error: any) {
         console.error('Test alert email error:', error);
+        const isSgAuthError =
+            error?.response?.status === 401 ||
+            (error?.message || '').toLowerCase() === 'unauthorized';
         res.status(500).json({
             success: false,
-            message: error?.message || 'Failed to send test alert. Check SMTP credentials.',
+            message: isSgAuthError
+                ? 'Email service credentials are invalid. Check SENDGRID_API_KEY on the server.'
+                : error?.message || 'Failed to send test alert.',
         });
     }
 });
